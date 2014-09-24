@@ -1,4 +1,4 @@
-all: reload provision
+all: reload
 
 reload: halt up
 
@@ -7,10 +7,6 @@ halt:
 
 up:
 	vagrant up
-
-# should run vagrant provison but that would take longer as it reinstalls(?) salt
-provision:
-	vagrant ssh -c 'sudo salt-call --log-level debug --local state.highstate'
 
 build:
 	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant/ '

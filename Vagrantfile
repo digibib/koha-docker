@@ -7,7 +7,5 @@ Vagrant.configure("2") do |config|
     d.pull_images "ubuntu"
   end
   # Docker exports only current folder, so need to put all in one place
-  config.vm.synced_folder "../../salt", "/vagrant/salt"
-  config.vm.synced_folder "../../pillar", "/vagrant/pillar"  
 
 end
