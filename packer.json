@@ -1,0 +1,23 @@
+{
+  "builders": [
+    {
+      "type": "docker",
+      "image": "ubuntu",
+      "export_path": "image.tar"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "apt-get update && apt-get install -y wget ca-certificates"
+      ]
+    },
+    {
+      "type": "salt-masterless",
+      "local_state_tree": "/home/vagrant/salt/",
+      "local_pillar_roots": "/home/vagrant/pillar/",
+      "minion_config": "/home/vagrant/salt/"
+    }
+  ]
+}
