@@ -10,17 +10,4 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "../../salt", "/vagrant/salt"
   config.vm.synced_folder "../../pillar", "/vagrant/pillar"  
 
-  config.vm.provision :shell, :inline => <<-PREPARE
-
-  #apt-get -y update
-  #apt-get install -y wget unzip curl
-
-  #mkdir -p /home/vagrant/packer
-  #cd /home/vagrant/packer
-  #wget --quiet https://dl.bintray.com/mitchellh/packer/packer_0.7.1_linux_amd64.zip
-  #unzip packer_0.7.1_linux_amd64.zip
-  #echo "export PATH=$PATH:/home/vagrant/packer" > /home/vagrant/.bashrc
-
-PREPARE
-  
 end
