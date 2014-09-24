@@ -1,0 +1,12 @@
+authorizedips:
+  - "127.0.0.1"
+  # external vagrant host
+  - "10.0.2.2"
+  # ls.test
+  - "192.168.50.11"
+debug: 1
+# fields from the borrowers table to be sent by the today and all services
+#borrowerfields:
+# - "surname"
+# - "firstname"
+# - "zipcode"

@@ -1,0 +1,11 @@
+---
+# Pillar values to use in minion states
+
+koha:
+  instance: name       # NB: instance name should be no more than 11 chars
+  dbhost: 192.168.50.12
+  dbport: 3306
+  adminuser: admin
+  adminpass: secret
+  zebrauser: kohauser
+  zebrapass: XXX
