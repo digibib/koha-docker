@@ -12,22 +12,22 @@ Using Makefile, the following commands are available:
 
 `make` : sets up and provisions virtual box
 
-`reload` : reloads box
+`make reload` : reloads box
 
-`halt` : stops virtual box
+`make halt` : stops virtual box
 
-`up` : starts box (no provisioning)
+`make up` : starts box (no provisioning)
 
-`provision`: provision box
+`make provision`: provision box
 
-`build` : build docker image (slooow)
+`make build` : build docker image (slooow)
 
-`run` : run/start docker container 
+`make run` : run/start docker container 
 
-`stop` : stop docker container
+`make stop` : stop docker container
 
-`delete` : stop and remove container
+`make delete` : stop and remove container
 
-`nsenter` : open and inspect container
+`make nsenter` : open and inspect container
 
-`clean` : purge entire virtual box
+`make clean` : purge entire virtual box
