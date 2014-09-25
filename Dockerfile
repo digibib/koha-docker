@@ -76,7 +76,6 @@ RUN /etc/init.d/mysql start && \
     /etc/init.d/apache2 start && \
     salt-call --local state.sls koha.webinstaller && \
     /etc/init.d/apache2 stop && \
-    /etc/init.d/mysql stop && \
     sleep 10  
 
 ADD ./salt/koha/restful.sls /srv/salt/koha/restful.sls
