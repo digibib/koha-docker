@@ -26,7 +26,7 @@ if [[ -n "$KOHAVERSION" ]] ; then
           \"olddbversion\":\"$KOHADBVERSIONOLD\"\
           }"
   else
-     ruby -r "/usr/local/bin/KohaWebInstallAutomation.rb" -e "KohaWebInstallAutomation.new \"${URL}\",\"${USER}\",\"${PASS}\""
+     /usr/bin/ruby -r "/usr/local/bin/KohaWebInstallAutomation.rb" -e "KohaWebInstallAutomation.new \"${URL}\",\"${USER}\",\"${PASS}\""
   fi
 else
   echo "{\"ERROR\":\"MISSING INSTANCENAME OR NO KOHAVERSION!\"}"

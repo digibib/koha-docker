@@ -38,31 +38,50 @@ ADD ./salt/koha/init.sls /srv/salt/koha/init.sls
 RUN salt-call --local state.sls koha
 
 ADD ./salt/koha/apache2.sls /srv/salt/koha/apache2.sls
+ADD ./salt/koha/files/apache.tmpl /srv/salt/koha/files/apache.tmpl
 RUN salt-call --local state.sls koha.apache2
 
 ADD ./salt/koha/common.sls /srv/salt/koha/common.sls
+ADD ./salt/koha/files/koha-common.cnf /srv/salt/koha/files/koha-common.cnf
+ADD ./salt/koha/files/koha-conf.xml.tmpl /srv/salt/koha/files/koha-conf.xml.tmpl
+ADD ./salt/koha/files/zebra.passwd.tmpl /srv/salt/koha/files/zebra.passwd.tmpl
 RUN salt-call --local state.sls koha.common
 
 ADD ./salt/koha/sites-config.sls /srv/salt/koha/sites-config.sls
+ADD ./salt/koha/files/koha-sites.conf /srv/salt/koha/files/koha-sites.conf
+ADD ./salt/koha/files/passwd /srv/salt/koha/files/passwd
 RUN salt-call --local state.sls koha.sites-config
 
 ADD ./salt/mysql/server.sls /srv/salt/mysql/server.sls
 RUN salt-call --local state.sls mysql.server
 
 ADD ./salt/koha/createdb.sls /srv/salt/koha/createdb.sls
-RUN salt-call --local state.sls koha.createdb
+RUN /etc/init.d/mysql start && \
+    salt-call --local state.sls koha.createdb && \
+    /etc/init.d/mysql stop && \
+    sleep 10   
 
 ADD ./salt/koha/config.sls /srv/salt/koha/config.sls
 RUN salt-call --local state.sls koha.config
 
+ADD ./salt/koha/watir.sls /srv/salt/koha/watir.sls
+RUN salt-call --local state.sls koha.watir
+
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
-RUN salt-call --local state.sls koha.webinstaller
+ADD ./salt/koha/files/KohaWebInstallAutomation.rb /srv/salt/koha/files/KohaWebInstallAutomation.rb
+ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
+ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
+RUN /etc/init.d/mysql start && \
+    salt-call --local state.sls koha.webinstaller && \
+    /etc/init.d/mysql stop && \
+    sleep 10  
 
 ADD ./salt/koha/restful.sls /srv/salt/koha/restful.sls
+ADD ./salt/koha/files/koha-restful-config.yaml /srv/salt/koha/files/koha-restful-config.yaml
 RUN salt-call --local state.sls koha.restful
 
 ENV HOME /root
 WORKDIR /root
 EXPOSE 80 4506 8080 8081
 
-#CMD mysqld_safe & /etc/init.d/koha-common start && /usr/sbin/apache2ctl -D FOREGROUND
+CMD /etc/init.d/mysql start && /etc/init.d/koha-common start && /usr/sbin/apache2ctl -D FOREGROUND

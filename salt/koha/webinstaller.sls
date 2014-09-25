@@ -4,20 +4,6 @@
 # Update database if not up to date with koha-common version
 # Should not run it already up to date
 ########
-mysql-running:
-  cmd.run:
-    - name: nohup mysqld & echo $! > pid.txt ; exit 0
-
-watir:
-  pkg.installed:
-  - pkgs:
-    - ruby1.9.1-dev
-    - phantomjs
-    - build-essential
-  gem.installed:
-    - name: watir-webdriver
-    - require:
-      - pkg: watir
 
 /usr/local/bin/KohaWebInstallAutomation.rb:
   file.managed:
@@ -28,11 +14,9 @@ run_webinstaller:
     - source: {{ pillar['koha']['saltfiles'] }}/updatekohadbversion.sh
     - stateful: True
     - env:
-      - URL: "http://192.168.50.10:8081"
+      - URL: "http://127.0.0.1:8081"
       - USER: {{ pillar['koha']['adminuser'] }}
       - PASS: {{ pillar['koha']['adminpass'] }}
       - INSTANCE: {{ pillar['koha']['instance'] }}
-    - require:
-      - pkg: watir
     - watch:
       - file: /usr/local/bin/KohaWebInstallAutomation.rb
