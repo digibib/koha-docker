@@ -63,6 +63,6 @@ RUN salt-call --local state.sls koha.restful
 
 ENV HOME /root
 WORKDIR /root
-EXPOSE 4506 8080
+EXPOSE 80 4506 8080 8081
 
-CMD /etc/init.d/koha-common && /etc/init.d/koha-common start && /usr/sbin/apache2ctl -D FOREGROUND
+#CMD mysqld_safe & /etc/init.d/koha-common start && /usr/sbin/apache2ctl -D FOREGROUND

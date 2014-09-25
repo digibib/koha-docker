@@ -4,11 +4,16 @@
 # Update database if not up to date with koha-common version
 # Should not run it already up to date
 ########
+mysql-running:
+  cmd.run:
+    - name: nohup mysqld & echo $! > pid.txt ; exit 0
+
 watir:
   pkg.installed:
   - pkgs:
     - ruby1.9.1-dev
     - phantomjs
+    - build-essential
   gem.installed:
     - name: watir-webdriver
     - require:

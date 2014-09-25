@@ -9,7 +9,7 @@ up:
 	vagrant up
 
 build:
-	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant/ '
+	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant/ ' | tee build.log
 
 run: 
 	vagrant ssh -c 'sudo docker run --rm --name koha_docker digibib/koha '
