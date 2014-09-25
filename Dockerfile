@@ -1,4 +1,5 @@
-FROM ubuntu
+#FROM ubuntu
+FROM debian:wheezy
  
 RUN apt-get update
 
@@ -72,7 +73,9 @@ ADD ./salt/koha/files/KohaWebInstallAutomation.rb /srv/salt/koha/files/KohaWebIn
 ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 RUN /etc/init.d/mysql start && \
+    /etc/init.d/apache2 start && \
     salt-call --local state.sls koha.webinstaller && \
+    /etc/init.d/apache2 stop && \
     /etc/init.d/mysql stop && \
     sleep 10  
 

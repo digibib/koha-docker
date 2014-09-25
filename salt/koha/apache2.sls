@@ -2,11 +2,11 @@
 # APACHE
 ########
 
-install_apache2:
-  pkg.installed:
-    - name: libapache2-mpm-itk
-    - require_in:
-      - pkg: apache2
+# install_apache2:
+#   pkg.installed:
+#     - name: libapache2-mpm-itk
+#     - require_in:
+#       - pkg: apache2
 
 apache2:
   pkg.installed
@@ -32,6 +32,10 @@ apacheconfig:
     - require:
       - pkg: apache2
 
+disable_default:
+  cmd.run:
+    - name: sudo a2dissite default || true
+
 sudo a2enmod rewrite:
   cmd.run:
     - require:
@@ -39,25 +43,25 @@ sudo a2enmod rewrite:
 
 # Temporary hack to build on 14.04 due to apache mpm failure
 
-sudo a2dismod mpm_event || true:
-  cmd.run:
-    - require:
-      - pkg: apache2
+# sudo a2dismod mpm_event || true:
+#   cmd.run:
+#     - require:
+#       - pkg: apache2
 
-sudo a2dismod mpm_itk || true:
-  cmd.run:
-    - require:
-      - pkg: apache2
+# sudo a2dismod mpm_itk || true:
+#   cmd.run:
+#     - require:
+#       - pkg: apache2
 
-sudo a2dismod mpm_prefork || true:
-  cmd.run:
-    - require:
-      - pkg: apache2
+# sudo a2dismod mpm_prefork || true:
+#   cmd.run:
+#     - require:
+#       - pkg: apache2
 
-sudo a2enmod mpm_itk || true:
-  cmd.run:
-    - require:
-      - pkg: apache2
+# sudo a2enmod mpm_itk || true:
+#   cmd.run:
+#     - require:
+#       - pkg: apache2
 
 sudo a2enmod cgi:
   cmd.run:
