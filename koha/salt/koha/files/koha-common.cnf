@@ -1,2 +1,2 @@
 [client]
-host     = db
+host     = $DB_PORT_3306_TCP_ADDR

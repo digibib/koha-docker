@@ -264,11 +264,11 @@
 <config>
  <template_cache_dir>/tmp</template_cache_dir>
  <db_scheme>mysql</db_scheme>
- <database>koha_{{ pillar['koha']['instance'] }}</database>
- <hostname>{{ pillar['koha']['dbhost'] }}</hostname>
- <port>{{ pillar['koha']['dbport'] }}</port>
- <user>{{ pillar['koha']['adminuser'] }}</user>
- <pass>{{ pillar['koha']['adminpass'] }}</pass>
+ <database>$DB_ENV_MYSQL_DATABASE</database>
+ <hostname>$DB_PORT_3306_TCP_ADDR</hostname>
+ <port>$DB_PORT_3306_TCP_PORT</port>
+ <user>$DB_ENV_MYSQL_USER</user>
+ <pass>$DB_ENV_MYSQL_PASS</pass>
  <biblioserver>biblios</biblioserver>
  <biblioservershadow>1</biblioservershadow>
  <authorityserver>authorities</authorityserver>

@@ -24,7 +24,7 @@ mysql_stop:
 	vagrant ssh -c 'sudo docker stop koha_mysql_docker && sudo docker rm koha_mysql_docker'
 
 build:
-	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant/ ' | tee build.log
+	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant/koha ' | tee build.log
 
 # start koha with link to mysql container
 run: 
