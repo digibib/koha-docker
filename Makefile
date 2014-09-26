@@ -8,11 +8,27 @@ halt:
 up:
 	vagrant up
 
+mysql_start:
+	vagrant ssh -c 'sudo docker run -d \
+	--name koha_docker_mysql \
+	-p 3306:3306 \
+	-v /var/lib/koha_docker_mysql:/var/lib/mysql \
+	-e MYSQL_ROOT_PASSWORD=secret \
+	-e MYSQL_USER=admin \
+	-e MYSQL_PASS=secret \
+	-e MYSQL_DATABASE=koha_name \
+	-t mysql:5.6 \
+	mysqld --datadir=/var/lib/mysql --user=mysql --max_allowed_packet=64M --wait_timeout=6000 --bind-address=0.0.0.0'
+
+mysql_stop:
+	vagrant ssh -c 'sudo docker stop koha_mysql_docker && sudo docker rm koha_mysql_docker'
+
 build:
 	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant/ ' | tee build.log
 
+# start koha with link to mysql container
 run: 
-	vagrant ssh -c 'sudo docker run --rm --name koha_docker -p 80:80 -p 8080:8080 -p 8081:8081 digibib/koha '
+	vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db --rm --name koha_docker -p 80:80 -p 8080:8080 -p 8081:8081 digibib/koha '
 
 stop: 
 	vagrant ssh -c 'sudo docker stop koha_docker'
