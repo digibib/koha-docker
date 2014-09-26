@@ -7,15 +7,15 @@ FROM debian:wheezy
 RUN apt-get update
 
 #Utilities
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y vim.tiny wget less curl git nmap netcat tree htop unzip sudo
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget less curl git nmap socat netcat tree htop unzip sudo
 
-RUN wget -O- --quiet https://bootstrap.saltstack.com | \
-    sudo sh -s -- -g https://github.com/saltstack/salt.git git v2014.7.0rc2 || true
 
 #Docker client only
 RUN wget -O /usr/local/bin/docker https://get.docker.io/builds/Linux/x86_64/docker-latest && \
     chmod +x /usr/local/bin/docker
 
+RUN wget -O- --quiet https://bootstrap.saltstack.com | \
+    sudo sh -s -- -g https://github.com/saltstack/salt.git git v2014.7.0rc2 || true
 
 # Preseed local master-minion
 #RUN cd /tmp && \
