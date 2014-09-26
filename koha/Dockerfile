@@ -18,13 +18,13 @@ RUN wget -O /usr/local/bin/docker https://get.docker.io/builds/Linux/x86_64/dock
 
 
 # Preseed local master-minion
-RUN cd /tmp && \
-    salt-key --gen-keys=master-minion && \
-    mkdir -p /etc/salt/pki/master/minions && \
-    cp master-minion.pub /etc/salt/pki/master/minions/master-minion && \
-    mkdir -p /etc/salt/pki/minion && \
-    cp master-minion.pub /etc/salt/pki/minion/minion.pub && \
-    cp master-minion.pem /etc/salt/pki/minion/minion.pem
+#RUN cd /tmp && \
+#    salt-key --gen-keys=master-minion && \
+#    mkdir -p /etc/salt/pki/master/minions && \
+#    cp master-minion.pub /etc/salt/pki/master/minions/master-minion && \
+#    mkdir -p /etc/salt/pki/minion && \
+#    cp master-minion.pub /etc/salt/pki/minion/minion.pub && \
+#    cp master-minion.pem /etc/salt/pki/minion/minion.pem
 
 # for now - only masterless salt is used
 RUN echo "file_client: local\nmaster: localhost" > /etc/salt/minion
