@@ -1,3 +1,7 @@
+########
+# WATIR
+########
+
 watir:
   pkg.installed:
   - pkgs:

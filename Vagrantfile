@@ -9,14 +9,15 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.box = "ubuntu/trusty64"
-  config.vm.hostname = "ls-ext"
+  config.vm.hostname = "kohadocker"
 
   config.vm.provision :shell, inline: <<SCRIPT
   apt-get install -y firefox
 SCRIPT
 
   config.vm.provision :docker do |d|
-    d.pull_images "ubuntu"
+    d.pull_images "debian:wheezy"
+    d.pull_images "mysql:5.6"
   end
 
 end

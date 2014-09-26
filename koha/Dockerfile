@@ -1,10 +1,13 @@
-#FROM ubuntu
+#######
+# Debian Wheezy build of Koha - Provisioned by Salt
+#######
+
 FROM debian:wheezy
  
 RUN apt-get update
 
 #Utilities
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget less curl git nmap socat netcat tree htop unzip sudo
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y vim.tiny wget less curl git nmap socat netcat tree htop unzip sudo
 
 RUN wget -O- --quiet https://bootstrap.saltstack.com | \
     sudo sh -s -- -g https://github.com/saltstack/salt.git git v2014.7.0rc2 || true
@@ -14,7 +17,7 @@ RUN wget -O /usr/local/bin/docker https://get.docker.io/builds/Linux/x86_64/dock
     chmod +x /usr/local/bin/docker
 
 
-#Preseed local master-minion
+# Preseed local master-minion
 RUN cd /tmp && \
     salt-key --gen-keys=master-minion && \
     mkdir -p /etc/salt/pki/master/minions && \
@@ -23,6 +26,7 @@ RUN cd /tmp && \
     cp master-minion.pub /etc/salt/pki/minion/minion.pub && \
     cp master-minion.pem /etc/salt/pki/minion/minion.pem
 
+# for now - only masterless salt is used
 RUN echo "file_client: local\nmaster: localhost" > /etc/salt/minion
 
 #######
