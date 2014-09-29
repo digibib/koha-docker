@@ -12,6 +12,7 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "kohadocker"
 
   config.vm.provision :shell, inline: <<SCRIPT
+  apt-get update
   apt-get install -y firefox
 SCRIPT
 
