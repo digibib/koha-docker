@@ -17,8 +17,7 @@ Vagrant.configure("2") do |config|
 SCRIPT
 
   config.vm.provision :docker do |d|
-    d.pull_images "debian:wheezy"
-    d.pull_images "mysql:5.6"
+    d.version = "latest"
   end
 
 end
