@@ -40,6 +40,7 @@ RUN echo "file_client: local\nmaster: localhost" > /etc/salt/minion
 #######
 
 ADD ./pillar /srv/pillar/
+COPY ./pillar/admin.sls.example /srv/pillar/koha/admin.sls
 
 ADD ./salt/common/init.sls /srv/salt/common/init.sls
 RUN salt-call --local state.sls common
