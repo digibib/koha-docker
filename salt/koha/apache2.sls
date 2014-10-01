@@ -17,7 +17,7 @@ apache2:
 apacheconfig:
   file.managed:
     - name: /etc/apache2/sites-available/{{ pillar['koha']['instance'] }}.conf
-    - source: {{ pillar['koha']['saltfiles'] }}/apache.tmpl
+    - source: salt://koha/files/apache.tmpl
     - template: jinja
     - context:
       OpacPort: 8080

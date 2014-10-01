@@ -21,14 +21,15 @@ create_data_volume:
 	@echo "======= CREATING MYSQL DATA VOLUME CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker inspect mysql_data || docker run -i -t --name mysql_data -v /var/lib/mysql busybox /bin/sh'
 
-mysql_start: 
-	@ RUNNING_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql')` ;\
+mysql_start:
+	@ CURRENT_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql')` ;\
 	LAST_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker history --quiet --no-trunc mysql:5.6 | head -n 1')` ;\
-	if [ $$RUNNING_MYSQL_IMAGE = $$LAST_MYSQL_IMAGE ]; then \
-		echo "image up to date!"; \
+	if [ $$CURRENT_MYSQL_IMAGE = $$LAST_MYSQL_IMAGE ]; then \
+		echo "mysql image up to date ... restarting"; \
+		vagrant ssh -c 'sudo docker restart koha_docker_mysql '; \
 	else \
 		echo "restarting container from new image ..."; \
-		vagrant ssh -c 'sudo docker stop koha_docker_mysql && sudo docker rm koha_docker_mysql' ;\
+		vagrant ssh -c 'sudo docker stop koha_docker_mysql && sudo docker rm koha_docker_mysql'; \
 		vagrant ssh -c 'sudo docker run -d --name koha_docker_mysql -p 3306:3306 --volumes-from mysql_data \
 	  -e MYSQL_ROOT_PASSWORD=secret \
 	  -e MYSQL_USER=admin \
@@ -36,7 +37,7 @@ mysql_start:
 	  -e MYSQL_DATABASE=koha_name \
 	  -t mysql:5.6 \
 	  mysqld --datadir=/var/lib/mysql --user=mysql --max_allowed_packet=64M --wait_timeout=6000 --bind-address=0.0.0.0' ;\
-	fi
+	fi \
 
 mysql_stop:
 	@echo "======= RESTARTING MYSQL CONTAINER ======\n"

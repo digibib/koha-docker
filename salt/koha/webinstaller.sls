@@ -7,11 +7,11 @@
 
 /usr/local/bin/KohaWebInstallAutomation.rb:
   file.managed:
-    - source: {{ pillar['koha']['saltfiles'] }}/KohaWebInstallAutomation.rb
+    - source: salt://koha/files/KohaWebInstallAutomation.rb
 
 run_webinstaller:
   cmd.script:
-    - source: {{ pillar['koha']['saltfiles'] }}/updatekohadbversion.sh
+    - source: salt://koha/files/updatekohadbversion.sh
     - stateful: True
     - env:
       - URL: "http://127.0.0.1:8081"

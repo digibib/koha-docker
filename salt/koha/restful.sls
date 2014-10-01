@@ -29,7 +29,7 @@ restful-git:
 
 /etc/koha/sites/{{ pillar['koha']['instance'] }}/rest/config.yaml:
   file.managed:
-    - source: {{ pillar['koha']['saltfiles'] }}/koha-restful-config.yaml
+    - source: salt://koha/files/koha-restful-config.yaml
     - user: {{ pillar['koha']['instance'] }}-koha
     - group: {{ pillar['koha']['instance'] }}-koha    
     - require:
