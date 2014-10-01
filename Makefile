@@ -19,7 +19,8 @@ mysql: create_data_volume mysql_start
 # Data volume container for mysql - for persistent data. Create new if not existing
 create_data_volume:
 	@echo "======= CREATING MYSQL DATA VOLUME CONTAINER ======\n"
-	vagrant ssh -c 'sudo docker inspect mysql_data || docker run -i -t --name mysql_data -v /var/lib/mysql busybox /bin/sh'
+	@vagrant ssh -c '(sudo docker inspect mysql_data > /dev/null && echo "mysql data volume already present") || \
+	docker run -it --name mysql_data -v /var/lib/mysql busybox /bin/sh'
 
 mysql_start:
 	@ CURRENT_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql')` ;\
@@ -50,13 +51,12 @@ build:
 # start koha with link to mysql container
 run: mysql
 	@echo "======= RUNNING KOHA CONTAINER ======\n"
-	vagrant ssh -c 'sudo docker rm koha_docker || \
-	sudo docker run --link koha_docker_mysql:db --volumes-from mysql_data -d --name koha_docker \
-	-p 80:80 -p 8080:8080 -p 8081:8081 digibib/koha '
+	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db --volumes-from mysql_data -d --name koha_docker \
+	-p 80:80 -p 8080:8080 -p 8081:8081 digibib/koha' || echo "koha docker container already running, please 'make delete' first"
 
 stop: 
 	@echo "======= STOPPING KOHA CONTAINER ======\n"
-	vagrant ssh -c 'sudo docker stop koha_docker'
+	vagrant ssh -c 'sudo docker stop koha_docker' || true
 
 delete: stop
 	vagrant ssh -c 'sudo docker rm koha_docker'

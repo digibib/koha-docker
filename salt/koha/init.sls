@@ -9,5 +9,5 @@ installdeps:
       - software-properties-common
       - libnet-ssleay-perl 
       - libcrypt-ssleay-perl
-      - libcgi-application-dispatch-perl
+      - apache2
     - skip_verify: True

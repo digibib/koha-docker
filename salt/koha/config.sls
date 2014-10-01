@@ -2,12 +2,6 @@
 # CONFIG changes - e g to switch to external database
 ###########
 
-koha_common_cnf:
-  file.managed:
-    - name: /etc/mysql/koha-common.cnf
-    - source: salt://koha/files/koha-common.cnf
-    - template: jinja
-
 # TODO: This should be parameterized or done with regex
 # koha config from template
 /etc/koha/sites/{{ pillar['koha']['instance'] }}/koha-conf.xml:

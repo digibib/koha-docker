@@ -62,6 +62,12 @@ ADD ./salt/koha/files/koha-conf.xml.tmpl /srv/salt/koha/files/koha-conf.xml.tmpl
 ADD ./salt/koha/files/zebra.passwd.tmpl /srv/salt/koha/files/zebra.passwd.tmpl
 RUN salt-call --local state.sls koha.common
 
+# Koha-restful API
+ADD ./salt/koha/restful.sls /srv/salt/koha/restful.sls
+ADD ./salt/koha/restful-config.sls /srv/salt/koha/restful-config.sls
+ADD ./salt/koha/files/koha-restful-config.yaml /srv/salt/koha/files/koha-restful-config.yaml
+RUN salt-call --local state.sls koha.restful
+
 #######
 # Salt Provisioning - step 2
 # Configuration files
@@ -89,11 +95,6 @@ ADD ./salt/koha/files/KohaWebInstallAutomation.rb /srv/salt/koha/files/KohaWebIn
 ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 
-# Koha-restful API
-ADD ./salt/koha/restful.sls /srv/salt/koha/restful.sls
-ADD ./salt/koha/files/koha-restful-config.yaml /srv/salt/koha/files/koha-restful-config.yaml
-#RUN salt-call --local state.sls koha.restful
-
 ENV HOME /root
 WORKDIR /root
 
@@ -104,4 +105,5 @@ EXPOSE 8080 8081
 
 # Might be koha-common (Zebra) should be stand-alone container
 CMD /etc/init.d/koha-common start && \
-    /usr/bin/apache2ctl -D FOREGROUND
+    /etc/init.d/apache2 start && \
+    sleep infinity

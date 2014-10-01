@@ -1,2 +1,12 @@
 [client]
 host     = db
+user     = {{ pillar['koha']['adminuser']}}
+password = {{ pillar['koha']['adminpass']}}
+socket   = /var/run/mysqld/mysqld.sock
+
+[mysql_upgrade]
+host     = db
+user     = {{ pillar['koha']['adminuser']}}
+password = {{ pillar['koha']['adminpass']}}
+socket   = /var/run/mysqld/mysqld.sock
+basedir  = /usr
