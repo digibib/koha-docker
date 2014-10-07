@@ -20,7 +20,7 @@ mysql: create_data_volume mysql_start
 create_data_volume:
 	@echo "======= CREATING MYSQL DATA VOLUME CONTAINER ======\n"
 	@vagrant ssh -c '(sudo docker inspect mysql_data > /dev/null && echo "mysql data volume already present") || \
-	docker run -it --name mysql_data -v /var/lib/mysql busybox /bin/sh'
+	docker run -d --name mysql_data -v /var/lib/mysql busybox echo "create data volume"'
 
 mysql_start:
 	@ CURRENT_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql')` ;\
