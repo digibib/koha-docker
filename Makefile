@@ -23,8 +23,10 @@ create_data_volume:
 	docker run -d --name mysql_data -v /var/lib/mysql busybox echo "create data volume"'
 
 mysql_start:
-	@ CURRENT_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql')` ;\
-	LAST_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker history --quiet --no-trunc mysql:5.6 | head -n 1')` ;\
+	@ CURRENT_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql'` ;\
+	LAST_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker history --quiet --no-trunc mysql:5.6 | head -n 1'` ;\
+	echo "Current image: $$CURRENT_MYSQL_IMAGE" ;\
+	echo "Last image $$LAST_MYSQL_IMAGE" ;\
 	if [ $$CURRENT_MYSQL_IMAGE = $$LAST_MYSQL_IMAGE ]; then \
 		echo "mysql image up to date ... restarting"; \
 		vagrant ssh -c 'sudo docker restart koha_docker_mysql '; \
