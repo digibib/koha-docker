@@ -53,7 +53,7 @@ build:
 # start koha with link to mysql container
 run: mysql
 	@echo "======= RUNNING KOHA CONTAINER ======\n"
-	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db --volumes-from mysql_data -d --name koha_docker \
+	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
 	-p 80:80 -p 8080:8080 -p 8081:8081 digibib/koha' || echo "koha docker container already running, please 'make delete' first"
 
 stop: 
