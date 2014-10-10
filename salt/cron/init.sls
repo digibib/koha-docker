@@ -1,0 +1,7 @@
+##########
+#  CRON  #
+##########
+
+cron:
+  pkg.installed
+

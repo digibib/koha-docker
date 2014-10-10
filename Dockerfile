@@ -113,4 +113,5 @@ EXPOSE 8080 8081
 # Might be koha-common (Zebra) should be stand-alone container
 CMD /etc/init.d/koha-common start && \
     /etc/init.d/apache2 start && \
+    /etc/init.d/cron start && \
     sleep infinity
