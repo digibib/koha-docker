@@ -6,7 +6,7 @@ KOHAVERSION=`perl -e 'require "/usr/share/koha/intranet/cgi-bin/kohaversion.pl" 
 if [[ -n "$KOHAVERSION" ]] ; then
   KOHADBVERSION=`echo ${KOHAVERSION} | awk -F. '{ print $1"."$2$3$4 }'`
   KOHADBVERSIONOLD=`echo -n "SELECT value as '' FROM systempreferences WHERE variable = 'Version';" | sudo koha-mysql $INSTANCE | tail -1`
-  MARCTAGSTRUCTURE=`echo -n "SELECT COUNT(*) FROM koha_name.marc_tag_structure where tagfield = 008;" | sudo koha-mysql $INSTANCE | tail -1`
+  MARCTAGSTRUCTURE=`echo -n "SELECT COUNT(*) FROM koha_$INSTANCE.marc_tag_structure where tagfield = 008;" | sudo koha-mysql $INSTANCE | tail -1`
 
   if [[ ! -z $KOHADBVERSIONOLD && ${KOHADBVERSIONOLD+x} ]] && \
      [[ $KOHADBVERSIONOLD = $KOHADBVERSION ]] && \
