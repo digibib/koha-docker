@@ -33,7 +33,7 @@ class KohaWebInstallAutomation
             STDOUT.puts  "{\"comment\":\"Instance is already installed\"}"
             exit 0
           else
-            raise "HTTPSuccess, but it is unclear how we got to" + @uri
+            raise "HTTPSuccess, but it is unclear how we got to " + location
         end
       when Net::HTTPRedirection
         @path = response['location']
