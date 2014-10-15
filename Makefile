@@ -71,3 +71,10 @@ browser:
 
 clean:
 	vagrant destroy --force
+
+tag = "$(shell git rev-parse HEAD)"
+push:
+	@echo "======= PUSHING KOHA CONTAINER ======\n"
+	vagrant ssh -c 'sudo docker tag digibib/koha digibib/koha:$(tag)' | tee build.log
+	vagrant ssh -c 'sudo docker push digibib/koha' | tee build.log
+

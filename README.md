@@ -39,3 +39,6 @@ Using Makefile, the following commands are available:
 `make nsenter` : open and inspect container
 
 `make clean` : purge entire virtual box
+
+`make push` : creates a new tag based on git revision and push docker image to docker registry
+
