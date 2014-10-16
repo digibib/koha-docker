@@ -14,13 +14,21 @@ provision:
 upgrade:
 	vagrant ssh -c 'sudo docker pull mysql && sudo docker pull debian:wheezy && sudo docker pull busybox'
 
-mysql: create_data_volume mysql_start
+mysql: create_data_volume mysql_pull_if_missing mysql_start
 
 # Data volume container for mysql - for persistent data. Create new if not existing
 create_data_volume:
 	@echo "======= CREATING MYSQL DATA VOLUME CONTAINER ======\n"
 	@vagrant ssh -c '(sudo docker inspect mysql_data > /dev/null && echo "mysql data volume already present") || \
 	docker run -d --name mysql_data -v /var/lib/mysql busybox echo "create data volume"'
+
+mysql_pull_if_missing:
+	@echo "Checking if there is an existing mysql image" ;\
+	MYSQL_IMAGE=`vagrant ssh -c 'sudo docker images | grep "mysql " |  grep " 5.6 "'` ;\
+	if [ "$$MYSQL_IMAGE" = "" ]; then \
+		echo "no existing mysql image with correct tag ... pulling"; \
+		vagrant ssh -c 'sudo docker pull mysql:5.6'; \
+        fi \
 
 mysql_start:
 	@ CURRENT_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql'` ;\
