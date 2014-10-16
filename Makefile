@@ -56,7 +56,7 @@ mysql_stop:
 
 build:
 	@echo "======= BUILDING KOHA CONTAINER ======\n"
-	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant ' >> build.log
+	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant '
 
 # start koha with link to mysql container
 run: mysql
@@ -83,6 +83,6 @@ clean:
 tag = "$(shell git rev-parse HEAD)"
 push:
 	@echo "======= PUSHING KOHA CONTAINER ======\n"
-	vagrant ssh -c 'sudo docker tag digibib/koha digibib/koha:$(tag)' >> build.log
-	vagrant ssh -c 'sudo docker push digibib/koha' >> build.log
+	vagrant ssh -c 'sudo docker tag digibib/koha digibib/koha:$(tag)'
+	vagrant ssh -c 'sudo docker push digibib/koha'
 
