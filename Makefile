@@ -85,6 +85,9 @@ test:
 clean:
 	vagrant destroy --force
 
+login: # needs EMAIL, PASSWORD, USERNAME
+	@ vagrant ssh -c 'sudo docker login --email=$(EMAIL) --username=$(USERNAME) --password=$(PASSWORD)'
+
 tag = "$(shell git rev-parse HEAD)"
 push:
 	@echo "======= PUSHING KOHA CONTAINER ======\n"
