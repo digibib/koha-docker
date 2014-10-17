@@ -1,3 +1,5 @@
+.PHONY: all test clean
+
 all: reload build mysql run
 
 reload: halt up provision
@@ -59,7 +61,7 @@ build:
 	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant '
 
 # start koha with link to mysql container
-run: mysql
+run: mysql delete
 	@echo "======= RUNNING KOHA CONTAINER ======\n"
 	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
 	-p 80:80 -p 8080:8080 -p 8081:8081 digibib/koha' || echo "koha docker container already running, please 'make delete' first"
@@ -69,13 +71,16 @@ stop:
 	vagrant ssh -c 'sudo docker stop koha_docker' || true
 
 delete: stop
-	vagrant ssh -c 'sudo docker rm koha_docker'
+	vagrant ssh -c 'sudo docker rm koha_docker' || true
 
 nsenter:
 	vagrant ssh -c 'sudo nsenter --target `sudo docker inspect --format="{{.State.Pid}}" koha_docker` --mount --uts --ipc --net --pid '
 
 browser:
 	vagrant ssh -c 'firefox "http://localhost:8081/" > firefox.log 2> firefox.err < /dev/null' &
+
+test: 
+	@echo "======= TESTING KOHA CONTAINER ======\n"
 
 clean:
 	vagrant destroy --force
