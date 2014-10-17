@@ -60,18 +60,19 @@ build:
 	@echo "======= BUILDING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant '
 
-# start koha with link to mysql container
-run: mysql delete
-	@echo "======= RUNNING KOHA CONTAINER ======\n"
-	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
-	-p 80:80 -p 8080:8080 -p 8081:8081 digibib/koha' || echo "koha docker container already running, please 'make delete' first"
-
 stop: 
 	@echo "======= STOPPING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker stop koha_docker' || true
 
 delete: stop
+	@echo "======= DELETING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker rm koha_docker' || true
+
+# start koha with link to mysql container
+run: mysql delete
+	@echo "======= RUNNING KOHA CONTAINER ======\n"
+	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
+	-p 80:80 -p 8080:8080 -p 8081:8081 -t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
 nsenter:
 	vagrant ssh -c 'sudo nsenter --target `sudo docker inspect --format="{{.State.Pid}}" koha_docker` --mount --uts --ipc --net --pid '
