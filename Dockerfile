@@ -41,9 +41,6 @@ RUN echo "file_client: local\nmaster: localhost\n" > /etc/salt/minion
 #    cp master-minion.pem /etc/salt/pki/minion/minion.pem
 
 
-# Mountable volumes
-VOLUME ["/var/log"]
-
 #######
 # Salt Provisioning
 # Package installs
