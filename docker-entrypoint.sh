@@ -33,4 +33,8 @@ salt-call --local state.sls koha.restful-config pillar="{koha: {instance: $KOHA_
 salt-call --local state.sls koha.webinstaller \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
 
+/etc/init.d/koha-common start
+/etc/init.d/apache2 start
+/etc/init.d/cron start
+
 exec "$@"
