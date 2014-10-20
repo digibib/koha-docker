@@ -115,4 +115,5 @@ ENTRYPOINT ["/root/entrypoint.sh"]
 EXPOSE 8080 8081
 
 # Might be koha-common (Zebra) should be stand-alone container
-CMD sleep infinity
+# cat is used to make the container run "forever" ('sleep infinity' misbehaves with EXEC)
+CMD cat
