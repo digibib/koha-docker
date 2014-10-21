@@ -77,6 +77,9 @@ run: mysql delete
 logs:
 	vagrant ssh -c 'sudo docker logs koha_docker'
 
+logs-f:
+	vagrant ssh -c 'sudo docker logs -f koha_docker'
+
 nsenter:
 	vagrant ssh -c 'sudo nsenter --target `sudo docker inspect --format="{{.State.Pid}}" koha_docker` --mount --uts --ipc --net --pid '
 
