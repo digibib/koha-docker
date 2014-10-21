@@ -74,6 +74,9 @@ run: mysql delete
 	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
 	-p 80:80 -p 8080:8080 -p 8081:8081 -t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
+logs:
+	vagrant ssh -c 'sudo docker logs koha_docker'
+
 nsenter:
 	vagrant ssh -c 'sudo nsenter --target `sudo docker inspect --format="{{.State.Pid}}" koha_docker` --mount --uts --ipc --net --pid '
 
