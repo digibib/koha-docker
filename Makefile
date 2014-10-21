@@ -88,31 +88,8 @@ browser:
 
 test: 
 	@echo "======= TESTING KOHA CONTAINER ======\n"
-	@ DOCKER_RUNNING=`vagrant ssh -c 'sudo docker inspect -f {{.State.Running}} koha_docker' | head -n 1` ; \
-	TRIMMED_DOCKER_RUNNING=`echo $$DOCKER_RUNNING | tr -dc 'true'` ; \
-	if [ "$$TRIMMED_DOCKER_RUNNING" = "true" ]; then \
-		echo "INFO: docker-container koha_docker is running"; \
-	else \
-		echo "ERROR: docker-container koha_docker is NOT running"; \
-		exit 1; \
-	fi
-	@ OPAC_RUNNING=`vagrant ssh -c 'curl -I localhost:8080' | head -n 1` ; \
-	TRIMMED_OPAC_RUNNING=`echo $$OPAC_RUNNING | tr -dc '200'` ; \
-	if [ "$$TRIMMED_OPAC_RUNNING" = "200" ]; then \
-		echo "INFO: OPAC is running"; \
-	else \
-		echo "ERROR: OPAC is NOT running"; \
-		exit 1; \
-	fi
-	@ INTRA_RUNNING=`vagrant ssh -c 'curl -I localhost:8081' | head -n 1` ; \
-	TRIMMED_INTRA_RUNNING=`echo $$INTRA_RUNNING | tr -dc '200'` ; \
-	if [ "$$TRIMMED_INTRA_RUNNING" = "200" ]; then \
-		echo "INFO: INTRA is running"; \
-	else \
-		echo "ERROR: INTRA is NOT running"; \
-		exit 1; \
-	fi
-
+	vagrant ssh -c 'cd vm-test && python test.py 300'
+	
 clean:
 	vagrant destroy --force
 
