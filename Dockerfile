@@ -115,4 +115,4 @@ ENTRYPOINT ["/root/entrypoint.sh"]
 EXPOSE 8080 8081
 
 # Might be koha-common (Zebra) should be stand-alone container
-CMD sleep infinity
+CMD tail -f /var/log/apache2/*access.log /var/log/koha/name/*error.log
