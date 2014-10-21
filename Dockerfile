@@ -115,4 +115,4 @@ ENTRYPOINT ["/root/entrypoint.sh"]
 EXPOSE 8080 8081
 
 # Might be koha-common (Zebra) should be stand-alone container
-CMD tail -f /var/log/apache2/*access.log /var/log/koha/name/*error.log
+CMD ["/usr/bin/tail", "-f", "/var/log/apache2/access.log", "/var/log/koha/name/intranet-error.log", "/var/log/koha/name/opac-error.log", "/var/log/koha/name/zebra-error.log", "/var/log/apache2/other_vhosts_access.log"]
