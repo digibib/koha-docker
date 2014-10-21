@@ -37,4 +37,4 @@ salt-call --local state.sls koha.webinstaller \
 /etc/init.d/apache2 start
 /etc/init.d/cron start
 
-exec "$@"
+"$@"
