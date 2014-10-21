@@ -13,7 +13,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision :shell, inline: <<SCRIPT
   apt-get update
-  apt-get install -y firefox
+  apt-get install -y firefox python-pip
+  pip install docker-py
 SCRIPT
 
   config.vm.provision :docker do |d|
