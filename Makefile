@@ -88,7 +88,7 @@ browser:
 
 test: 
 	@echo "======= TESTING KOHA CONTAINER ======\n"
-	vagrant ssh -c 'cd vm-test && python test.py 300'
+	vagrant ssh -c 'cd vm-test && python test.py koha_docker'
 	
 clean:
 	vagrant destroy --force
