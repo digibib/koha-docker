@@ -36,5 +36,6 @@ salt-call --local state.sls koha.webinstaller \
 /etc/init.d/koha-common start
 /etc/init.d/apache2 start
 /etc/init.d/cron start
+/etc/init.d/logstash-forwarder start
 
 exec "$@"

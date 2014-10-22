@@ -106,6 +106,27 @@ ADD ./salt/koha/files/KohaWebInstallAutomation.rb /srv/salt/koha/files/KohaWebIn
 ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 
+#######
+# Setup logstash-forwarder
+# TODO: convert to salt state? Or are we moving towards Dockerfile-provisioning?
+#######
+
+# install logstash-forwarder from official repositories (note: quite old version as of 16.10.2014)
+RUN wget -qO - http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -
+RUN echo "deb http://packages.elasticsearch.org/logstashforwarder/debian stable main" >> /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -yq logstash-forwarder
+
+# add the config file
+ADD https://raw.githubusercontent.com/digibib/ls.ext/master/salt/koha/files/logstash-forwarder.conf /etc/logstash-forwarder
+
+# add certificate
+RUN mkdir -p /etc/pki/tls/certs
+ADD https://raw.githubusercontent.com/digibib/ls.ext/master/salt/koha/files/logstash-forwarder.crt /etc/pki/tls/certs/logstash-forwarder.crt
+
+# Remove option to log to syslog (syslog is not running in container)
+RUN sed -i 's/-log-to-syslog//' /etc/init.d/logstash-forwarder
+
 ENV HOME /root
 WORKDIR /root
 
