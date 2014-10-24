@@ -108,7 +108,6 @@ ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 
 #######
 # Setup logstash-forwarder
-# TODO: convert to salt state? Or are we moving towards Dockerfile-provisioning?
 #######
 
 # install logstash-forwarder from official repositories (note: quite old version as of 16.10.2014)
