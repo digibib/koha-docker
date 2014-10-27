@@ -75,8 +75,6 @@ RUN salt-call --local --retcode-passthrough state.sls koha.common
 
 # Koha-restful API
 ADD ./salt/koha/restful.sls /srv/salt/koha/restful.sls
-ADD ./salt/koha/restful-config.sls /srv/salt/koha/restful-config.sls
-ADD ./salt/koha/files/koha-restful-config.yaml /srv/salt/koha/files/koha-restful-config.yaml
 RUN salt-call --local --retcode-passthrough state.sls koha.restful
 
 #######
