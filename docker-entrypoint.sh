@@ -26,9 +26,6 @@ salt-call --local state.sls koha.config \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS, \
   zebrauser: $KOHA_ZEBRAUSER, zebrapass: $KOHA_ZEBRAPASS}}"
 
-# Koha-restful connfig
-salt-call --local state.sls koha.restful-config pillar="{koha: {instance: $KOHA_INSTANCE}}"
-
 # Run webinstaller to autoupdate/validate install
 salt-call --local state.sls koha.webinstaller \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
