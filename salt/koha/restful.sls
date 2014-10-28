@@ -3,7 +3,7 @@
 ##########
 
 restful_pkgs:
-  pkg.installed
+  pkg.installed:
     - pkgs:
       - libcgi-application-dispatch-perl
       - libtest-www-mechanize-cgiapp-perl
