@@ -2,5 +2,8 @@
 # KOHA RESTFUL API
 ##########
 
-libcgi-application-dispatch-perl:
+restful_pkgs:
   pkg.installed
+    - pkgs:
+      - libcgi-application-dispatch-perl
+      - libtest-www-mechanize-cgiapp-perl
