@@ -1,6 +1,5 @@
 ##########
-# KOHA CREATE VANILLA INSTANCE WITH DEFAULT SCHEMAS
-# Replicates web installer steps 1-3
+# KOHA INSTALL ON REMOTE MYSQL
 ##########
 
 koha_common_cnf:

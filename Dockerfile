@@ -85,18 +85,15 @@ RUN salt-call --local --retcode-passthrough state.sls koha.restful
 # Apache settings
 ADD ./salt/koha/apache2.sls /srv/salt/koha/apache2.sls
 ADD ./salt/koha/files/apache.tmpl /srv/salt/koha/files/apache.tmpl
-#RUN salt-call --local --retcode-passthrough state.sls koha.apache2
 
 # Koha instance settings
 ADD ./salt/koha/sites-config.sls /srv/salt/koha/sites-config.sls
 ADD ./salt/koha/files/koha-sites.conf /srv/salt/koha/files/koha-sites.conf
 ADD ./salt/koha/files/passwd /srv/salt/koha/files/passwd
-#RUN salt-call --local --retcode-passthrough state.sls koha.sites-config
 
 # Koha DB settings
 ADD ./salt/koha/createdb.sls /srv/salt/koha/createdb.sls
 ADD ./salt/koha/config.sls /srv/salt/koha/config.sls
-#RUN salt-call --local --retcode-passthrough state.sls koha.config
 
 # Koha automated webinstaller
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
