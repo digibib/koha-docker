@@ -13,3 +13,4 @@ restful_pkgs:
 /usr/share/koha/opac/cgi-bin/opac/rest.pl:
   file.managed:
     - source: salt://koha/files/rest.pl
+    - mode: 644
