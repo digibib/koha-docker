@@ -5,9 +5,9 @@
 # Should not run it already up to date
 ########
 
-/usr/local/bin/KohaWebInstallAutomation.rb:
+/usr/local/bin/KohaWebInstallAutomation.pl:
   file.managed:
-    - source: salt://koha/files/KohaWebInstallAutomation.rb
+    - source: salt://koha/files/KohaWebInstallAutomation.pl
 
 run_webinstaller:
   cmd.script:
@@ -19,4 +19,4 @@ run_webinstaller:
       - PASS: {{ pillar['koha']['adminpass'] }}
       - INSTANCE: {{ pillar['koha']['instance'] }}
     - watch:
-      - file: /usr/local/bin/KohaWebInstallAutomation.rb
+      - file: /usr/local/bin/KohaWebInstallAutomation.pl

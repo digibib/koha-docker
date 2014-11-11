@@ -23,27 +23,16 @@ ENV KOHA_ZEBRAPASS lkjasdpoiqrr
 # Salt Configuration
 #######
 
-# Install salt from git
-#RUN wget -O- --quiet https://bootstrap.saltstack.com | \
-#    sudo sh -s -- -g https://github.com/saltstack/salt.git git v2014.7.0rc3 || true  
+# Install salt from git, leaves
+#RUN curl -L https://bootstrap.saltstack.com | sh -s -- -g https://github.com/saltstack/salt.git git v2014.7.0 || true
 
-# Install stable salt minion, currently 2014.1.11
+# Install stable salt minion, currently 2014.1.13
 RUN add-apt-repository 'deb http://debian.saltstack.com/debian wheezy-saltstack main' && \
     wget -q -O- "http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key" | apt-key add - && \
     sudo apt-get update && sudo apt-get install -y salt-minion
 
 # for now - only masterless salt is used
 RUN echo "file_client: local\nmaster: localhost\n" > /etc/salt/minion
-
-# Preseed local master-minion, in case we need master against gitfs remote
-#RUN cd /tmp && \
-#    salt-key --gen-keys=master-minion && \
-#    mkdir -p /etc/salt/pki/master/minions && \
-#    cp master-minion.pub /etc/salt/pki/master/minions/master-minion && \
-#    mkdir -p /etc/salt/pki/minion && \
-#    cp master-minion.pub /etc/salt/pki/minion/minion.pub && \
-#    cp master-minion.pem /etc/salt/pki/minion/minion.pem
-
 
 #######
 # Salt Provisioning
@@ -55,9 +44,6 @@ COPY ./pillar/koha/admin.sls.example /srv/pillar/koha/admin.sls
 
 ADD ./salt/common/init.sls /srv/salt/common/init.sls
 RUN salt-call --local --retcode-passthrough state.sls common
-
-ADD ./salt/koha/watir.sls /srv/salt/koha/watir.sls
-RUN salt-call --local --retcode-passthrough state.sls koha.watir
 
 ADD ./salt/koha/init.sls /srv/salt/koha/init.sls 
 RUN salt-call --local --retcode-passthrough state.sls koha
@@ -92,13 +78,13 @@ ADD ./salt/koha/sites-config.sls /srv/salt/koha/sites-config.sls
 ADD ./salt/koha/files/koha-sites.conf /srv/salt/koha/files/koha-sites.conf
 ADD ./salt/koha/files/passwd /srv/salt/koha/files/passwd
 
-# Koha DB settings
+# Koha DB settings, and post-config
 ADD ./salt/koha/createdb.sls /srv/salt/koha/createdb.sls
 ADD ./salt/koha/config.sls /srv/salt/koha/config.sls
 
 # Koha automated webinstaller
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
-ADD ./salt/koha/files/KohaWebInstallAutomation.rb /srv/salt/koha/files/KohaWebInstallAutomation.rb
+ADD ./salt/koha/files/KohaWebInstallAutomation.pl /srv/salt/koha/files/KohaWebInstallAutomation.pl
 ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 
