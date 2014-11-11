@@ -10,10 +10,10 @@ set -e
 # KOHA_ZEBRAPASS lkjasdpoiqrr
 ########
 
-# Apache config
+# Apache Koha instance config
 salt-call --local state.sls koha.apache2 pillar="{koha: {instance: $KOHA_INSTANCE}}"
 
-# Sites global config
+# Koha Sites global config
 salt-call --local state.sls koha.sites-config \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
 
@@ -42,8 +42,8 @@ salt-call --local state.sls koha.config \
 salt-call --local state.sls koha.webinstaller \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
 
-/etc/init.d/koha-common start
-/etc/init.d/apache2 start
-/etc/init.d/cron start
+/etc/init.d/koha-common restart
+/etc/init.d/apache2 restart
+/etc/init.d/cron restart
 
 exec "$@"

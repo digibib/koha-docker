@@ -18,3 +18,13 @@
     - group: {{ pillar['koha']['instance'] }}-koha
     - user: {{ pillar['koha']['instance'] }}-koha
     - template: jinja
+
+config_apacheinstance:
+  file.managed:
+    - name: /etc/apache2/sites-available/{{ pillar['koha']['instance'] }}.conf
+    - source: salt://koha/files/apache.tmpl
+    - template: jinja
+    - context:
+      OpacPort: 8080
+      IntraPort: 8081
+      ServerName: {{ pillar['koha']['instance'] }}
