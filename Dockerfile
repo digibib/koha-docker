@@ -79,6 +79,16 @@ ADD ./salt/koha/files/koha-sites.conf /srv/salt/koha/files/koha-sites.conf
 ADD ./salt/koha/files/passwd /srv/salt/koha/files/passwd
 
 # Koha DB settings, and post-config
+ADD ./salt/koha/files/SIPconfig.xml /srv/salt/koha/files/SIPconfig.xml
+ADD ./salt/koha/sip2.sls /srv/salt/koha/sip2.sls
+
+# Koha SIP2 server
+ENV SIP_HOST      0.0.0.0
+ENV SIP_PORT      6001
+ENV SIP_WORKERS   3
+ENV SIP_AUTOUSER1 autouser
+ENV SIP_AUTOPASS1 autopass
+
 ADD ./salt/koha/createdb.sls /srv/salt/koha/createdb.sls
 ADD ./salt/koha/config.sls /srv/salt/koha/config.sls
 
@@ -94,7 +104,7 @@ WORKDIR /root
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
-EXPOSE 8080 8081
+EXPOSE 6001 8080 8081
 
 # Might be koha-common (Zebra) should be stand-alone container
-CMD ["/usr/bin/tail", "-f", "/var/log/apache2/access.log", "/var/log/koha/name/intranet-error.log", "/var/log/koha/name/opac-error.log", "/var/log/koha/name/zebra-error.log", "/var/log/apache2/other_vhosts_access.log"]
+CMD ["/usr/bin/tail", "-f", "/var/log/apache2/access.log", "/var/log/koha/name/intranet-error.log", "/var/log/koha/name/opac-error.log", "/var/log/koha/name/zebra-error.log", "/var/log/apache2/other_vhosts_access.log", "/var/log/koha/name/sip-output.log"]
