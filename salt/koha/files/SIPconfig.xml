@@ -13,6 +13,7 @@
     log_file='Sys::Syslog'
     syslog_ident='koha_sip'
     syslog_facility='local6'
+    ipv='4'
   />
 
   <listeners>
