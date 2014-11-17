@@ -31,7 +31,7 @@
       
 <!-- external listener -->
     <service
-      port="{{ sip_host }}:{{ sip_port }}/tcp"
+      port="{{ sip_port }}/tcp"
       transport="RAW"
       protocol="SIP/2.00"
       timeout="60" />

@@ -49,7 +49,7 @@ salt-call --local state.sls koha.config \
 
 # SIP2 Server config
 salt-call --local state.sls koha.sip2 \
-  pillar="{koha: {instance: $KOHA_INSTANCE, sip_host: $SIP_HOST, sip_port: $SIP_PORT, \
+  pillar="{koha: {instance: $KOHA_INSTANCE, sip_port: $SIP_PORT, \
   sip_workers: $SIP_WORKERS, sip_autouser1: $SIP_AUTOUSER1, sip_autopass1: $SIP_AUTOPASS1}}"
 
 # Run webinstaller to autoupdate/validate install

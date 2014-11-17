@@ -83,7 +83,6 @@ ADD ./salt/koha/files/SIPconfig.xml /srv/salt/koha/files/SIPconfig.xml
 ADD ./salt/koha/sip2.sls /srv/salt/koha/sip2.sls
 
 # Koha SIP2 server
-ENV SIP_HOST      0.0.0.0
 ENV SIP_PORT      6001
 ENV SIP_WORKERS   3
 ENV SIP_AUTOUSER1 autouser
