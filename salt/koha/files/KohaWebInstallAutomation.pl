@@ -25,7 +25,7 @@ sub init {
   
   %{$self} = (
       uri  => 'http://localhost:8081',
-      path => '',
+      path => '/',
       user => 'admin',
       pass => 'secret',
       previousStep => 0,
@@ -39,28 +39,31 @@ sub init {
 sub test_response_code {
   # Test for webinstaller by HEAD request
   my $self = shift;
-  my $mech = WWW::Mechanize->new();
+  my $mech = WWW::Mechanize->new(autocheck => 0);
+  $mech->max_redirect(0);
   $mech->agent('User-Agent=Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5');
   $mech->cookie_jar(HTTP::Cookies->new);
 
   # follows redirect by default
-  my $head = $mech->head($self->{uri}); 
+  my $head = $mech->head($self->{uri});
   # Test header for redirect to webinstaller
-  if ($head->is_success) {
-    if ($head->previous && $head->previous->code() == HTTP::Status::HTTP_FOUND) { 
+  if ($head->is_redirect) {
     # Redirect to webinstaller
-      $self->{path} = $head->previous->headers->{location};
-      $self->{mech} = $mech;
-      clickthrough_installer($self);
+    $self->{path} = $head->headers->{location};
+    $mech = WWW::Mechanize->new();
+    $mech->agent('User-Agent=Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5');
+    $mech->cookie_jar(HTTP::Cookies->new);
+    $self->{mech} = $mech;
+    clickthrough_installer($self);
+  } elsif ($head->is_success) {
+     $mech->get($self->{uri});
+    if ( $self->{uri} eq $mech->{uri} ) {
+      print "{\"comment\":\"Instance is already installed\"}";
     } else {
-      if ( $self->{uri} == $head->previous->headers->{location} ) {
-        print "{\"comment\":\"Instance is already installed\"}";
-      } else {
-        die "HTTPSuccess, but it is unclear how we got to " . $head->previous->headers->{location};
-      }
+      die "HTTPSuccess, but it is unclear how we got to " . $mech->{uri};
     }
   } else {
-    die "{\"comment\":\"Request failed. URI: $head->previous->headers->{location}\"}";
+    die "{\"comment\":\"Request failed. URI: $head->headers->{location}\"}";
   }
 
 }
