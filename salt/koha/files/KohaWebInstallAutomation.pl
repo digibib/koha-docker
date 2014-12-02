@@ -2,9 +2,12 @@
 
 use strict;
 use warnings;
+use Switch;
 use WWW::Mechanize;
 use HTTP::Cookies;
 use HTTP::Status qw(:constants :is status_message);
+use URI;
+use URI::QueryParam;
 use Carp qw( confess );
    $SIG{__DIE__} =  \&confess;
    $SIG{__WARN__} = \&confess;
@@ -70,9 +73,16 @@ sub test_response_code {
 
 sub clickthrough_installer {
   my $self = shift;
-  step_one($self);
-  step_two($self);
-  step_three($self);
+  # Get step param
+  my $uri = URI->new($self->{path});
+  my $step = $uri->query_param("step");
+
+  switch($step){
+    case 1 { step_one($self) }
+    case 2 { step_two($self) }
+    case 3 { step_three($self) }
+    else { step_one($self) }
+  }
 }
 
 sub do_login {
@@ -86,14 +96,24 @@ sub do_login {
 
 sub step_one {
   my $self = shift;
+  if ( $self->{previousStep} != 0 ) {
+    die "Error step one: expected previous step to be 0, but got $self->{previousStep}";
+  }
   do_login($self);
+  $self->{previousStep} = 1;
   $self->{mech}->submit_form( form_name => "language" );
   $self->{mech}->submit_form( form_name => "checkmodules" );
   $self->{path} = '/cgi-bin/koha/installer/install.pl?step=2';
+  clickthrough_installer($self);
 }
 
 sub step_two {
   my $self = shift;
+
+  if ( $self->{previousStep} != 1 ) {
+    die "Error step two: expected previous step to be 1, but got $self->{previousStep}";
+  }
+
   $self->{mech}->submit_form( form_name => "checkinformation" );
   $self->{mech}->submit_form( form_name => "checkdbparameters" );
   $self->{mech}->submit_form();
@@ -102,10 +122,20 @@ sub step_two {
   $self->{mech}->set_fields( marcflavour => "MARC21");
   $self->{mech}->submit_form( form_name => "frameworkselection");
   $self->{mech}->submit_form( form_name => "frameworkselection"); # yes, it occurs twice
+  $self->{previousStep} = 2;
+  step_three($self);
 }
 
 sub step_three {
   my $self = shift;
-  $self->{mech}->submit_form();
+  if ( $self->{previousStep} == 0 ) {
+    do_login($self);
+    $self->{mech}->follow_link( url => "install.pl?step=3&op=updatestructure" );
+  } elsif ( $self->{previousStep} == 2 ) {
+    $self->{mech}->submit_form();
+  } else {
+    die "Error in webinstaller step three: $_";
+  }
+
   print "{\"comment\":\"Successfully completed the install process\"}";
 }
