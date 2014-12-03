@@ -23,16 +23,14 @@ ENV KOHA_ZEBRAPASS lkjasdpoiqrr
 # Salt Configuration
 #######
 
-# Install salt from git, leaves
+# Install salt from git, results in large build
 #RUN curl -L https://bootstrap.saltstack.com | sh -s -- -g https://github.com/saltstack/salt.git git v2014.7.0 || true
 
-# Install stable salt minion, currently 2014.1.13
+# Install stable salt minion, currently 2014.7.0
 RUN add-apt-repository 'deb http://debian.saltstack.com/debian wheezy-saltstack main' && \
     wget -q -O- "http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key" | apt-key add - && \
-    sudo apt-get update && sudo apt-get install -y salt-minion
-
-# for now - only masterless salt is used
-RUN echo "file_client: local\nmaster: localhost\n" > /etc/salt/minion
+    sudo apt-get update && sudo apt-get install -y salt-minion && \
+    sudo apt-get clean
 
 #######
 # Salt Provisioning
