@@ -12,8 +12,10 @@
     - template: jinja
 
 # zebra internal password
-/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra.passwd:
+config_zebrapass:
   file.managed:
+    - name: /etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra.passwd
+    - stateful: True
     - source: salt://koha/files/zebra.passwd.tmpl
     - group: {{ pillar['koha']['instance'] }}-koha
     - user: {{ pillar['koha']['instance'] }}-koha
@@ -22,9 +24,20 @@
 config_apacheinstance:
   file.managed:
     - name: /etc/apache2/sites-available/{{ pillar['koha']['instance'] }}.conf
+    - stateful: True
     - source: salt://koha/files/apache.tmpl
     - template: jinja
     - context:
       OpacPort: 8080
       IntraPort: 8081
       ServerName: {{ pillar['koha']['instance'] }}
+
+apache2:
+  service.running:
+    - watch:
+      - file: config_apacheinstance
+
+koha-common:
+  service.running:
+    - watch:
+      - file: config_zebrapass

@@ -56,8 +56,6 @@ salt-call --local state.sls koha.sip2 \
 salt-call --local state.sls koha.webinstaller \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
 
-/etc/init.d/koha-common restart
-/etc/init.d/apache2 restart
-/etc/init.d/cron restart
+/etc/init.d/cron start
 
 exec "$@"

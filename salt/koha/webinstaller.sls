@@ -18,5 +18,5 @@ run_webinstaller:
       - USER: {{ pillar['koha']['adminuser'] }}
       - PASS: {{ pillar['koha']['adminpass'] }}
       - INSTANCE: {{ pillar['koha']['instance'] }}
-    - watch:
+    - require:
       - file: /usr/local/bin/KohaWebInstallAutomation.pl
