@@ -68,16 +68,28 @@ delete: stop
 	@echo "======= DELETING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker rm koha_docker' || true
 
+KOHA_INSTANCE  ?= name
+KOHA_ADMINUSER ?= admin
+KOHA_ADMINPASS ?= secret
+
 run: delete
 	@echo "======= RUNNING KOHA CONTAINER WITH LOCAL MYSQL ======\n"
 	@vagrant ssh -c 'sudo docker run -d --name koha_docker \
-	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 -t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
+	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 \
+	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
+	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
+	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
+	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
 # start koha with link to mysql container
 run_linked_db: mysql delete
 	@echo "======= RUNNING KOHA CONTAINER WITH MYSQL FROM LINKED DB CONTAINER ======\n"
 	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
-	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 -t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
+	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 \
+	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
+	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
+	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
+	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
 logs:
 	vagrant ssh -c 'sudo docker logs koha_docker'
