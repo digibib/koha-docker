@@ -13,3 +13,7 @@
       sip_port: {{ pillar['koha']['sip_port'] }}
       autouser1: {{ pillar['koha']['sip_autouser1'] }}
       autopass1: {{ pillar['koha']['sip_autopass1'] }}
+
+start_sip_server:
+  cmd.run:
+    - name: /usr/sbin/koha-start-sip {{ pillar['koha']['instance'] }}
