@@ -6,9 +6,10 @@ FROM debian:wheezy
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
-ENV REFRESHED_AT 2014-10-20
+ENV REFRESHED_AT 2015-01-06
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get upgrade --yes && \
     apt-get install -y wget less curl git nmap socat netcat tree htop \ 
                        unzip sudo python-software-properties && \
     apt-get clean
