@@ -98,15 +98,18 @@ logs-f:
 	vagrant ssh -c 'sudo docker logs -f koha_docker'
 
 nsenter:
-	vagrant ssh -c 'sudo nsenter --target `sudo docker inspect --format="{{.State.Pid}}" koha_docker` --mount --uts --ipc --net --pid '
+	vagrant ssh -c 'sudo docker exec -it koha_docker /bin/bash'
 
 browser:
 	vagrant ssh -c 'firefox "http://localhost:8081/" > firefox.log 2> firefox.err < /dev/null' &
 
-test: 
+wait_until_ready:
+	@echo "=======    wait until ready    ======\n"
+	vagrant ssh -c 'sudo docker exec -t koha_docker ./wait_until_ready.py'
+
+test: wait_until_ready
 	@echo "======= TESTING KOHA CONTAINER ======\n"
-	vagrant ssh -c 'cd vm-test && python test.py koha_docker'
-	
+
 clean:
 	vagrant destroy --force
 

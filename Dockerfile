@@ -105,3 +105,6 @@ ENTRYPOINT ["/root/entrypoint.sh"]
 EXPOSE 6001 8080 8081
 
 # Might be koha-common (Zebra) should be stand-alone container
+
+# Script for checking if koha is up & ready (to be executed using docker exec)
+COPY docker-wait_until_ready.py /root/wait_until_ready.py

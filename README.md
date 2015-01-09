@@ -36,7 +36,7 @@ Using Makefile, the following commands are available:
 
 `make delete` : stop and remove container
 
-`make nsenter` : open and inspect container
+`make nsenter` : open shell inside container
 
 `make clean` : purge entire virtual box
 
