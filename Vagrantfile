@@ -8,8 +8,6 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--memory", "1024"]
   end
 
-  config.vm.synced_folder "test", "/home/vagrant/vm-test"
-
   config.vm.box = "ubuntu/trusty64"
   config.vm.hostname = "kohadocker"
 
