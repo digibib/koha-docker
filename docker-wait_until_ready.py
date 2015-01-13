@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-import requests, time, sys
+# Script to test sanity of koha docker container
+# Verifies that Koha OPAC, Intra and SIP Server are reachable
+
+import socket, requests, time, sys
 
 def validateArguments():
 	if ((len(sys.argv) > 4)):
@@ -39,7 +42,7 @@ def getRetryPeriod():
 
 def doRequest(url):
 	statusCode = 0
-	try: 
+	try:
 		# Note: do NOT follow redirect:
 		statusCode = requests.get(url, allow_redirects=False).status_code
 	except Exception as e:
@@ -60,21 +63,44 @@ def kohaStatusCode(url, sleepPeriod, retryPeriod):
 	print()
 	return statusCode
 
+def isSipServerRunning(host, port):
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.settimeout(2)
+
+	try:
+		s.connect((host, port))
+		s.close
+		return True
+	except Exception as e:
+		return False
+
+def waitForSipServer(host, port, sleepPeriod, retryPeriod):
+	startTime = time.time()
+	status = False
+	elapsedTime = time.time() - startTime
+
+	while ((status == False) and (elapsedTime < retryPeriod)):
+		time.sleep(sleepPeriod)
+		status = isSipServerRunning(host, port)
+		print('.', end=""); sys.stdout.flush()
+		elapsedTime = time.time() - startTime
+
+	print()
+	return status
 
 # main
 DEFAULT_SLEEP_PERIOD = 5
 DEFAULT_RETRY_PERIOD = 300
 
-DEFAULT_OPAC_URL = "http://localhost:8080"
-DEFAULT_INTRA_URL = "http://localhost:8081"
-
 validateArguments()
 
 sleepPeriod = getSleepPeriod()
 retryPeriod = getRetryPeriod()
-opac_url = DEFAULT_OPAC_URL
-intra_url = DEFAULT_INTRA_URL
-exitCode = 0
+opac_url    = "http://localhost:8080"
+intra_url   = "http://localhost:8081"
+sip_host    = "localhost"
+sip_port    = 6001
+exitCode    = 0
 
 print("INFO: opac_url:\t\t", opac_url)
 print("INFO: intra_url:\t", intra_url)
@@ -94,6 +120,12 @@ if (kohaStatusCode(intra_url, sleepPeriod, retryPeriod) == 200):
 	print("INFO: INTRA is running")
 else:
 	print("ERROR: INTRA is NOT running")
+	exitCode = 1
+
+if (waitForSipServer(sip_host, sip_port, sleepPeriod, retryPeriod = 200)):
+	print("INFO: SIP SERVER is running")
+else:
+	print("ERROR: SIP SERVER is NOT running")
 	exitCode = 1
 
 sys.exit(exitCode)
