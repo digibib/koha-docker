@@ -25,9 +25,10 @@ The `tag/revision` should correspond to the git revisions in this git repository
 
 ### Starting a Koha Docker container
 
-```docker run -d --name koha_docker \
+<pre>docker run -d --name koha_docker \
 	-p 6001:6001 -p 8080:8080 -p 8081:8081 \
-	-t digibib/koha:[tag/revision]```
+	-t digibib/koha:[tag/revision]
+</pre>
 
 The `tag/revision` is as above.
 
@@ -41,7 +42,7 @@ Starting Koha as explained above makes the OPAC available on port 8080 (http) an
 
 You should set credentials for the Koha instance database user on container startup (to avoid default values), you can also set the Koha instance name, and SIP-server settings :
 
-```docker run -d --name koha_docker \
+<pre>docker run -d --name koha_docker \
 	-p 6001:6001 -p 8080:8080 -p 8081:8081 \
 	-e KOHA_INSTANCE=[koha instance name, default: name] \
 	-e KOHA_ADMINUSER=[db admin user name, default: admin] \
@@ -49,7 +50,8 @@ You should set credentials for the Koha instance database user on container star
 	-e SIP_WORKERS=[no of workers, default: 3] \
 	-e SIP_AUTOUSER1=[username, default: autouser] \
 	-e SIP_AUTOPASS1=[password, default: autopass] \
-	-t digibib/koha```
+	-t digibib/koha
+</pre>
 
 ### External MySql
 
@@ -61,14 +63,13 @@ Log entries from a number of logs will be concatenated into standard out and can
 ```docker logs koha_docker```
 
 The logs tailed to standard out: 
-```
-  /var/log/apache2/access.log
+<pre>  /var/log/apache2/access.log
   /var/log/koha/${KOHA_INSTANCE}/intranet*.log
   /var/log/koha/${KOHA_INSTANCE}/opac*.log
   /var/log/koha/${KOHA_INSTANCE}/zebra*.log
   /var/log/apache2/other_vhosts_access.log
   /var/log/koha/${KOHA_INSTANCE}/sip*.log
-```
+</pre>
 
 ## Installing virtual build machine
 
