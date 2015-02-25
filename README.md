@@ -11,6 +11,8 @@ The image is built from a [Dockerfile](./Dockerfile) which also invokes [Salt](h
 
 The Docker image produced uses currently released [Debian packages of Koha](http://wiki.koha-community.org/wiki/Koha_on_Debian). 
 
+There is also a Docker setup for a Koha development version from git available in the subfolder `kohadev`. Please read the README in this folder for further instructions.
+
 The image will on startup go through the steps of the Koha Webinstaller accepting default settings, and choosing MARC-flavour: MARC21.
 
 ## Using the Koha Docker image
