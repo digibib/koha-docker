@@ -9,6 +9,6 @@ koharepo:
 koha-common:
   pkg.installed:
     - skip_verify: True
-    - version: 3.18.03
+    - version: 3.18.04
     - require:
       - pkgrepo: koharepo
