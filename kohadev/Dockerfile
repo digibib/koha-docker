@@ -40,7 +40,8 @@ RUN mkdir -p /kohadev && cd /kohadev && \
     git clone --depth=1 $KOHA_REPO kohaclone
 
 # kohadev dependencies
-RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl && \
+RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl \
+    libdbix-connector-perl && \
     apt-get clean
 
 # Git bz
