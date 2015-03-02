@@ -38,9 +38,14 @@ run: delete			## start kohadev container - args: AUTHOR_NAME, AUTHOR_EMAIL, BUGZ
 	-e BUGZ_PASS=$(BUGZ_PASS) \
 	-t digibib/kohadev' || echo "kohadev_docker container already running, please 'make delete' first"
 
+update_git:			## Updates git master to HEAD
+	@echo "======= UPDATING KOHA MASTER TO HEAD ======\n"
+	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'cd /kohadev/kohaclone && git update'"
+
 reset_git:			## Resets git by removing and doing new shallow clone
 	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
-	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'cd /kohadev && rm -rf kohaclone && git clone --depth 1 \$$KOHA_REPO kohaclone'"
+	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'cd /kohadev/kohaclone && git clean -xdf && \
+	git checkout master && git branch -d sandbox"
 
 patch:					## needs PATCHES
 	@echo "======= PATCHING KOHADEV CONTAINER ======\n"
