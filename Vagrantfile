@@ -11,9 +11,9 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.hostname = "kohadocker"
 
+  config.vm.provision "shell", path: "pip_install.sh"
+
   config.vm.provision :shell, inline: <<SCRIPT
-  apt-get update
-  apt-get install -y firefox python-pip
   pip install docker-py
 SCRIPT
 
