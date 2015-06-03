@@ -59,7 +59,7 @@ sub test_response_code {
     $mech->get($self->{uri});
     # If you are not redirected OR faced with a 200 Sorry! maintenance page it is already installed
     if ( $self->{uri} eq $mech->{uri} && $mech->{content} !~ "maintenance" ) {
-      print "{\"comment\":\"Instance is already installed\"}";
+      print "Instance is already installed";
     # If you are not redirected AND faced with a 200 Sorry! maintenance page you need to run webinstaller
     } elsif ( $self->{uri} eq $mech->{uri} && $mech->{content} =~ "maintenance" ) {
       $self->{path} = "/cgi-bin/koha/installer/install.pl";
@@ -67,10 +67,10 @@ sub test_response_code {
       $self->{mech} = $mech;
       clickthrough_installer($self);
     } else {
-      die "{\"comment\":\"HTTPSuccess, but it is unclear how we got to " . $mech->{uri} . "\"}";
+      die "HTTPSuccess, but it is unclear how we got to " . $mech->{uri} ;
     }
   } else {
-    die "{\"comment\":\"Request failed. URI: $mech->response()->headers()->{location}\"}";
+    die "Request failed. URI: $mech->response()->headers()->{location}";
   }
 
 }
@@ -100,7 +100,7 @@ sub do_login {
 sub step_one {
   my $self = shift;
   if ( $self->{previousStep} != 0 ) {
-    die "{\"comment\":\"Error step one: expected previous step to be 0, but got " . $self->{previousStep} . "\"}";
+    die "Error step one: expected previous step to be 0, but got " . $self->{previousStep} ;
   }
   do_login($self);
   $self->{mech}->submit_form( form_name => "language" );
@@ -114,7 +114,7 @@ sub step_two {
   my $self = shift;
 
   if ( $self->{previousStep} != 1 ) {
-    die "{\"comment\":\"Error step two: expected previous step to be 1, but got " . $self->{previousStep} ."\"}";
+    die "Error step two: expected previous step to be 1, but got " . $self->{previousStep} ;
   }
 
   $self->{mech}->submit_form( form_name => "checkinformation" );
@@ -137,8 +137,8 @@ sub step_three {
   } elsif ( $self->{previousStep} == 2 ) {
     $self->{mech}->submit_form();
   } else {
-    die  "{\"comment\":\"Error in webinstaller step three: " . $_ . "\"}";
+    die  "Error in webinstaller step three: " . $_ ;
   }
 
-  print "{\"comment\":\"Successfully completed the install process\"}";
+  print "Successfully completed the install process!";
 }
