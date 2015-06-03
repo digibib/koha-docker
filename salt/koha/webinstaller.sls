@@ -13,6 +13,8 @@ run_webinstaller:
   cmd.script:
     - source: salt://koha/files/updatekohadbversion.sh
     - stateful: True
+    - cwd: /usr/share/koha/lib
+    - shell: /bin/bash
     - env:
       - URL: "http://127.0.0.1:8081"
       - USER: {{ pillar['koha']['adminuser'] }}

@@ -10,7 +10,6 @@ apache2:
     - text:
       - Listen 8080
       - Listen 8081
-    - stateful: True
     - require:
       - pkg: apache2
 
