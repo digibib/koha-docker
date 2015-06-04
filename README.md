@@ -80,7 +80,7 @@ If you want to build the image yourself you need to install and set up a virtual
 1. Install virtualbox and vagrant:
     - Ubuntu:
         * `sudo apt-get install virtualbox`
-        * vagrant > 1.5 - install deb manually: https://www.vagrantup.com/downloads.html
+        * vagrant > 1.7.2 - install deb manually: https://www.vagrantup.com/downloads.html
     - OSX: We recommend using [homebrew](http://brew.sh/) and [homebrew cask](http://caskroom.io/), but you can install these manually if you prefer (see download links).
         * `brew cask install virtualbox` -- or [Virtualbox Downloads](https://www.virtualbox.org/wiki/Downloads)
         * `brew cask install vagrant` -- or [Vagrant Downloads](https://www.vagrantup.com/downloads)
