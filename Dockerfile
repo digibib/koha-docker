@@ -25,13 +25,17 @@ ENV KOHA_ZEBRAPASS lkjasdpoiqrr
 #######
 
 # Install salt from git, results in large build
-RUN curl -L https://bootstrap.saltstack.com | sh -s -- -g https://github.com/saltstack/salt.git git v2014.7.6 || true
+RUN curl -L https://bootstrap.saltstack.com | \
+  sh -s -- -g https://github.com/saltstack/salt.git -X git v2015.5.2 || true && \
+  apt-get purge -y build-essential && \
+  apt-get -y autoremove && \
+  apt-get clean
 
 # Install stable salt minion, currently 2015.5.0
 #RUN add-apt-repository 'deb http://debian.saltstack.com/debian wheezy-saltstack main' && \
 #    wget -q -O- "http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key" | apt-key add - && \
-#    sudo apt-get update && sudo apt-get install -y salt-minion=2015.5.0 && \
-#    sudo apt-get clean
+#    apt-get update && apt-get install -y salt-minion=2015.5.0 && \
+#    apt-get clean
 
 #######
 # Salt Provisioning
