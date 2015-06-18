@@ -12,7 +12,7 @@ if [[ -n "$KOHAVERSION" ]] ; then
      [[ $KOHADBVERSIONOLD = $KOHADBVERSION ]] && \
      [[ $MARCTAGSTRUCTURE = "1" ]] ; then
     # Up to date!
-
+    CHANGED=no
     RESULT="Koha DB is up-to-date (version $KOHAVERSION) and MARC tag structure is nominally in place"
     EXIT_CODE=0
   else
@@ -30,7 +30,7 @@ else
   EXIT_CODE=1
 fi
 echo # Salt status
-echo "changed=\"${CHANGED}\" comment=\"${RESULT}\" instance=$INSTANCE \
+echo "changed=$CHANGED comment=\"${RESULT}\" instance=$INSTANCE \
           newdbversion=\"${KOHADBVERSION}\" olddbversion=\"${KOHADBVERSIONOLD}\""
 exit $EXIT_CODE
 
