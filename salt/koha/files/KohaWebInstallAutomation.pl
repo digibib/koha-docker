@@ -89,6 +89,25 @@ sub clickthrough_installer {
   }
 }
 
+sub upgrade {
+  my $self = shift;
+  my $deps = "All required Perl modules appear to be installed";
+  my $mods = "All dependencies installed";
+  if ($self->{mech}->{content} ~~ /$mods/ && $self->{mech}->{content} ~~ /$deps/) {
+    # Upgrade with all modules and deps in place
+    $self->{mech}->submit_form( form_name => "checkmodules" );
+    $self->{mech}->follow_link( url => "install.pl?step=3&op=finished" );
+    print "Successfully completed the upgrade process!";
+    exit 0;
+  } elsif ($self->{mech}->{content} ~~ /Some Perl modules are missing/) {
+    print "Crucial Perl modules are missing!";
+    exit 1;
+  } else {
+    print "Upgrade failed!";
+    exit 1;
+  }
+}
+
 sub do_login {
   my $self = shift;
   $self->{mech}->submit_form( with_fields => {
@@ -100,21 +119,27 @@ sub do_login {
 sub step_one {
   my $self = shift;
   if ( $self->{previousStep} != 0 ) {
-    die "Error step one: expected previous step to be 0, but got " . $self->{previousStep} ;
+    print "Error step one: expected previous step to be 0, but got " . $self->{previousStep} ;
+    exit 1;
   }
   do_login($self);
-  $self->{mech}->submit_form( form_name => "language" );
-  $self->{mech}->submit_form( form_name => "checkmodules" );
-  $self->{path} = '/cgi-bin/koha/installer/install.pl?step=2';
-  $self->{previousStep} = 1;
-  clickthrough_installer($self);
+  if ($self->{mech}->form_name( "language" )) { # language selection    -- first time install
+    $self->{mech}->submit_form( form_name => "language" );
+    $self->{mech}->submit_form( form_name => "checkmodules" );
+    $self->{path} = '/cgi-bin/koha/installer/install.pl?step=2';
+    $self->{previousStep} = 1;
+    clickthrough_installer($self);
+  } else {                                      # no language selection -- upgrade
+    upgrade($self);
+  }
 }
 
 sub step_two {
   my $self = shift;
 
   if ( $self->{previousStep} != 1 ) {
-    die "Error step two: expected previous step to be 1, but got " . $self->{previousStep} ;
+    print "Error step two: expected previous step to be 1, but got " . $self->{previousStep} ;
+    exit 1;
   }
 
   $self->{mech}->submit_form( form_name => "checkinformation" );
@@ -137,7 +162,8 @@ sub step_three {
   } elsif ( $self->{previousStep} == 2 ) {
     $self->{mech}->submit_form();
   } else {
-    die  "Error in webinstaller step three: " . $_ ;
+    print  "Error in webinstaller step three: " . $_ ;
+    exit 1;
   }
 
   print "Successfully completed the install process!";
