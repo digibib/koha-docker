@@ -112,6 +112,13 @@ RUN cd /srv/salt/koha/files && \
       do ./applypatch.sh --patch $patch; \
     done
 
+#######
+# Salt performance
+#######
+
+# enable salt grains cache
+RUN sed -i 's/^.*grains_cache:.*$/grains_cache: True/' /etc/salt/minion
+
 ENV HOME /root
 WORKDIR /root
 
