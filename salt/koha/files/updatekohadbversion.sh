@@ -13,27 +13,24 @@ if [[ -n "$KOHAVERSION" ]] ; then
      [[ $MARCTAGSTRUCTURE = "1" ]] ; then
     # Up to date!
 
-    COMMENT="Koha DB is up-to-date (version $KOHAVERSION) and MARC tag structure is nominally in place"
-
-    echo  # Salt status
-    echo "changed=no comment=\"${COMMENT}\" instance=$INSTANCE \
-          newdbversion=\"$KOHADBVERSION\" olddbversion=$KOHADBVERSIONOLD"
+    RESULT="Koha DB is up-to-date (version $KOHAVERSION) and MARC tag structure is nominally in place"
+    EXIT_CODE=0
   else
      RESULT=`/usr/bin/perl -e "require('/usr/local/bin/KohaWebInstallAutomation.pl') ; \
      KohaWebInstallAutomation->new( uri => \"${URL}\", user => \"${USER}\", pass => \"${PASS}\" );"`
      EXIT_CODE=$?
-    echo  # Salt status
     if [[ $EXIT_CODE -ne 0 ]]; then
-      echo "changed=no comment=\"${RESULT}\" instance=$INSTANCE \
-          newdbversion=\"$KOHADBVERSION\" olddbversion=$KOHADBVERSIONOLD"
-      exit $EXIT_CODE
+      CHANGED=no
     else
-      echo "changed=yes comment=\"${RESULT}\" instance=$INSTANCE \
-          newdbversion=\"$KOHADBVERSION\" olddbversion=$KOHADBVERSIONOLD"
+      CHANGED=yes
     fi
   fi
 else
-  echo "changed=no comment=\"MISSING INSTANCENAME OR NO KOHAVERSION!\""
-  exit 1
+  RESULT="MISSING INSTANCENAME OR NO KOHAVERSION!"
+  EXIT_CODE=1
 fi
+echo # Salt status
+echo "changed=\"${CHANGED}\" comment=\"${RESULT}\" instance=$INSTANCE \
+          newdbversion=\"${KOHADBVERSION}\" olddbversion=\"${KOHADBVERSIONOLD}\""
+exit $EXIT_CODE
 
