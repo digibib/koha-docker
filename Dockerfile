@@ -26,7 +26,7 @@ ENV KOHA_ZEBRAPASS lkjasdpoiqrr
 
 # Install salt from git, results in large build
 RUN curl -L https://bootstrap.saltstack.com | \
-  sh -s -- -g https://github.com/saltstack/salt.git -X git v2015.5.2 || true && \
+  sh -s -- -g https://github.com/saltstack/salt.git -X git v2015.5.2 && \
   apt-get purge -y build-essential && \
   apt-get -y autoremove && \
   apt-get clean
