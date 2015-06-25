@@ -11,11 +11,18 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
   config.vm.hostname = "kohadocker"
 
+
   config.vm.provision "shell", path: "pip_install.sh"
 
   config.vm.provision :shell, inline: <<SCRIPT
   pip install docker-py
 SCRIPT
+
+  # Temporary fix in order to make docker install on ubuntu/thrusty64,
+  # until this issue is resolved:
+  # https://github.com/mitchellh/vagrant/issues/5697
+  config.vm.provision :shell,
+    inline: "sudo apt-get update"
 
   config.vm.provision :docker do |d|
     d.version = "latest"
