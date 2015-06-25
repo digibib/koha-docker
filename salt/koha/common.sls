@@ -9,6 +9,6 @@ koharepo:
 koha-common:
   pkg.installed:
     - skip_verify: True
-    - version: 3.20.00
+    - version: 3.20.01
     - require:
       - pkgrepo: koharepo
