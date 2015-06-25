@@ -19,23 +19,32 @@ ENV KOHA_ADMINPASS secret
 ENV KOHA_INSTANCE name
 ENV KOHA_ZEBRAUSER zebrauser
 ENV KOHA_ZEBRAPASS lkjasdpoiqrr
+ENV SALT_VERSION 2015.5.2
+
+#######
+# Salt Install
+#######
+
+# Salt dependencies
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y python-m2crypto python-yaml python-jinja2 python-requests python-markupsafe \
+      msgpack-python python-zmq && \
+    apt-get clean
+
+# Install salt
+RUN curl -O https://pypi.python.org/packages/source/s/salt/salt-${SALT_VERSION}.tar.gz && \
+  tar -xzvf salt-${SALT_VERSION}.tar.gz && \
+  cd salt-${SALT_VERSION} && \
+  python setup.py install && \
+  rm -rf salt-${SALT_VERSION}
 
 #######
 # Salt Configuration
 #######
 
-# Install salt from git, results in large build
-RUN curl -L https://bootstrap.saltstack.com | \
-  sh -s -- -g https://github.com/saltstack/salt.git -X git v2015.5.2 && \
-  apt-get purge -y build-essential && \
-  apt-get -y autoremove && \
-  apt-get clean
-
-# Install stable salt minion, currently 2015.5.0
-#RUN add-apt-repository 'deb http://debian.saltstack.com/debian wheezy-saltstack main' && \
-#    wget -q -O- "http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key" | apt-key add - && \
-#    apt-get update && apt-get install -y salt-minion=2015.5.0 && \
-#    apt-get clean
+# enable salt grains cache for speed improvement
+RUN mkdir -p /etc/salt && \
+  echo "grains_cache: True" >> /etc/salt/minion
 
 #######
 # Salt Provisioning
@@ -111,13 +120,6 @@ RUN cd /srv/salt/koha/files && \
     for patch in ./patches/*.patch; \
       do ./applypatch.sh --patch $patch; \
     done
-
-#######
-# Salt performance
-#######
-
-# enable salt grains cache
-RUN sed -i 's/^.*grains_cache:.*$/grains_cache: True/' /etc/salt/minion
 
 ENV HOME /root
 WORKDIR /root
