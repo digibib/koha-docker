@@ -69,6 +69,7 @@ ADD ./salt/koha/common.sls /srv/salt/koha/common.sls
 ADD ./salt/koha/files/koha-common.cnf /srv/salt/koha/files/koha-common.cnf
 ADD ./salt/koha/files/koha-conf.xml.tmpl /srv/salt/koha/files/koha-conf.xml.tmpl
 ADD ./salt/koha/files/zebra.passwd.tmpl /srv/salt/koha/files/zebra.passwd.tmpl
+ADD ./salt/koha/files/local-apt-repo.tmpl /srv/salt/koha/files/local-apt-repo.tmpl
 RUN salt-call --local --retcode-passthrough state.sls koha.common
 
 # Koha-restful API
