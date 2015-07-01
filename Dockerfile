@@ -110,18 +110,6 @@ ADD ./salt/koha/files/KohaWebInstallAutomation.pl /srv/salt/koha/files/KohaWebIn
 ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 
-#######
-# Salt Provisioning - step 3
-# Patches
-#######
-
-ADD ./salt/koha/files/patches /srv/salt/koha/files/patches
-ADD ./salt/koha/files/applypatch.sh /srv/salt/koha/files/applypatch.sh
-RUN cd /srv/salt/koha/files && \
-    for patch in ./patches/*.patch; \
-      do ./applypatch.sh --patch $patch; \
-    done
-
 ENV HOME /root
 WORKDIR /root
 
