@@ -38,7 +38,7 @@
   </listeners>
 
   <accounts>
-    <login encoding="utf8" id="{{ autouser1 }}"  password="{{ autopass1 }}" delimiter="|" error-detect="enabled" institution="HUTL" />
+    <login encoding="utf8" id="{{ autouser1 }}"  password="{{ autopass1 }}" delimiter="|" error-detect="enabled" institution="HUTL" checked_in_ok="1" />
   </accounts>
 
 <!--
