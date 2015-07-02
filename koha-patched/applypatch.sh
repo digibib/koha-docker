@@ -10,7 +10,7 @@ trap "cleanup" INT TERM EXIT
 
 cleanup() {
     rv=$?
-    echo "$MSG"
+    echo -e "$MSG"
     if [ -n $RETVAL ];
     then
       exit $RETVAL
@@ -40,14 +40,19 @@ applyPatch() {
 
   if [ -f $FILE ];
   then
-    echo "CMD: patch -d ${DIR:-.} -p1 -N --dry-run -i $FILE"
-    RES=`patch -d ${DIR:-.} -p1 -N --dry-run -i $FILE`                    # dry-run first
+    echo "CMD: patch -d ${DIR:-.} -p1 -N --verbose --reject-file=/tmp/reject -i $FILE"
+    RES=`patch -d ${DIR:-.} -p1 -N --verbose \
+         --reject-file=/tmp/reject -i $FILE`
     RETVAL=$?
     if [ $RETVAL -eq 0 ];                                                 # all good?
     then
-      MSG="`patch -d ${DIR:-.} -p1 -N < $FILE` -------------------> OK"   # apply the patch!
+      MSG="-------------------> OK"
     else
-      MSG="'Patch error: ${RES}'"
+      MSG="Patch error: ${RES}"
+      MSG+="\nRejected file:"
+      MSG+="\n-------\n"
+      MSG+="$([ -f /tmp/reject ] && cat /tmp/reject)"
+      MSG+="\n-------\n"
       exit $RETVAL
     fi
   else
