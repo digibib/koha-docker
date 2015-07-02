@@ -25,15 +25,13 @@ delete: stop
 	@echo "======= DELETING KOHA-PATCHED CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker rm koha_patched_docker' || true
 
-run: delete			## start koha_patched_docker - args: AUTHOR_NAME, AUTHOR_EMAIL, BUGZ_USER, BUGZ_PASS
+run: delete			## start koha_patched_docker - args: KOHABUGS, TEST_QA
 	@echo "======= RUNNING KOHA-PATCHED CONTAINER IN PRIVILEGED MODE ======\n"
 	vagrant ssh -c 'sudo docker run --name koha_patched_docker \
 	-v "/vagrant/koha-patched/debian:/debian" \
 	-v "/vagrant/koha-patched/patches:/patches" \
-	-e AUTHOR_NAME=$(AUTHOR_NAME) \
-	-e AUTHOR_EMAIL=$(AUTHOR_EMAIL) \
-	-e BUGZ_USER=$(BUGZ_USER) \
-	-e BUGZ_PASS=$(BUGZ_PASS) \
+	-e KOHABUGS="$(KOHABUGS)" \
+	-e TEST_QA="$(TEST_QA)" \
 	-t digibib/koha-patched' || echo "koha_patched_docker container already running, please 'make delete' first"
 
 logs-f:

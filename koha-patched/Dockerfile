@@ -50,6 +50,8 @@ ADD ./git-bz /usr/bin/git-bz
 
 # bugzilla user and pass needed for git-bz to apply patches
 # can safely be left untouched
+ENV AUTHOR_NAME  "John Doe"
+ENV AUTHOR_EMAIL john@doe.snot
 ENV BUGZ_USER    bugsquasher
 ENV BUGZ_PASS    bugspass
 
