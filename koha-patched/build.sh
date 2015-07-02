@@ -41,12 +41,14 @@ echo "Patching..."
 
 # Patch from bugzilla
 for bugid in ${KOHABUGS}; do \
+  echo "Patching from bugzilla bug $bugid"
   /root/applypatch.sh --bugid $bugid /koha ; \
 done
 
 # Patch with custom patches
 for patch in $(find /patches -name *.patch); do \
   if [ -f "$patch" ]; then \
+    echo "Patching local patch $patch"
     /root/applypatch.sh --patch $patch /koha ; \
   fi \
 done
