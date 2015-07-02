@@ -9,8 +9,7 @@ local-apt-repo-priority:
 
 deichmanrepo:
   pkgrepo.managed:
-    - name: deb http://datatest.deichman.no/repositories/koha wheezy main
-    - key_url: http://datatest.deichman.no/repositories/public.gpg
+    - name: deb http://datatest.deichman.no/repositories/koha/public/ wheezy main
     - watch:
       - file: local-apt-repo-priority
 
