@@ -52,6 +52,7 @@ in our case "ILS".
     <institution id="HUTL" implementation="ILS" parms="">
           <policy checkin="true" renewal="true" checkout="true"
       status_update="false" offline="false"
+      allow_branch_override="true"
       timeout="100"
       retries="5" />
     </institution>
