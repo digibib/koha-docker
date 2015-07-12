@@ -40,8 +40,8 @@ applyPatch() {
 
   if [ -f $FILE ];
   then
-    echo "CMD: patch -d ${DIR:-.} -p1 -N --verbose --reject-file=/tmp/reject -i $FILE"
-    RES=`patch -d ${DIR:-.} -p1 -N --verbose \
+    echo "CMD: patch -d ${DIR:-.} -p1 -N --verbose --ignore-whitespace --reject-file=/tmp/reject -i $FILE"
+    RES=`patch -d ${DIR:-.} -p1 -N --verbose --ignore-whitespace \
          --reject-file=/tmp/reject -i $FILE`
     RETVAL=$?
     if [ $RETVAL -eq 0 ];                                                 # all good?
