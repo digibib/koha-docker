@@ -46,7 +46,7 @@ for bugid in ${KOHABUGS}; do \
 done
 
 # Patch with custom patches
-for patch in $(find /patches -name *.patch); do \
+for patch in $(find /patches -name *.patch | sort -n); do \
   if [ -f "$patch" ]; then \
     echo "Patching local patch $patch"
     /root/applypatch.sh --patch $patch /koha ; \
