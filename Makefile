@@ -122,3 +122,6 @@ push:
 	vagrant ssh -c 'sudo docker tag digibib/koha digibib/koha:$(tag)'
 	vagrant ssh -c 'sudo docker push digibib/koha'
 
+docker_cleanup:
+	@echo "cleaning up unused containers and images"
+	@vagrant ssh -c 'sudo /vagrant/docker-cleanup.sh'
