@@ -20,6 +20,7 @@ ENV KOHA_INSTANCE name
 ENV KOHA_ZEBRAUSER zebrauser
 ENV KOHA_ZEBRAPASS lkjasdpoiqrr
 ENV SALT_VERSION 2015.5.2
+ENV KOHA_PLACK_PORT 5000
 
 #######
 # Salt Install
@@ -76,6 +77,11 @@ RUN salt-call --local --retcode-passthrough state.sls koha.common
 ADD ./salt/koha/restful.sls /srv/salt/koha/restful.sls
 ADD ./salt/koha/files/rest.pl /srv/salt/koha/files/rest.pl
 RUN salt-call --local --retcode-passthrough state.sls koha.restful
+
+# Koha plack setup
+ADD ./salt/koha/plack.sls /srv/salt/koha/plack.sls
+ADD ./salt/koha/files/intra.psgi /srv/salt/koha/files/intra.psgi
+RUN salt-call --local --retcode-passthrough state.sls koha.plack
 
 #######
 # Salt Provisioning - step 2

@@ -9,6 +9,7 @@ set -e
 # KOHA_ADMINPASS secret
 # KOHA_ZEBRAUSER zebrauser
 # KOHA_ZEBRAPASS lkjasdpoiqrr
+# KOHA_PLACK_PORT 5000
 #######################
 # SIP2 DEFAULT SETTINGS
 #######################
@@ -58,8 +59,12 @@ salt-call --local state.sls koha.sip2 \
 
 /etc/init.d/cron start
 
+KOHA_CONF=/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml PERL5LIB=/srv/koha sudo -E -u ${KOHA_INSTANCE}-koha \
+  plackup --D --access-log /var/log/koha/${KOHA_INSTANCE}/intranet_plack.log --reload --port ${KOHA_PLACK_PORT} /usr/share/koha/intranet/intra.psgi
+
 /usr/bin/tail -f /var/log/apache2/access.log \
   /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
+  /var/log/koha/${KOHA_INSTANCE}/intranet_plack*.log \
   /var/log/koha/${KOHA_INSTANCE}/opac*.log \
   /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
   /var/log/apache2/other_vhosts_access.log \

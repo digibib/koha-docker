@@ -75,7 +75,7 @@ KOHA_ADMINPASS ?= secret
 run: delete
 	@echo "======= RUNNING KOHA CONTAINER WITH LOCAL MYSQL ======\n"
 	@vagrant ssh -c 'sudo docker run -d --name koha_docker \
-	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 \
+	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 -p 5000:5000 \
 	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
 	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
 	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \

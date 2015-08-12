@@ -10,4 +10,5 @@ base:
     - koha.config # includes switching to db instance on ls.db
     - koha.webinstaller
     - koha.restful
+    - koha.plack
     - cron
