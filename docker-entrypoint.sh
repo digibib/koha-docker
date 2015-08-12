@@ -60,7 +60,7 @@ salt-call --local state.sls koha.sip2 \
 /etc/init.d/cron start
 
 KOHA_CONF=/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml PERL5LIB=/srv/koha sudo -E -u ${KOHA_INSTANCE}-koha \
-  plackup --demonize --access-log /var/log/koha/${KOHA_INSTANCE}/intranet_plack.log --reload --port ${KOHA_PLACK_PORT} /usr/share/koha/intranet/intra.psgi
+  plackup --daemonize --access-log /var/log/koha/${KOHA_INSTANCE}/intranet-plack.log --reload --port ${KOHA_PLACK_PORT} /usr/share/koha/intranet/intra.psgi &
 
 /usr/bin/tail -f /var/log/apache2/access.log \
   /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
