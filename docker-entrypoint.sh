@@ -62,9 +62,14 @@ salt-call --local state.sls koha.sip2 \
 KOHA_CONF=/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml PERL5LIB=/srv/koha sudo -E -u ${KOHA_INSTANCE}-koha \
   plackup --daemonize --access-log /var/log/koha/${KOHA_INSTANCE}/intranet-plack.log --reload --port ${KOHA_PLACK_PORT} /usr/share/koha/intranet/intra.psgi &
 
+# Make sure log files exist before tailing them
+touch /var/log/koha/${KOHA_INSTANCE}/intranet-plack.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-plack.log
+touch /var/log/koha/${KOHA_INSTANCE}/intranet-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
+touch /var/log/koha/${KOHA_INSTANCE}/sip-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-error.log
+touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-output.log
+
 /usr/bin/tail -f /var/log/apache2/access.log \
   /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
-  /var/log/koha/${KOHA_INSTANCE}/intranet_plack*.log \
   /var/log/koha/${KOHA_INSTANCE}/opac*.log \
   /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
   /var/log/apache2/other_vhosts_access.log \
