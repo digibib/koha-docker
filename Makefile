@@ -119,7 +119,7 @@ login: # needs EMAIL, PASSWORD, USERNAME
 tag = "$(shell git rev-parse HEAD)"
 
 tag:
-	vagrant ssh -c 'sudo docker tag digibib/koha digibib/koha:$(tag)'
+	vagrant ssh -c 'sudo docker tag -f digibib/koha digibib/koha:$(tag)'
 
 push: tag
 	@echo "======= PUSHING KOHA CONTAINER ======\n"
