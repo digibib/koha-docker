@@ -117,9 +117,12 @@ login: # needs EMAIL, PASSWORD, USERNAME
 	@ vagrant ssh -c 'sudo docker login --email=$(EMAIL) --username=$(USERNAME) --password=$(PASSWORD)'
 
 tag = "$(shell git rev-parse HEAD)"
-push:
-	@echo "======= PUSHING KOHA CONTAINER ======\n"
+
+tag:
 	vagrant ssh -c 'sudo docker tag digibib/koha digibib/koha:$(tag)'
+
+push: tag
+	@echo "======= PUSHING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker push digibib/koha'
 
 docker_cleanup:
