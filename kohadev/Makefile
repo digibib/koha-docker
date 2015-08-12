@@ -42,10 +42,13 @@ update_git:			## Updates git master to HEAD
 	@echo "======= UPDATING KOHA MASTER TO HEAD ======\n"
 	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'cd /kohadev/kohaclone && git update'"
 
-update_kohadb:	## Runs Koha updatedatabase.pl
+update_kohadb: dump_kohadb	## Runs Koha updatedatabase.pl
 	@echo "======= UPDATING KOHA DATABASE ======\n"
-	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'mysqldump --all-databases > /tmp/kohadump.sql && \
-		koha-shell name -c /kohadev/kohaclone/installer/data/mysql/updatedatabase.pl'"
+	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'koha-shell name -c /kohadev/kohaclone/installer/data/mysql/updatedatabase.pl'"
+
+dump_kohadb:		## Dumps Koha database
+	@echo "======= DUMPING KOHA DATABASE ======\n"
+	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'mysqldump --all-databases > /tmp/kohadump.sql'"
 
 restore_kohadb:	## Restores Koha database
 	@echo "======= RESTORING KOHA DATABASE ======\n"
@@ -60,8 +63,9 @@ load_testdata:	## Load optional test data
 
 reset_git:			## Resets git by removing and doing new shallow clone
 	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
-	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'cd /kohadev/kohaclone && git clean -xdf && \
-	git checkout master && git branch -D sandbox'"
+	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'cd /kohadev/kohaclone && \
+		git clean -xdf && git am --abort || true && git reset --hard && \
+		git checkout master && git branch -D sandbox || true'"
 
 reset_git_hard:	## Resets git by removing and doing new shallow clone
 	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
