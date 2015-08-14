@@ -3,6 +3,7 @@ use Plack::Builder;
 use Plack::App::CGIBin;
 use Plack::App::Directory;
 use Plack::Middleware::Rewrite;
+use Plack::Middleware::AccessLog;
 #use Plack::Middleware::Debug;
 #use Plack::Middleware::Debug::MemLeak;
 use lib("/usr/share/koha/lib");
@@ -30,6 +31,7 @@ builder {
 			s{^/$}{/cgi-bin/koha/mainpage.pl};
 		};
 
+		enable "Plack::Middleware::AccessLog", format => "combined";
 
         enable "Plack::Middleware::Static",
                 path => qr{^/intranet-tmpl/}, root => '/usr/share/koha/intranet/htdocs/';                

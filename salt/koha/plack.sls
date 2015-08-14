@@ -11,6 +11,7 @@ perl_deps:
       - libdevel-nytprof-perl
       - cpanminus
       - dh-make-perl
+      - starman
 
 /usr/share/koha/intranet/intra.psgi:
   file.managed:
@@ -21,6 +22,6 @@ perl_deps:
 
 install_perl_modules:
   cmd.run:
-    - name: cpanm Plack::Middleware::Rewrite Plack::Middleware::Debug
+    - name: cpanm Plack::Middleware::Rewrite Plack::Middleware::Debug Plack::Middleware::AccessLog
     - require:
       - pkg: perl_deps
