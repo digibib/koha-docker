@@ -75,7 +75,7 @@ KOHA_ADMINPASS ?= secret
 run: delete
 	@echo "======= RUNNING KOHA CONTAINER WITH LOCAL MYSQL ======\n"
 	@vagrant ssh -c 'sudo docker run -d --name koha_docker \
-	-p 80:80 -p 5000:5000 -p 6001:6001 -p 8080:8080 -p 8081:8081 -p 5000:5000 \
+	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 -p 8082:8082 \
 	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
 	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
 	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
@@ -85,7 +85,7 @@ run: delete
 run_linked_db: mysql delete
 	@echo "======= RUNNING KOHA CONTAINER WITH MYSQL FROM LINKED DB CONTAINER ======\n"
 	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
-	-p 80:80 -p 5000:5000 -p 6001:6001 -p 8080:8080 -p 8081:8081 \
+	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 -p 8082:8082 \
 	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
 	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
 	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
@@ -104,7 +104,7 @@ browser:
 	vagrant ssh -c 'firefox "http://localhost:8081/" > firefox.log 2> firefox.err < /dev/null' &
 
 browser_plack:
-	vagrant ssh -c 'firefox "http://localhost:5000/" > firefox.log 2> firefox.err < /dev/null' &
+	vagrant ssh -c 'firefox "http://localhost:8082/" > firefox.log 2> firefox.err < /dev/null' &
 
 wait_until_ready:
 	@echo "=======    wait until ready    ======\n"
