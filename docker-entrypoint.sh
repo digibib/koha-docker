@@ -63,7 +63,10 @@ KOHA_CONF=/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml PERL5LIB=/srv/koha \
   starman -M FindBin --workers 4 --port ${KOHA_PLACK_PORT} --max-requests 50 \
   --user ${KOHA_INSTANCE}-koha \
   --error-log /var/log/koha/${KOHA_INSTANCE}/intranet-plack.err.log \
-  --pid /var/run/starman.pid /usr/share/koha/intranet/intra.psgi \
+  --pid /var/run/starman.pid \
+  --env deployment \
+  --disable-keepalive \
+  /usr/share/koha/intranet/intra.psgi \
    >/var/log/koha/${KOHA_INSTANCE}/intranet-plack.log &
 
 # Make sure log files exist before tailing them
