@@ -57,7 +57,7 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-ENV KOHABUGS     ""
+ENV KOHABUGS     "13666 13411 14361"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
