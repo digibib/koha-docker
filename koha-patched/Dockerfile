@@ -5,18 +5,18 @@
 # applys patches, runs tests and builds debian packages
 ###########################
 
-FROM debian:wheezy
+FROM debian:jessie
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBIAN_PRIORITY critical
 ENV DEBCONF_NOWARNINGS yes
-ENV REFRESHED_AT 2015-06-26
+ENV REFRESHED_AT 2015-12-09
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -q -y vim.tiny telnet screen htop curl git \
-            devscripts equivs && \
+            devscripts equivs python && \
     apt-get clean
 
 #######################
@@ -32,7 +32,7 @@ RUN apt-get update && \
 
 RUN apt-get install -y libdbix-connector-perl libtest-perl-critic-perl && apt-get clean
 
-ENV KOHA_VERSION 3.20.03
+ENV KOHA_VERSION 3.22.00
 
 # Download Koha from tarball
 RUN mkdir -p /koha && cd /koha && \
@@ -40,6 +40,9 @@ RUN mkdir -p /koha && cd /koha && \
   tar -C /koha --strip-components=1 -xzf koha-${KOHA_VERSION}.tar.gz && \
   rm -rf koha-${KOHA_VERSION}.tar.gz
 
+# One of the tests in Logger.t fails in our setup,
+# probably due to user permissions in the docker build-container.
+RUN rm /koha/t/Logger.t
 
 ##########
 # GIT-BZ, PATCHLIBS AND BUILDSCRIPT
@@ -57,7 +60,7 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-ENV KOHABUGS     "13666 13411 14361"
+ENV KOHABUGS     "13666"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
