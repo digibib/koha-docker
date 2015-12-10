@@ -17,12 +17,7 @@ disable_default:
   cmd.run:
     - name: sudo a2dissite default || true
 
-sudo a2enmod rewrite:
-  cmd.run:
-    - require:
-      - pkg: apache2
-
-sudo a2enmod cgi:
+sudo a2enmod rewrite headers proxy_http cgi:
   cmd.run:
     - require:
       - pkg: apache2
@@ -31,3 +26,11 @@ sudo a2dissite 000-default:
   cmd.run:
     - require:
       - pkg: apache2
+
+apache2_service:
+  service.running:
+    - name: apache2
+    - watch:
+      - pkg: apache2
+      - cmd: sudo a2dissite 000-default
+      - cmd: sudo a2enmod rewrite headers proxy_http cgi

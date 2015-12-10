@@ -15,13 +15,13 @@ deichmanrepo:
 
 koharepo:
   pkgrepo.managed:
-    - name: deb http://debian.koha-community.org/koha squeeze main
+    - name: deb http://debian.koha-community.org/koha stable main
     - key_url: http://debian.koha-community.org/koha/gpg.asc
 
 koha-common:
   pkg.installed:
     - skip_verify: True
-    - version: 3.20.03+20150826~patched
+    - version: 3.22.00+20151210~patched
     - require:
       - pkgrepo: deichmanrepo
       - pkgrepo: koharepo

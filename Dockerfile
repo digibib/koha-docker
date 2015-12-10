@@ -1,8 +1,8 @@
 #######
-# Debian Wheezy build of Koha - Provisioned by Salt
+# Debian Jessie build of Koha - Provisioned by Salt
 #######
 
-FROM debian:wheezy
+FROM debian:jessie
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
@@ -11,7 +11,7 @@ ENV REFRESHED_AT 2015-01-06
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get upgrade --yes && \
     apt-get install -y wget less curl git nmap socat netcat tree htop \ 
-                       unzip sudo python-software-properties && \
+                       unzip sudo python-software-properties libswitch-perl && \
     apt-get clean
 
 ENV KOHA_ADMINUSER admin
@@ -20,7 +20,6 @@ ENV KOHA_INSTANCE name
 ENV KOHA_ZEBRAUSER zebrauser
 ENV KOHA_ZEBRAPASS lkjasdpoiqrr
 ENV SALT_VERSION 2015.5.2
-ENV KOHA_PLACK_PORT 8082
 
 #######
 # Salt Install
@@ -73,16 +72,6 @@ ADD ./salt/koha/files/zebra.passwd.tmpl /srv/salt/koha/files/zebra.passwd.tmpl
 ADD ./salt/koha/files/local-apt-repo.tmpl /srv/salt/koha/files/local-apt-repo.tmpl
 RUN salt-call --local --retcode-passthrough state.sls koha.common
 
-# Koha-restful API
-ADD ./salt/koha/restful.sls /srv/salt/koha/restful.sls
-ADD ./salt/koha/files/rest.pl /srv/salt/koha/files/rest.pl
-RUN salt-call --local --retcode-passthrough state.sls koha.restful
-
-# Koha plack setup
-ADD ./salt/koha/plack.sls /srv/salt/koha/plack.sls
-ADD ./salt/koha/files/intra.psgi /srv/salt/koha/files/intra.psgi
-RUN salt-call --local --retcode-passthrough state.sls koha.plack
-
 #######
 # Salt Provisioning - step 2
 # Configuration files
@@ -91,6 +80,7 @@ RUN salt-call --local --retcode-passthrough state.sls koha.plack
 # Apache settings
 ADD ./salt/koha/apache2.sls /srv/salt/koha/apache2.sls
 ADD ./salt/koha/files/apache.tmpl /srv/salt/koha/files/apache.tmpl
+ADD ./salt/koha/files/log4perl.conf /srv/salt/koha/files/log4perl.conf
 
 # Koha instance settings
 ADD ./salt/koha/sites-config.sls /srv/salt/koha/sites-config.sls

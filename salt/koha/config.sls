@@ -11,6 +11,13 @@
     - user: {{ pillar['koha']['instance'] }}-koha
     - template: jinja
 
+/etc/koha/sites/{{ pillar['koha']['instance'] }}/log4perl.conf:
+  file.managed:
+    - source: salt://koha/files/log4perl.conf
+    - group: {{ pillar['koha']['instance'] }}-koha
+    - user: {{ pillar['koha']['instance'] }}-koha
+    - template: jinja
+
 # zebra internal password
 config_zebrapass:
   file.managed:

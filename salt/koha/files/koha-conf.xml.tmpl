@@ -1,4 +1,7 @@
 <yazgfs>
+<!-- [scheme:]host[:port][/databaseName] -->
+<!-- scheme: tcp, ssl, unix, http, sru -->
+<!-- can run all servers on tcp, but the unix socket is faster -->
 
 <listen id="biblioserver" >unix:/var/run/koha/{{ pillar['koha']['instance'] }}/bibliosocket</listen>
 <listen id="authorityserver" >unix:/var/run/koha/{{ pillar['koha']['instance'] }}/authoritysocket</listen>
@@ -13,91 +16,23 @@
 <!-- Settings for special biblio server instance for PazPar2.
      Because PazPar2 only connects to a Z39.50 server using TCP/IP,
      it cannot use the Unix-domain socket that biblioserver uses.
-     Therefore, a custom server is defined. -->
-<!--
+     Therefore, a custom server is defined. 
+__PAZPAR2_TOGGLE_XML_PRE__
 <listen id="mergeserver">tcp:@:__MERGE_SERVER_PORT__</listen>
-<server id="mergeserver"  listenref="mergeserver">
-    <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/biblios</directory>
-    <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-biblios-dom.cfg</config>
-    <cql2rpn>/var/lib/koha/{{ pillar['koha']['instance'] }}/pqf.properties</cql2rpn>
+<server id="mergeserver"  listenref="mergeserver"> 
+    <directory>__ZEBRA_DATA_DIR__/biblios</directory>
+    <config>__ZEBRA_CONF_DIR__/__ZEBRA_BIB_CFG__</config>
+    <cql2rpn>__ZEBRA_CONF_DIR__/pqf.properties</cql2rpn>
 </server>
+__PAZPAR2_TOGGLE_XML_POST__
 -->
-
 <!-- BIBLIOGRAPHIC RECORDS -->
 <server id="biblioserver"  listenref="biblioserver">
     <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/biblios</directory>
     <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-biblios-dom.cfg</config>
     <cql2rpn>/etc/koha/zebradb/pqf.properties</cql2rpn>
-    <xi:include href="/etc/koha/normarc-retrieval-info-bib-dom.xml"
-  xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:fallback>
-    <retrievalinfo>
-       <retrieval syntax="normarc" name="F"/>
-       <retrieval syntax="normarc" name="B"/>
-       <retrieval syntax="xml" name="F"/>
-       <retrieval syntax="xml" name="B"/>
-       <retrieval syntax="xml" name="marcxml"
-                  identifier="info:srw/schema/1/marcxml-v1.1">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="dc">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2DC.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="mods">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2MODS.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="rdfdc">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2RDFDC.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="rss2">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2RSS2.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="utils">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slimUtils.xsl"/>
-         </backend>
-       </retrieval>
-    </retrievalinfo>
-  </xi:fallback>
-  </xi:include>
-
-    <!-- The stuff below is used to enable SRU. It's currently disabled
-         until we come up with a good way to make it get magically set up by
-         the packaging system. If you need it, uncomment and set it up
-         manually.
-    <xi:include href="__KOHA_CONF_DIR__/zebradb/explain-biblios.xml"
-                xmlns:xi="http://www.w3.org/2001/XInclude">
-      <xi:fallback>
-      <explain xmlns="http://explain.z3950.org/dtd/2.0/">
-          <serverInfo>
-            <host>__ZEBRA_SRU_HOST__</host>
-            <port>__ZEBRA_SRU_BIBLIOS_PORT__</port>
-            <database>biblios</database>
-          </serverInfo>
-        </explain>
-      </xi:fallback>
-    </xi:include> -->
+    <xi:include href="/etc/koha/normarc-retrieval-info-bib-dom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <xi:include href="/etc/koha/zebradb/explain-biblios.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </server>
 <serverinfo id="biblioserver">
         <ccl2rpn>/etc/koha/zebradb/ccl.properties</ccl2rpn>
@@ -110,69 +45,8 @@
     <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/authorities</directory>
     <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-authorities-dom.cfg</config>
     <cql2rpn>/etc/koha/zebradb/pqf.properties</cql2rpn>
-
-    <xi:include href="/etc/koha/normarc-retrieval-info-auth-dom.xml"
- xmlns:xi="http://www.w3.org/2001/XInclude">
- <xi:fallback>
- <retrievalinfo>
-       <retrieval syntax="normarc" name="F"/>
-       <retrieval syntax="normarc" name="B"/>
-       <retrieval syntax="xml" name="marcxml"
-                  identifier="info:srw/schema/1/marcxml-v1.1">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="dc">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2DC.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="mods">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2MODS.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="rdfdc">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2RDFDC.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="utils">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slimUtils.xsl"/>
-         </backend>
-       </retrieval>
-    </retrievalinfo>
- </xi:fallback>
- </xi:include>
-
-
-    <!-- The stuff below is used to enable SRU. It's currently disabled
-         until we come up with a good way to make it get magically set up by
-         the packaging system. If you need it, uncomment and set it up
-         manually.
-    <xi:include href="__KOHA_CONF_DIR__/zebradb/explain-authorities.xml"
-                xmlns:xi="http://www.w3.org/2001/XInclude">
-    <xi:fallback>
-      <explain xmlns="http://explain.z3950.org/dtd/2.0/">
-          <serverInfo>
-            <host>__ZEBRA_SRU_HOST__</host>
-            <port>__ZEBRA_SRU_AUTHORITIES_PORT__</port>
-            <database>authorities</database>
-          </serverInfo>
-        </explain>
-      </xi:fallback>
-  </xi:include> -->
+    <xi:include href="/etc/koha/zebradb/retrieval-info-auth-dom.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <xi:include href="/etc/koha/zebradb/explain-authorities.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </server>
 <serverinfo id="authorityserver">
     <ccl2rpn>/etc/koha/zebradb/ccl.properties</ccl2rpn>
@@ -181,86 +55,25 @@
 </serverinfo>
 
 <!-- PUBLICSERVER'S BIBLIOGRAPHIC RECORDS -->
-<!-- This can be used to set up a public Z39.50/SRU server.
-
+<!--
 <server id="publicserver"  listenref="publicserver">
-    <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/biblios</directory>
-    <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-biblios-dom.cfg</config>
-    <cql2rpn>/etc/koha/zebradb/pqf.properties</cql2rpn>
-    <xi:include href="/etc/koha/normarc-retrieval-info-bib-dom.xml"
-  xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:fallback>
-  <retrievalinfo>
-       <retrieval syntax="normarc" name="F"/>
-       <retrieval syntax="normarc" name="B"/>
-       <retrieval syntax="xml" name="F"/>
-       <retrieval syntax="xml" name="B"/>
-       <retrieval syntax="xml" name="marcxml"
-                  identifier="info:srw/schema/1/marcxml-v1.1">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="dc">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2DC.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="mods">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2MODS.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="rdfdc">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2RDFDC.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="rss2">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slim2RSS2.xsl"/>
-         </backend>
-       </retrieval>
-       <retrieval syntax="xml" name="utils">
-         <backend syntax="normarc" name="F">
-           <marc inputformat="marc" outputformat="marcxml"
-                 inputcharset="utf-8"/>
-           <xslt stylesheet="/usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/xslt/MARC21slimUtils.xsl"/>
-         </backend>
-       </retrieval>
-    </retrievalinfo>
-  </xi:fallback>
-  </xi:include>
-
-    <xi:include href="__KOHA_CONF_DIR__/zebradb/explain-biblios.xml"
-                xmlns:xi="http://www.w3.org/2001/XInclude">
-      <xi:fallback>
-      <explain xmlns="http://explain.z3950.org/dtd/2.0/">
-          <serverInfo>
-            <host>__ZEBRA_SRU_HOST__</host>
-            <port>__ZEBRA_SRU_BIBLIOS_PORT__</port>
-            <database>biblios</database>
-          </serverInfo>
-        </explain>
-      </xi:fallback>
-    </xi:include>
+    <directory>__ZEBRA_DATA_DIR__/biblios</directory>
+    <config>__ZEBRA_CONF_DIR__/__ZEBRA_BIB_CFG__</config>
+    <cql2rpn>__ZEBRA_CONF_DIR__/pqf.properties</cql2rpn>
+    <xi:include href="__KOHA_CONF_DIR__/zebradb/__BIB_RETRIEVAL_CFG__" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <xi:include href="__KOHA_CONF_DIR__/zebradb/explain-biblios.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </server>
 <serverinfo id="publicserver">
-        <ccl2rpn>/etc/koha/zebradb/ccl.properties</ccl2rpn>
-        <user>kohauser</user>
-        <password>QrsygfPSRm7OFDhu</password>
+        <ccl2rpn>__ZEBRA_CONF_DIR__/ccl.properties</ccl2rpn>
+        <user>__ZEBRA_USER__</user>
+        <password>__ZEBRA_PASS__</password>
 </serverinfo>
 -->
 
+<!-- ADDITIONAL KOHA CONFIGURATION DIRECTIVE -->
+<!-- db_scheme should follow the DBD driver name -->
+<!-- the DBD drivers supported by Koha are mysql and Pg -->
+<!-- port info: mysql:3306 Pg:5432 (5433 on Debian) -->
 <config>
  <template_cache_dir>/tmp</template_cache_dir>
  <db_scheme>mysql</db_scheme>
@@ -275,6 +88,7 @@
  <authorityservershadow>1</authorityservershadow>
  <pluginsdir>/var/lib/koha/{{ pillar['koha']['instance'] }}/plugins</pluginsdir>
  <enable_plugins>1</enable_plugins>
+ <upload_path></upload_path>
  <intranetdir>/usr/share/koha/intranet/cgi-bin</intranetdir>
  <opacdir>/usr/share/koha/opac/cgi-bin/opac</opacdir>
  <opachtdocs>/usr/share/koha/opac/htdocs/opac-tmpl</opachtdocs>
@@ -288,6 +102,10 @@
       tool -->
  <backup_db_via_tools>0</backup_db_via_tools>
  <backup_conf_via_tools>0</backup_conf_via_tools>
+ <!-- Uncomment the following line if you are not using packages and need to schedule reports through the web interface. supportdir should contain cronjobs/runreport.pl -->
+ <!--
+ <supportdir>__SCRIPT_NONDEV_DIR__</supportdir>
+ -->
  <!-- <pazpar2url>http://__PAZPAR2_HOST__:__PAZPAR2_PORT__/search.pz2</pazpar2url> -->
  <install_log>/usr/share/koha/misc/koha-install-log</install_log>
  <useldapserver>0</useldapserver><!-- see C4::Auth_with_ldap for extra configs you must add if you want to turn this on -->
@@ -297,6 +115,10 @@
  <zebra_lockdir>/var/lock/koha/{{ pillar['koha']['instance'] }}</zebra_lockdir>
  <use_zebra_facets>1</use_zebra_facets>
  <queryparser_config>/etc/koha/searchengine/queryparser.yaml</queryparser_config>
+ <log4perl_conf>/etc/koha/sites/{{ pillar['koha']['instance'] }}/log4perl.conf</log4perl_conf>
+
+ <!-- Secret passphrase used by Mojolicious for signed cookies -->
+ <api_secret_passphrase>CHANGEME</api_secret_passphrase>
 
  <!-- true type font mapping accoding to type from $font_types in C4/Creators/Lib.pm -->
  <ttf>

@@ -59,26 +59,21 @@ salt-call --local state.sls koha.sip2 \
 
 /etc/init.d/cron start
 
-KOHA_CONF=/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml PERL5LIB=/srv/koha \
-  starman -M FindBin --workers 4 --port ${KOHA_PLACK_PORT} --max-requests 50 \
-  --user ${KOHA_INSTANCE}-koha \
-  --error-log /var/log/koha/${KOHA_INSTANCE}/intranet-plack.err.log \
-  --pid /var/run/starman.pid \
-  --env deployment \
-  --disable-keepalive \
-  /usr/share/koha/intranet/intra.psgi \
-   >/var/log/koha/${KOHA_INSTANCE}/intranet-plack.log &
+# Enable plack
+sudo koha-plack --enable "$KOHA_INSTANCE"
+sudo koha-plack --start "$KOHA_INSTANCE"
+sudo service apache2 restart
 
 # Make sure log files exist before tailing them
-touch /var/log/koha/${KOHA_INSTANCE}/intranet-plack.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-plack.log
-touch /var/log/koha/${KOHA_INSTANCE}/intranet-plack.err.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-plack.err.log
 touch /var/log/koha/${KOHA_INSTANCE}/intranet-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
 touch /var/log/koha/${KOHA_INSTANCE}/sip-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-error.log
 touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-output.log
+touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/plack-error.log
 
 /usr/bin/tail -f /var/log/apache2/access.log \
   /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
   /var/log/koha/${KOHA_INSTANCE}/opac*.log \
   /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
   /var/log/apache2/other_vhosts_access.log \
-  /var/log/koha/${KOHA_INSTANCE}/sip*.log
+  /var/log/koha/${KOHA_INSTANCE}/sip*.log \
+  /var/log/koha/${KOHA_INSTANCE}/plack*.log
