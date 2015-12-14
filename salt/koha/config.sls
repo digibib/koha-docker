@@ -39,6 +39,24 @@ config_apacheinstance:
       IntraPort: 8081
       ServerName: {{ pillar['koha']['instance'] }}
 
+#########
+# PLACK IN DOCKER SOCKET WORKAROUND
+#########
+
+/usr/share/perl5/Authen/CAS/Client/Response/Failure.pm:
+  file.managed:
+    - source: salt://koha/files/Authen_CAS_Client_Response_Failure.pm
+    - makedirs: True
+
+/usr/share/perl5/Authen/CAS/Client/Response/Success.pm:
+  file.managed:
+    - source: salt://koha/files/Authen_CAS_Client_Response_Success.pm
+    - makedirs: True
+
+#########
+# END PLACK IN DOCKER SOCKET WORKAROUND
+#########
+
 apache2:
   service.running:
     - watch:

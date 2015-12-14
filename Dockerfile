@@ -106,6 +106,10 @@ ADD ./salt/koha/files/KohaWebInstallAutomation.pl /srv/salt/koha/files/KohaWebIn
 ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
 ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 
+# CAS bug workaround
+ADD ./salt/koha/files/Authen_CAS_Client_Response_Failure.pm /srv/salt/koha/files/Authen_CAS_Client_Response_Failure.pm
+ADD ./salt/koha/files/Authen_CAS_Client_Response_Success.pm /srv/salt/koha/files/Authen_CAS_Client_Response_Success.pm
+
 ENV HOME /root
 WORKDIR /root
 

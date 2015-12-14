@@ -60,9 +60,9 @@ salt-call --local state.sls koha.sip2 \
 /etc/init.d/cron start
 
 # Enable plack
-sudo koha-plack --enable "$KOHA_INSTANCE"
-sudo koha-plack --start "$KOHA_INSTANCE"
-sudo service apache2 restart
+koha-plack --enable "$KOHA_INSTANCE"
+koha-plack --start "$KOHA_INSTANCE"
+service apache2 restart
 
 # Make sure log files exist before tailing them
 touch /var/log/koha/${KOHA_INSTANCE}/intranet-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
