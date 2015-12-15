@@ -9,7 +9,6 @@ set -e
 # KOHA_ADMINPASS secret
 # KOHA_ZEBRAUSER zebrauser
 # KOHA_ZEBRAPASS lkjasdpoiqrr
-# KOHA_PLACK_PORT 8082
 #######################
 # SIP2 DEFAULT SETTINGS
 #######################
