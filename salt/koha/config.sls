@@ -40,7 +40,7 @@ config_apacheinstance:
       ServerName: {{ pillar['koha']['instance'] }}
 
 #########
-# PLACK IN DOCKER SOCKET WORKAROUND
+# PLACK IN DOCKER CAS WORKAROUND
 #########
 
 /usr/share/perl5/Authen/CAS/Client/Response/Failure.pm:
@@ -54,7 +54,7 @@ config_apacheinstance:
     - makedirs: True
 
 #########
-# END PLACK IN DOCKER SOCKET WORKAROUND
+# END PLACK IN DOCKER CAS WORKAROUND
 #########
 
 apache2:
