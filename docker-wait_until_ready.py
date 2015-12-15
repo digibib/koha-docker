@@ -98,14 +98,12 @@ sleepPeriod = getSleepPeriod()
 retryPeriod = getRetryPeriod()
 opac_url    = "http://localhost:8080"
 intra_url   = "http://localhost:8081"
-plack_intra_url   = "http://localhost:8082"
 sip_host    = "localhost"
 sip_port    = 6001
 exitCode    = 0
 
 print("INFO: opac_url:\t\t", opac_url)
 print("INFO: intra_url:\t", intra_url)
-print("INFO: plack_intra_url:\t", plack_intra_url)
 print("INFO: sleepPeriod:\t", sleepPeriod)
 print("INFO: retryPeriod:\t", retryPeriod, "\n")
 
@@ -122,12 +120,6 @@ if (kohaStatusCode(intra_url, sleepPeriod, retryPeriod) == 200):
 	print("INFO: INTRA is running")
 else:
 	print("ERROR: INTRA is NOT running")
-	exitCode = 1
-
-if (kohaStatusCode(plack_intra_url, sleepPeriod, retryPeriod) == 200):
-	print("INFO: Plack INTRA is running")
-else:
-	print("ERROR: Plack INTRA is NOT running")
 	exitCode = 1
 
 if (waitForSipServer(sip_host, sip_port, sleepPeriod, retryPeriod = 200)):
