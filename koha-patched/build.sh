@@ -57,7 +57,8 @@ done
 # CHANGELOG AND BUILD DEPS
 ############
 
-mk-build-deps -t "apt-get -y --no-install-recommends" -i "debian/control"
+mk-build-deps -t "apt-get update"
+mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
 dch --force-distribution -D "wheezy" \
     --newversion "${KOHA_VERSION}+$(date +%Y%m%d)~patched" \
