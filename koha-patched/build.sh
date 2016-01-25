@@ -58,6 +58,7 @@ done
 ############
 
 mk-build-deps -t "apt-get update"
+mk-build-deps -t "apt-get install libxml2-utils"
 mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
 dch --force-distribution -D "wheezy" \
