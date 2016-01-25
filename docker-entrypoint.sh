@@ -18,6 +18,11 @@ set -e
 # SIP_AUTOUSER1 autouser
 # SIP_AUTOPASS1 autopass
 ########################
+# KOHA LANGUAGE SETTINGS
+########################
+# DEFAULT_LANGUAGE
+# INSTALL_LANGUAGES
+########################
 
 # Apache Koha instance config
 salt-call --local state.sls koha.apache2 pillar="{koha: {instance: $KOHA_INSTANCE}}"
@@ -47,9 +52,32 @@ salt-call --local state.sls koha.config \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS, \
   zebrauser: $KOHA_ZEBRAUSER, zebrapass: $KOHA_ZEBRAPASS}}"
 
+# Install languages in Koha
+for language in $INSTALL_LANGUAGES
+do
+    koha-translate --install $language
+done
+
 # Run webinstaller to autoupdate/validate install
 salt-call --local state.sls koha.webinstaller \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
+
+# To create diff between to Koha mysql databases:
+# mysqldump --skip-opt -u <user> -p <db> > before.sql
+# <Do your changes>
+# mysqldump --skip-opt -u <user> -p <db> > after.sql
+# diff --suppress-common-lines before.sql after.sql
+
+# Install the default language if not already installed
+if [ -n "$DEFAULT_LANGUAGE" ]; then
+    if [ -z `koha-translate --list | grep -Fx $DEFAULT_LANGUAGE` ] ; then
+        koha-translate --install $DEFAULT_LANGUAGE
+    fi
+
+    echo "USE koha_$KOHA_INSTANCE;
+          UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
+          UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | mysql -u root
+fi
 
 # SIP2 Server config
 salt-call --local state.sls koha.sip2 \

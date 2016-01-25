@@ -79,6 +79,8 @@ run: delete
 	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
 	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
 	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
+	-e DEFAULT_LANGUAGE="$(DEFAULT_LANGUAGE)" \
+    -e INSTALL_LANGUAGES="$(INSTALL_LANGUAGES)" \
 	--cap-add=SYS_NICE --cap-add=DAC_READ_SEARCH \
 	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
@@ -90,6 +92,8 @@ run_linked_db: mysql delete
 	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
 	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
 	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
+	-e DEFAULT_LANGUAGE="$(DEFAULT_LANGUAGE)" \
+    -e INSTALL_LANGUAGES="$(INSTALL_LANGUAGES)" \
 	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
 logs:
