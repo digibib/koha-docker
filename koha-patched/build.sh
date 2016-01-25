@@ -57,8 +57,10 @@ done
 # CHANGELOG AND BUILD DEPS
 ############
 
-mk-build-deps -t "apt-get update"
-mk-build-deps -t "apt-get install libxml2-utils"
+# TEMP FIX FOR MISSING LIBXML2-UTILS .DEB
+mk-build-deps -t "wget -qo libxml2-utils_2.9.1+dfsg1-5+deb8u1_amd64.deb \
+  http://debian.mirror.lrz.de/debian/pool/main/libx/libxml2/libxml2-utils_2.9.1+dfsg1-5+deb8u1_amd64.deb && \
+  dpkg -i libxml2-utils_2.9.1+dfsg1-5+deb8u1_amd64.deb"
 mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
 dch --force-distribution -D "wheezy" \
