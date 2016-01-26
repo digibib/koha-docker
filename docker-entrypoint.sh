@@ -74,9 +74,9 @@ if [ -n "$DEFAULT_LANGUAGE" ]; then
         koha-translate --install $DEFAULT_LANGUAGE
     fi
 
-    echo "USE koha_$KOHA_INSTANCE;
-          UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
-          UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | mysql -u root
+    echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
+        UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
+        koha-mysql $INSTANCE
 fi
 
 # SIP2 Server config
