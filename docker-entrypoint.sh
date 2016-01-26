@@ -76,7 +76,7 @@ if [ -n "$DEFAULT_LANGUAGE" ]; then
 
     echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
         UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
-        koha-mysql $INSTANCE
+        koha-mysql $KOHA_INSTANCE
 fi
 
 # SIP2 Server config
