@@ -29,8 +29,8 @@ mysql_pull_if_missing:
 	MYSQL_IMAGE=`vagrant ssh -c 'sudo docker images | grep "mysql " |  grep " 5.6 "'` ;\
 	if [ "$$MYSQL_IMAGE" = "" ]; then \
 		echo "no existing mysql image with correct tag ... pulling"; \
-		vagrant ssh -c 'sudo docker pull mysql:5.6'; \
-        fi \
+		vagrant ssh -c 'sudo docker pull mysql:5.6.20'; \
+    fi
 
 mysql_start:
 	@ CURRENT_MYSQL_IMAGE=`vagrant ssh -c 'sudo docker inspect --format {{.Image}} koha_docker_mysql'` ;\
@@ -48,9 +48,9 @@ mysql_start:
 	  -e MYSQL_USER=admin \
 	  -e MYSQL_PASSWORD=secret \
 	  -e MYSQL_DATABASE=koha_name \
-	  -t mysql:5.6 \
+	  -t mysql:5.6.20 \
 	  mysqld --datadir=/var/lib/mysql --user=mysql --max_allowed_packet=64M --wait_timeout=6000 --bind-address=0.0.0.0' ;\
-	fi \
+	fi
 
 mysql_stop:
 	@echo "======= RESTARTING MYSQL CONTAINER ======\n"
