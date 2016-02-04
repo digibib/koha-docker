@@ -23,6 +23,11 @@ set -e
 # DEFAULT_LANGUAGE
 # INSTALL_LANGUAGES
 ########################
+# EMAIL_ENABLED    false
+# SMTP_SERVER_HOST localhost
+# SMTP_SERVER_PORT 25
+# MESSAGE_QUEUE_FREQUENCY 15
+########################
 
 # Apache Koha instance config
 salt-call --local state.sls koha.apache2 pillar="{koha: {instance: $KOHA_INSTANCE}}"
@@ -77,6 +82,32 @@ if [ -n "$DEFAULT_LANGUAGE" ]; then
     echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
         UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
         koha-mysql $KOHA_INSTANCE
+fi
+
+# MESSAGING SETTINGS
+if [ -n "$MESSAGE_QUEUE_FREQUENCY" ]; then
+  sed "/process_message_queue/c\H/${MESSAGE_QUEUE_FREQUENCY} * * * * root koha-foreach --enabled --email \
+  /usr/share/koha/bin/cronjobs/process_message_queue.pl" /etc/cron.d/koha-common
+fi
+
+if [ -n "$EMAIL_ENABLED" ]; then
+  # Koha uses default sendmail localhost, so need to override perl Sendmail config
+  if [ -n "$SMTP_SERVER_HOST" ]; then
+    sub="%mailcfg = (
+      'smtp'    => [ '$SMTP_SERVER_HOST' ],
+      'from'    => '', # default sender e-mail, used when no From header in mail
+      'mime'    => 1, # use MIME encoding by default
+      'retries' => 1, # number of retries on smtp connect failure
+      'delay'   => 1, # delay in seconds between retries
+      'tz'      => '', # only to override automatic detection
+      'port'    => $SMTP_SERVER_PORT,
+      'debug'   => 0,
+    );"
+    sendmail=/usr/share/perl5/Mail/Sendmail.pm
+    awk -v sb="$sub" '/^%mailcfg/,/;/ { if ( $0 ~ /\);/ ) print sb; next } 1' $sendmail > tmp && \
+      mv tmp $sendmail
+  fi
+  koha-email-enable $KOHA_INSTANCE
 fi
 
 # SIP2 Server config
