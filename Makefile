@@ -56,6 +56,24 @@ mysql_stop:
 	@echo "======= RESTARTING MYSQL CONTAINER ======\n"
 	vagrant ssh -c '(sudo docker stop koha_docker_mysql && sudo docker rm koha_docker_mysql) || true'
 
+gosmtp:	gosmtp_pull_if_missing gosmtp_start
+
+gosmtp_pull_if_missing:
+	@echo "Checking if there is an existing gosmtp image" ;\
+	GOSMTP=`vagrant ssh -c 'sudo docker images | grep "digibib/gosmtpd"'` ;\
+	if [ "$$GOSMTP" = "" ]; then \
+		echo "no existing gosmtp image with correct tag ... pulling"; \
+		vagrant ssh -c 'sudo docker pull digibib/gosmtpd:77b8ca230bbfcac7a9f40d5eead79acb50639f14'; \
+	fi
+
+# for REAL forwarding, set env FORWARD_SMTP to receiving smtp service
+gosmtp_start:
+	@echo "restarting gosmtpd container  ..."; \
+	vagrant ssh -c 'sudo docker stop gosmtp && sudo docker rm gosmtp'; \
+	vagrant ssh -c 'sudo docker run -d --name gosmtp -p 8000:8000 \
+		-e FORWARD_SMTP=$(FORWARD_SMTP) \
+		-t digibib/gosmtpd ' ;\
+
 build:
 	@echo "======= BUILDING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant '
@@ -81,6 +99,27 @@ run: delete
 	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
 	-e DEFAULT_LANGUAGE="$(DEFAULT_LANGUAGE)" \
     -e INSTALL_LANGUAGES="$(INSTALL_LANGUAGES)" \
+	--cap-add=SYS_NICE --cap-add=DAC_READ_SEARCH \
+	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
+
+EMAIL_ENABLED ?= true
+SMTP_SERVER_HOST ?= mailrelay
+SMTP_SERVER_PORT ?= 2525
+MESSAGE_QUEUE_FREQUENCY ?= 1
+
+run_with_mail: gosmtp delete
+	@echo "======= RUNNING KOHA CONTAINER WITH LOCAL MYSQL ======\n"
+	@vagrant ssh -c 'sudo docker run --link gosmtp:mailrelay -d --name koha_docker \
+	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 \
+	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
+	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
+	-e KOHA_ADMINPASS=$(KOHA_ADMINPASS) \
+	-e DEFAULT_LANGUAGE="$(DEFAULT_LANGUAGE)" \
+    -e INSTALL_LANGUAGES="$(INSTALL_LANGUAGES)" \
+    -e EMAIL_ENABLED="$(EMAIL_ENABLED)" \
+    -e SMTP_SERVER_HOST="$(SMTP_SERVER_HOST)" \
+    -e SMTP_SERVER_PORT="$(SMTP_SERVER_PORT)" \
+    -e MESSAGE_QUEUE_FREQUENCY="$(MESSAGE_QUEUE_FREQUENCY)" \
 	--cap-add=SYS_NICE --cap-add=DAC_READ_SEARCH \
 	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
