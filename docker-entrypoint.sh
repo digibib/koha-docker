@@ -39,12 +39,10 @@ salt-call --local state.sls koha.sites-config \
 # If not linked to an existing mysql container, use local mysql server
 if [[ -z "$DB_PORT" ]] ; then
   /etc/init.d/mysql start
-  echo "127.0.0.1  db" >> /etc/hosts
+  echo "127.0.0.1  koha_mysql" >> /etc/hosts
   echo "CREATE USER '$KOHA_ADMINUSER'@'%' IDENTIFIED BY '$KOHA_ADMINPASS' ;
         CREATE DATABASE IF NOT EXISTS koha_$KOHA_INSTANCE ; \
-        CREATE DATABASE IF NOT EXISTS koha_restful_test ; \
         GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
-        GRANT ALL ON koha_restful_test.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
         FLUSH PRIVILEGES ;" | mysql -u root
 fi
 
@@ -66,12 +64,6 @@ done
 # Run webinstaller to autoupdate/validate install
 salt-call --local state.sls koha.webinstaller \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
-
-# To create diff between to Koha mysql databases:
-# mysqldump --skip-opt -u <user> -p <db> > before.sql
-# <Do your changes>
-# mysqldump --skip-opt -u <user> -p <db> > after.sql
-# diff --suppress-common-lines before.sql after.sql
 
 # Install the default language if not already installed
 if [ -n "$DEFAULT_LANGUAGE" ]; then

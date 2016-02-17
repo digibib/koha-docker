@@ -126,7 +126,7 @@ run_with_mail: gosmtp delete
 # start koha with link to mysql container
 run_linked_db: mysql delete
 	@echo "======= RUNNING KOHA CONTAINER WITH MYSQL FROM LINKED DB CONTAINER ======\n"
-	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:db -d --name koha_docker \
+	@vagrant ssh -c 'sudo docker run --link koha_docker_mysql:koha_mysql -d --name koha_docker \
 	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 \
 	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
 	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \

@@ -71,12 +71,10 @@ salt-call --local state.sls koha.sites-config \
 # If not linked to an existing mysql container, use local mysql server
 if [[ -z "$DB_PORT" ]] ; then
   /etc/init.d/mysql start
-  echo "127.0.0.1  db" >> /etc/hosts
+  echo "127.0.0.1  koha_mysql" >> /etc/hosts
   echo "CREATE USER '$KOHA_ADMINUSER'@'%' IDENTIFIED BY '$KOHA_ADMINPASS' ;
         CREATE DATABASE IF NOT EXISTS koha_$KOHA_INSTANCE ; \
-        CREATE DATABASE IF NOT EXISTS koha_restful_test ; \
         GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
-        GRANT ALL ON koha_restful_test.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
         FLUSH PRIVILEGES ;" | mysql -u root
 fi
 

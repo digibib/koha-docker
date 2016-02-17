@@ -1,11 +1,11 @@
 [client]
-host     = db
+host     = koha_mysql
 user     = {{ pillar['koha']['adminuser']}}
 password = {{ pillar['koha']['adminpass']}}
 socket   = /var/run/mysqld/mysqld.sock
 
 [mysql_upgrade]
-host     = db
+host     = koha_mysql
 user     = {{ pillar['koha']['adminuser']}}
 password = {{ pillar['koha']['adminpass']}}
 socket   = /var/run/mysqld/mysqld.sock
