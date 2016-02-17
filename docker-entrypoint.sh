@@ -78,7 +78,7 @@ fi
 
 # MESSAGING SETTINGS
 if [ -n "$MESSAGE_QUEUE_FREQUENCY" ]; then
-  sed -i "/process_message_queue/c\H/${MESSAGE_QUEUE_FREQUENCY} * * * * root koha-foreach --enabled --email \
+  sed -i "/process_message_queue/c\*/${MESSAGE_QUEUE_FREQUENCY} * * * * root koha-foreach --enabled --email \
   /usr/share/koha/bin/cronjobs/process_message_queue.pl" /etc/cron.d/koha-common
 fi
 
