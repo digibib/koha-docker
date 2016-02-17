@@ -31,7 +31,10 @@ echo "Configuring bugzilla..." && \
   git config --global bz.default-product Koha && \
   git config --global bz-tracker.bugs.koha-community.org.path /bugzilla3 && \
   git config --global bz-tracker.bugs.koha-community.org.bz-user $BUGZ_USER && \
-  git config --global bz-tracker.bugs.koha-community.org.bz-password $BUGZ_PASS
+  git config --global bz-tracker.bugs.koha-community.org.bz-password $BUGZ_PASS && \
+  git config --global bz-tracker.bugs.koha-community.org.https true && \
+  git config --global core.whitespace trailing-space,space-before-tab && \
+  git config --global apply.whitespace fix
 
 ##########
 # PATCHING
