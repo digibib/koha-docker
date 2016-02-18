@@ -60,14 +60,10 @@ done
 # CHANGELOG AND BUILD DEPS
 ############
 
-# TEMP FIX FOR MISSING LIBXML2-UTILS .DEB
-mk-build-deps -t "wget -qo libxml2-utils_2.9.1+dfsg1-5+deb8u1_amd64.deb \
-  http://debian.mirror.lrz.de/debian/pool/main/libx/libxml2/libxml2-utils_2.9.1+dfsg1-5+deb8u1_amd64.deb && \
-  dpkg -i libxml2-utils_2.9.1+dfsg1-5+deb8u1_amd64.deb"
 mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
 dch --force-distribution -D "wheezy" \
-    --newversion "${KOHA_VERSION}+$(date +%Y%m%d)~patched" \
+    --newversion "${KOHA_VERSION}+$(date +%Y%m%d%H%M)~patched" \
     "Patched version of koha ${KOHA_VERSION} - Bugpatches included: ${KOHABUGS}"
 dch --append "Local patches:"
 for patch in $(find /patches -name *.patch); do \
@@ -79,6 +75,6 @@ dch --release "Patched version of koha ${KOHA_VERSION}"
 
 # Build
 cd /koha && \
-    dpkg-buildpackage -b -us -uc
+    dpkg-buildpackage -d -b -us -uc
 
 cp *.deb ../*.deb ../*.changes /debian
