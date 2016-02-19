@@ -28,7 +28,7 @@ set -e
 # SMTP_SERVER_PORT 25
 # MESSAGE_QUEUE_FREQUENCY 15
 ########################
-# SMS_FORWARD_URL  http://localhost:8101
+# SMS_SERVER_HOST  localhost:8101
 ########################
 
 # Apache Koha instance config
@@ -104,10 +104,10 @@ if [ -n "$EMAIL_ENABLED" ]; then
   koha-email-enable $KOHA_INSTANCE
 fi
 
-if [ -n "$SMS_FORWARD_URL" ]; then
+if [ -n "$SMS_SERVER_HOST" ]; then
   # SMS modules need to be in shared perl libs
   mkdir -p /usr/share/perl5/SMS/Send/NO
-  sed -e "s/__REPLACE_WITH_SMS_URL__/${SMS_FORWARD_URL}/g" /usr/share/koha/lib/Koha/SMS_HTTP.pm > /usr/share/perl5/SMS/Send/NO/SMS_HTTP.pm
+  sed -e "s/__REPLACE_WITH_SMS_URL__/${SMS_SERVER_HOST}/g" /usr/share/koha/lib/Koha/SMS_HTTP.pm > /usr/share/perl5/SMS/Send/NO/SMS_HTTP.pm
 fi
 
 # SIP2 Server config
