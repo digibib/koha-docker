@@ -69,6 +69,23 @@ gosmtp_start:
 		-e FORWARD_SMTP=$(FORWARD_SMTP) \
 		-t digibib/gosmtpd:e51ec0b872867560461ab1e8c12b10fd63f5d3c1 ' ;\
 
+gosms: gosms_pull gosms_start gosms_fake_listener
+
+gosms_pull:
+	vagrant ssh -c 'docker pull digibib/tcp-proxy:7660632e2afa09593941fd35ba09d6c3a948f342'
+
+# Start a fake listener at local port 8102 inside container
+gosms_fake_listener:
+	vagrant ssh -c "docker exec -d gosms sh -c 'while true; do { echo -e \"HTTP/1.1 200 OK\r\n\"; } | nc -l -p 8102; done'"
+
+# for REAL forwarding, set env SMS_FORWARD_URL to receiving sms http service at HOST:PORT
+gosms_start:
+	@echo "restarting gosms container  ..."; \
+	vagrant ssh -c 'docker stop gosms && sudo docker rm gosms'; \
+	vagrant ssh -c 'docker run -d --name gosms -p 8101:8101 \
+		-t digibib/tcp-proxy:7660632e2afa09593941fd35ba09d6c3a948f342 \
+		/app/tcp-proxy -l :8101 -vv -r $(SMS_FORWARD_URL)' ;\
+
 build:
 	@echo "======= BUILDING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant '
@@ -101,10 +118,11 @@ EMAIL_ENABLED ?= true
 SMTP_SERVER_HOST ?= mailrelay
 SMTP_SERVER_PORT ?= 2525
 MESSAGE_QUEUE_FREQUENCY ?= 1
+SMS_FORWARD_URL ?= :8102
 
-run_with_mail: gosmtp delete
-	@echo "======= RUNNING KOHA CONTAINER WITH LOCAL MYSQL ======\n"
-	@vagrant ssh -c 'sudo docker run --link gosmtp:mailrelay -d --name koha_docker \
+run_with_messaging: gosmtp gosms delete
+	@echo "======= RUNNING KOHA CONTAINER WITH LOCAL MYSQL AND MESSAGING ======\n"
+	@vagrant ssh -c 'sudo docker run --link gosmtp:mailrelay --link gosms:smsproxy -d --name koha_docker \
 	-p 80:80 -p 6001:6001 -p 8080:8080 -p 8081:8081 \
 	-e KOHA_INSTANCE=$(KOHA_INSTANCE) \
 	-e KOHA_ADMINUSER=$(KOHA_ADMINUSER) \
@@ -115,6 +133,7 @@ run_with_mail: gosmtp delete
     -e SMTP_SERVER_HOST="$(SMTP_SERVER_HOST)" \
     -e SMTP_SERVER_PORT="$(SMTP_SERVER_PORT)" \
     -e MESSAGE_QUEUE_FREQUENCY="$(MESSAGE_QUEUE_FREQUENCY)" \
+    -e SMS_FORWARD_URL="$(SMS_FORWARD_URL)" \
 	--cap-add=SYS_NICE --cap-add=DAC_READ_SEARCH \
 	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
 
