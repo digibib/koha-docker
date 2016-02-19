@@ -56,15 +56,10 @@ mysql_stop:
 	@echo "======= RESTARTING MYSQL CONTAINER ======\n"
 	vagrant ssh -c '(sudo docker stop koha_docker_mysql && sudo docker rm koha_docker_mysql) || true'
 
-gosmtp:	gosmtp_pull_if_missing gosmtp_start
+gosmtp:	gosmtp_pull gosmtp_start
 
-gosmtp_pull_if_missing:
-	@echo "Checking if there is an existing gosmtp image" ;\
-	GOSMTP=`vagrant ssh -c 'sudo docker images | grep "digibib/gosmtpd"'` ;\
-	if [ "$$GOSMTP" = "" ]; then \
-		echo "no existing gosmtp image with correct tag ... pulling"; \
-		vagrant ssh -c 'sudo docker pull digibib/gosmtpd:77b8ca230bbfcac7a9f40d5eead79acb50639f14'; \
-	fi
+gosmtp_pull:
+	vagrant ssh -c 'sudo docker pull digibib/gosmtpd:e51ec0b872867560461ab1e8c12b10fd63f5d3c1'
 
 # for REAL forwarding, set env FORWARD_SMTP to receiving smtp service
 gosmtp_start:
@@ -72,7 +67,7 @@ gosmtp_start:
 	vagrant ssh -c 'sudo docker stop gosmtp && sudo docker rm gosmtp'; \
 	vagrant ssh -c 'sudo docker run -d --name gosmtp -p 8000:8000 \
 		-e FORWARD_SMTP=$(FORWARD_SMTP) \
-		-t digibib/gosmtpd ' ;\
+		-t digibib/gosmtpd:e51ec0b872867560461ab1e8c12b10fd63f5d3c1 ' ;\
 
 build:
 	@echo "======= BUILDING KOHA CONTAINER ======\n"
