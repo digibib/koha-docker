@@ -16,9 +16,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 
 ENV KOHA_ADMINUSER admin
 ENV KOHA_ADMINPASS secret
-ENV KOHA_INSTANCE name
+ENV KOHA_INSTANCE  name
 ENV KOHA_ZEBRAUSER zebrauser
 ENV KOHA_ZEBRAPASS lkjasdpoiqrr
+ENV KOHA_DBHOST    koha_mysql
 ENV SALT_VERSION 2015.5.2
 
 #######

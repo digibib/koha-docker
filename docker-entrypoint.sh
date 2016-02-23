@@ -9,6 +9,7 @@ set -e
 # KOHA_ADMINPASS secret
 # KOHA_ZEBRAUSER zebrauser
 # KOHA_ZEBRAPASS lkjasdpoiqrr
+# KOHA_DBHOST    koha_mysql
 #######################
 # SIP2 DEFAULT SETTINGS
 #######################
@@ -38,10 +39,13 @@ salt-call --local state.sls koha.apache2 pillar="{koha: {instance: $KOHA_INSTANC
 salt-call --local state.sls koha.sites-config \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
 
-# If not linked to an existing mysql container, use local mysql server
-if [[ -z "$DB_PORT" ]] ; then
+# Using linked mysql container if it exists
+if ping -c 1 -W 1 $KOHA_DBHOST ; then
+  echo "Using linked mysql container $KOHA_DBHOST"
+else
+  echo "Unable to connect to linked mysql container $KOHA_DBHOST -- initializing local mysql"
   /etc/init.d/mysql start
-  echo "127.0.0.1  koha_mysql" >> /etc/hosts
+  echo "127.0.0.1  $KOHA_DBHOST" >> /etc/hosts
   echo "CREATE USER '$KOHA_ADMINUSER'@'%' IDENTIFIED BY '$KOHA_ADMINPASS' ;
         CREATE DATABASE IF NOT EXISTS koha_$KOHA_INSTANCE ; \
         GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
