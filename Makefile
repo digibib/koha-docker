@@ -118,6 +118,7 @@ EMAIL_ENABLED ?= true
 SMTP_SERVER_HOST ?= mailrelay
 SMTP_SERVER_PORT ?= 2525
 MESSAGE_QUEUE_FREQUENCY ?= 1
+SMS_SERVER_HOST ?= http://localhost:8101
 SMS_FORWARD_URL ?= :8102
 
 run_with_messaging: gosmtp gosms delete
@@ -133,6 +134,7 @@ run_with_messaging: gosmtp gosms delete
     -e SMTP_SERVER_HOST="$(SMTP_SERVER_HOST)" \
     -e SMTP_SERVER_PORT="$(SMTP_SERVER_PORT)" \
     -e MESSAGE_QUEUE_FREQUENCY="$(MESSAGE_QUEUE_FREQUENCY)" \
+    -e SMS_SERVER_HOST="$(SMS_SERVER_HOST)" \
     -e SMS_FORWARD_URL="$(SMS_FORWARD_URL)" \
 	--cap-add=SYS_NICE --cap-add=DAC_READ_SEARCH \
 	-t digibib/koha' || echo "koha_docker container already running, please 'make delete' first"
