@@ -5,16 +5,16 @@ Run patch from kohasrc root
 
 diff --git a/Koha/SMS_HTTP.pm b/Koha/SMS_HTTP.pm
 new file mode 100644
-index 0000000..a0ae758
+index 0000000..6ee5240
 --- /dev/null
 +++ b/Koha/SMS_HTTP.pm
-@@ -0,0 +1,197 @@
+@@ -0,0 +1,202 @@
 +package SMS::Send::NO::HTTP;
 +
 +use warnings;
 +use strict;
 +use Carp;
-+use version; our $VERSION = qv('0.0.3');
++use version; our $VERSION = qv('0.0.4');
 +
 +use LWP::UserAgent;
 +use URI::Escape;
@@ -24,10 +24,11 @@ index 0000000..a0ae758
 +# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=13029
 +# TODO: Need to replace URL manually before above mentioned bug is in master
 +
-+our $URL     = "__REPLACE_WITH_SMS_URL__";
-+our $AGENT   = 'SMS-Send-HTTP/' . $VERSION;
-+our $METHOD  = 'POST';
-+our $TIMEOUT = 3;
++our $URL      = "__REPLACE_WITH_SMS_URL__";
++our $CLIENTID = "testserver";
++our $AGENT    = 'SMS-Send-HTTP/' . $VERSION;
++our $METHOD   = 'POST';
++our $TIMEOUT  = 3;
 +
 +#####################################################################
 +# Constructor
@@ -37,13 +38,15 @@ index 0000000..a0ae758
 +  my %args = @_;
 +
 +  # Create the object
-+  my $url   = $args{'_url'}     || $URL; #Carp::croak("Need _url param: The URL to the SMS API");
++  my $url   = $args{'_url'}     || $URL;
 +  my $agent = $args{'_agent'}   || $AGENT;
 +  my $timeout = $args{'_timeout'} || $TIMEOUT;
++  my $clientId = $args{'_clientId'} || $CLIENTID;
 +  my $self = bless {
 +    'url'      => $url,
 +    'agent'    => $agent,
-+    'timeout'  => $timeout
++    'timeout'  => $timeout,
++    'clientId' => $clientId
 +  }, $class;
 +
 +  return $self;
@@ -69,7 +72,8 @@ index 0000000..a0ae758
 +     POST $self->{url},
 +     Content_Type  => 'application/x-www-form-urlencoded',
 +     Content       => [ 'to' => $params{to},
-+                        'text' => $params{text} ]
++                        'text' => $params{text},
++                        'clientId' => $params{clientId} ]
 +  );
 +  my $res = $ua->request($req);
 +
@@ -102,7 +106,8 @@ index 0000000..a0ae758
 +    $sender->send_sms(
 +      '_from' => 'Test Testesen', # prepended to 'text' seperated by '/', I dunno; that what their site does :)
 +      'to'    => '012345678', # mobile number
-+      'text'  => 'some text'
++      'text'  => 'some text', # sms text
++      'clientId' => 'key'     # id of client
 +    ) or _handle_sms_error( $@ );
 +
 +=head1 DESCRIPTION
