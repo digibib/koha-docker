@@ -3,7 +3,7 @@
 # Baser on debian wheezy vanilla Koha
 #######
 
-FROM digibib/koha:latest
+FROM digibib/koha:8e0ff03040bb328305b572c68668c11dea2dc197
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
