@@ -60,6 +60,9 @@ git config --global bz.default-tracker bugs.koha-community.org && \
     git config --global bz-tracker.bugs.koha-community.org.path /bugzilla3 && \
     git config --global bz-tracker.bugs.koha-community.org.bz-user $BUGZ_USER && \
     git config --global bz-tracker.bugs.koha-community.org.bz-password $BUGZ_PASS
+    git config --global bz-tracker.bugs.koha-community.org.https true && \
+    git config --global core.whitespace trailing-space,space-before-tab && \
+    git config --global apply.whitespace fix
 
 # Apache Koha instance config
 salt-call --local state.sls koha.apache2 pillar="{koha: {instance: $KOHA_INSTANCE}}"
