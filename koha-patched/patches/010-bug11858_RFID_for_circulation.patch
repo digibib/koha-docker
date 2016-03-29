@@ -6,27 +6,26 @@ Run patch from kohasrc root
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref b/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref
 +++ b/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref
-@@ -694,6 +694,16 @@
+@@ -704,6 +704,15 @@ Circulation:
+                   yes: Show
                    no: "Don't show"
              - "the print receipt popup dialog when self checkout is finished"
- 
 +    RFID:
 +        -
 +            - pref: UseRFIDHub
 +              choices:
 +                  yes: Use
 +                  no: "Don't use"
-+            - the RFIDHub located at 
++            - the RFIDHub located at
 +            - pref: RFIDHubURL
 +            - "Please note: You need to set up an RFID hub for this to work!"
-+
      Course Reserves:
          -
              - pref: UseCourseReserves
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
 +++ b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
-@@ -76,6 +76,7 @@
+@@ -122,6 +122,7 @@ $(document).ready(function() {
  
  //]]>
  </script>
@@ -34,37 +33,31 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt b/koha-
  </head>
  <body id="circ_circulation" class="circ">
  
-@@ -753,7 +754,9 @@
+@@ -868,7 +869,7 @@ No patron matched <span class="ex">[% message %]</span>
  </div>
  </div>
  
 -<div class="yui-g"><div id="patronlists" class="toptabs">
-+<div class="yui-g">
-+[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %]<div id="rfidlist"></div>[% END %]
-+<div id="patronlists" class="toptabs">
++<div class="yui-g">[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %]<div id="rfidlist"></div>[% END %]<div id="patronlists" class="toptabs">
  
  <ul>
      <li>
-
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
 +++ b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
-@@ -87,6 +87,7 @@
+@@ -104,6 +104,7 @@ $(document).ready(function () {
  });
  //]]>
  </script>
 +[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %][% INCLUDE 'rfidhub.inc' %][% END %]
  </head>
  <body id="circ_returns" class="circ">
- 
-@@ -537,6 +538,10 @@
+ <span class="audio-alert-success"></span>
+@@ -587,6 +588,7 @@ $(document).ready(function () {
      </form>
  </div>
  
-+[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %]
-+    <div id="rfidlist"></div>
-+[% END %]
-+
++[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %]<div id="rfidlist"></div>[% END %]
  [% IF ( riloop ) %]
      <h2>Checked-in items</h2>
      <table id="checkedintable">
@@ -400,5 +393,7 @@ index 0000000..98aee33
 --- /dev/null
 +++ b/installer/data/mysql/atomicupdate/bug_11858-add_rfidhub_syspref.sql
 @@ -0,0 +1 @@
-+INSERT IGNORE INTO systempreferences (variable,value,options,explanation,type) VALUES('RFIDHubURL','','','URL for the RFID hub.,'F
++INSERT IGNORE INTO systempreferences (variable,value,options,explanation,type) VALUES
++('UseRFIDHub','1','','Enable RFID hub','YesNo'),
++('RFIDHubURL','','','URL for the RFID hub.,'Free');
 +
