@@ -70,4 +70,4 @@ VOLUME ["/patches", "/debian"]
 ADD ./applypatch.sh /root/applypatch.sh
 ADD ./build.sh /root/build.sh
 
-ENTRYPOINT ["/root/build.sh"]
+CMD ["/root/build.sh"]
