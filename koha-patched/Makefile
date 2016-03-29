@@ -32,9 +32,12 @@ endif
 ifdef TEST_QA
 ENVFLAGS += -e TEST_QA=$(TEST_QA)
 endif
+ifdef SKIP_BUILD
+ENVFLAGS += -e SKIP_BUILD=$(SKIP_BUILD)
+endif
 
 run: delete			## start koha_patched_docker - args: KOHABUGS, TEST_QA
-	@echo "======= RUNNING KOHA-PATCHED CONTAINER IN PRIVILEGED MODE ======\n"
+	@echo "======= RUNNING KOHA-PATCHED CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker run --name koha_patched_docker \
 	-v "/vagrant/koha-patched/debian:/debian" \
 	-v "/vagrant/koha-patched/patches:/patches" \

@@ -60,21 +60,23 @@ done
 # CHANGELOG AND BUILD DEPS
 ############
 
-mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
+if [ -z "$SKIP_BUILD" ]; then
+  mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
-dch --force-distribution -D "wheezy" \
-    --newversion "${KOHA_VERSION}+$(date +%Y%m%d%H%M)~patched" \
-    "Patched version of koha ${KOHA_VERSION} - Bugpatches included: ${KOHABUGS}"
-dch --append "Local patches:"
-for patch in $(find /patches -name *.patch); do \
-  if [ -f "$patch" ]; then \
-    dch --append "${patch##/*/}"    # strip path of patch
-  fi \
-done
-dch --release "Patched version of koha ${KOHA_VERSION}"
+  dch --force-distribution -D "wheezy" \
+      --newversion "${KOHA_VERSION}+$(date +%Y%m%d%H%M)~patched" \
+      "Patched version of koha ${KOHA_VERSION} - Bugpatches included: ${KOHABUGS}"
+  dch --append "Local patches:"
+  for patch in $(find /patches -name *.patch); do \
+    if [ -f "$patch" ]; then \
+      dch --append "${patch##/*/}"    # strip path of patch
+    fi \
+  done
+  dch --release "Patched version of koha ${KOHA_VERSION}"
 
-# Build
-cd /koha && \
-    dpkg-buildpackage -d -b -us -uc
+  # Build
+  cd /koha && \
+      dpkg-buildpackage -d -b -us -uc
 
-cp *.deb ../*.deb ../*.changes /debian
+  cp *.deb ../*.deb ../*.changes /debian
+fi
