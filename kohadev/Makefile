@@ -16,10 +16,9 @@ provision:
 upgrade:
 	vagrant ssh -c 'sudo docker pull digibib/kohadev'
 
-KOHA_IMAGE_TAG ?= latest
 build:
 	@echo "======= BUILDING KOHADEV CONTAINER ======\n"
-	vagrant ssh -c 'sudo docker build --build-arg KOHA_IMAGE_TAG=$(KOHA_IMAGE_TAG) -t digibib/kohadev /vagrant/kohadev'
+	vagrant ssh -c 'sudo docker build -t digibib/kohadev /vagrant/kohadev'
 
 stop: 
 	@echo "======= STOPPING KOHADEV CONTAINER ======\n"
