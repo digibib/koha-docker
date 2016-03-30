@@ -34,9 +34,13 @@ RUN apt-get install -y libdbix-connector-perl libtest-perl-critic-perl && apt-ge
 
 ENV KOHA_VERSION 3.22.04
 
-# Download Koha from tarball
+# Download Koha from tarball, try old_releases if not existing
 RUN mkdir -p /koha && cd /koha && \
-  curl -O http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz && \
+  ( curl --head http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz && \
+    curl -O http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz || \
+    curl --head http://download.koha-community.org/old_releases/koha-${KOHA_VERSION}.tar.gz && \
+    curl -O http://download.koha-community.org/old_releases/koha-${KOHA_VERSION}.tar.gz \
+  ) && \
   tar -C /koha --strip-components=1 -xzf koha-${KOHA_VERSION}.tar.gz && \
   rm -rf koha-${KOHA_VERSION}.tar.gz
 
