@@ -12,8 +12,8 @@
 
    ServerName {{ ServerName }}
    SetEnv KOHA_CONF "/etc/koha/sites/{{ ServerName }}/koha-conf.xml"
-   SetEnv MEMCACHED_SERVERS ""
-   SetEnv MEMCACHED_NAMESPACE ""
+   SetEnv MEMCACHED_SERVERS "memcached:11211"
+   SetEnv MEMCACHED_NAMESPACE "koha-{{ ServerName }}"
    AssignUserID {{ ServerName }}-koha {{ ServerName }}-koha
 
    ErrorLog    /var/log/koha/{{ ServerName }}/opac-error.log
@@ -33,8 +33,8 @@
    
    ServerName {{ ServerName }}
    SetEnv KOHA_CONF "/etc/koha/sites/{{ ServerName }}/koha-conf.xml"
-   SetEnv MEMCACHED_SERVERS ""
-   SetEnv MEMCACHED_NAMESPACE ""
+   SetEnv MEMCACHED_SERVERS "memcached:11211"
+   SetEnv MEMCACHED_NAMESPACE "koha-{{ ServerName }}"
    AssignUserID {{ ServerName }}-koha {{ ServerName }}-koha
 
    ErrorLog    /var/log/koha/{{ ServerName }}/intranet-error.log
