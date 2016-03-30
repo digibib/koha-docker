@@ -32,7 +32,7 @@ RUN apt-get update && \
 
 RUN apt-get install -y libdbix-connector-perl libtest-perl-critic-perl && apt-get clean
 
-ENV KOHA_VERSION 3.22.04
+ENV KOHA_VERSION 3.22.03
 
 # Download Koha from tarball, try old_releases if not existing
 RUN mkdir -p /koha && cd /koha && \
