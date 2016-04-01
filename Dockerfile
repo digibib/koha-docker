@@ -111,6 +111,9 @@ ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
 ADD ./salt/koha/files/Authen_CAS_Client_Response_Failure.pm /srv/salt/koha/files/Authen_CAS_Client_Response_Failure.pm
 ADD ./salt/koha/files/Authen_CAS_Client_Response_Success.pm /srv/salt/koha/files/Authen_CAS_Client_Response_Success.pm
 
+# Activate Plack and REST API
+ADD ./salt/koha/files/api /srv/salt/koha/files/api
+
 ENV HOME /root
 WORKDIR /root
 
@@ -118,8 +121,6 @@ COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
 EXPOSE 6001 8080 8081
-
-# Might be koha-common (Zebra) should be stand-alone container
 
 # Script for checking if koha is up & ready (to be executed using docker exec)
 COPY docker-wait_until_ready.py /root/wait_until_ready.py

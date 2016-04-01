@@ -57,6 +57,20 @@ config_apacheinstance:
 # END PLACK IN DOCKER CAS WORKAROUND
 #########
 
+#########
+# NEW RESTFUL API
+#########
+
+/usr/share/koha/api:
+  file.recurse:
+    - source: salt://koha/files/api
+    - include_empty: True
+    - file_mode: '0775'
+
+#########
+# END NEW RESTFUL API
+#########
+
 apache2:
   service.running:
     - watch:

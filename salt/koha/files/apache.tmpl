@@ -12,9 +12,24 @@
 
    ServerName {{ ServerName }}
    SetEnv KOHA_CONF "/etc/koha/sites/{{ ServerName }}/koha-conf.xml"
-   SetEnv MEMCACHED_SERVERS "memcached:11211"
-   SetEnv MEMCACHED_NAMESPACE "koha-{{ ServerName }}"
+   SetEnv PERL5LIB "/usr/share/koha/lib"
+   SetEnv MEMCACHED_SERVERS ""
+   SetEnv MEMCACHED_NAMESPACE ""
    AssignUserID {{ ServerName }}-koha {{ ServerName }}-koha
+
+   # REST API configuration
+   Alias "/api" "/usr/share/koha/api/v1/app.pl/api"
+   <Directory /usr/share/koha/api>
+     Options +ExecCGI +FollowSymlinks
+     AddHandler cgi-script .pl
+     #SetEnv MOJO_MODE "production"
+     RewriteEngine On
+     RewriteBase /api/
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteCond %{DOCUMENT_ROOT}/../api/$1/app.pl -f
+     RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
+   </Directory>
 
    ErrorLog    /var/log/koha/{{ ServerName }}/opac-error.log
 #  TransferLog /var/log/koha/{{ ServerName }}/opac-access.log
@@ -33,9 +48,25 @@
    
    ServerName {{ ServerName }}
    SetEnv KOHA_CONF "/etc/koha/sites/{{ ServerName }}/koha-conf.xml"
-   SetEnv MEMCACHED_SERVERS "memcached:11211"
-   SetEnv MEMCACHED_NAMESPACE "koha-{{ ServerName }}"
+   SetEnv PERL5LIB "/usr/share/koha/lib"
+   SetEnv MEMCACHED_SERVERS ""
+   SetEnv MEMCACHED_NAMESPACE ""
+
    AssignUserID {{ ServerName }}-koha {{ ServerName }}-koha
+
+   # REST API configuration
+   Alias "/api" "/usr/share/koha/api/v1/app.pl/api"
+   <Directory /usr/share/koha/api>
+     Options +ExecCGI +FollowSymlinks
+     AddHandler cgi-script .pl
+     #SetEnv MOJO_MODE "production"
+     RewriteEngine On
+     RewriteBase /api/
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteCond %{DOCUMENT_ROOT}/../api/$1/app.pl -f
+     RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
+   </Directory>
 
    ErrorLog    /var/log/koha/{{ ServerName }}/intranet-error.log
 #  TransferLog /var/log/koha/{{ ServerName }}/intranet-access.log
