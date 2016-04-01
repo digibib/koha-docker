@@ -36,6 +36,7 @@ run: delete			## start kohadev container - args: AUTHOR_NAME, AUTHOR_EMAIL, BUGZ
 	-e AUTHOR_EMAIL=$(AUTHOR_EMAIL) \
 	-e BUGZ_USER=$(BUGZ_USER) \
 	-e BUGZ_PASS=$(BUGZ_PASS) \
+	--cap-add=SYS_NICE --cap-add=DAC_READ_SEARCH \
 	-t digibib/kohadev' || echo "kohadev_docker container already running, please 'make delete' first"
 
 update_git:			## Updates git master to HEAD

@@ -54,6 +54,7 @@ RUN cd /kohadev && \
 # Apache dev settings
 ADD apache-kohadev.conf /srv/salt/koha/files/apache.tmpl
 ADD koha-conf.xml.tmpl /srv/salt/koha/files/koha-conf.xml.tmpl
+ADD log4perl.conf /srv/salt/koha/files/log4perl.conf
 
 # Use SIP2 Development version from git
 ADD sip2-dev.sls /srv/salt/koha/sip2-dev.sls

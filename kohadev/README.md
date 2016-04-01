@@ -44,6 +44,7 @@ sudo docker run -d --name kohadev_docker \
   -e AUTHOR_EMAIL=rabbit@mail.com \
   -e BUGZ_USER=rabbit@mail.com \
   -e BUGZ_PASS=rabbitz \
+  --cap-add=SYS_NICE --cap-add=DAC_READ_SEARCH \
   -t digibib/kohadev
 ```
 
@@ -54,9 +55,9 @@ It will create a branch `sandbox` from the koha repo, in which it will apply sel
 
 Example:
 
-```PATHCES="bugid1 bugid2 ..." make patch```
+```PATCHES="bugid1 bugid2 ..." make patch```
 will patch repo with one or more bugzilla patches
 
 To cleanup and reset git from HEAD:
-```make reset_git```
+```make reset_git_hard```
 (actually deletes repo and makes new clone, which is faster than git pull...)
