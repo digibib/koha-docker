@@ -1139,7 +1139,7 @@ def do_apply(*args):
     for patch in bug.patches:
         patches_by_id[patch.attach_id] = patch
 
-    print "\tBug:\t%d - %s" % (bug.id, bug.short_desc)
+    print "\tBug:\t%d - %s" % (bug.id, bug.short_desc.encode('ascii', 'ignore'))
 
     for patch in bug.patches:
         if patch.status == 'committed' or patch.status == 'rejected':
