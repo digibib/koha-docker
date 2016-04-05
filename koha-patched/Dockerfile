@@ -46,6 +46,15 @@ RUN mkdir -p /koha && cd /koha && \
   tar -C /koha --strip-components=1 -xzf koha.tar.gz && \
   rm -rf koha.tar
 
+##########
+# WORKAROUNDS - REMOVE WHEN OBSOLETE
+##########
+
+# Add mojolicious and swagger2 deps that are not yet in kohadeps
+RUN apt-get install -y make cpanminus && \
+    cpanm Mojolicious@6.0 Swagger2@0.59 && \
+    apt-get clean
+
 # One of the tests in Logger.t fails in our setup,
 # probably due to user permissions in the docker build-container.
 RUN rm /koha/t/Logger.t

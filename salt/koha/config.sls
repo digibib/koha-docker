@@ -63,7 +63,7 @@ config_apacheinstance:
 
 /usr/share/koha/api:
   file.symlink:
-    - target: /usr/share/koha/cgi-bin/api
+    - target: /usr/share/koha/intranet/cgi-bin/api
 
 # /usr/share/koha/api:
 #   file.recurse:
