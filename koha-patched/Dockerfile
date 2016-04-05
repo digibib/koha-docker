@@ -36,13 +36,15 @@ ENV KOHA_VERSION 3.22.03
 
 # Download Koha from tarball, try old_releases if not existing
 RUN mkdir -p /koha && cd /koha && \
-  ( curl --head http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz && \
-    curl -O http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz || \
-    curl --head http://download.koha-community.org/old_releases/koha-${KOHA_VERSION}.tar.gz && \
-    curl -O http://download.koha-community.org/old_releases/koha-${KOHA_VERSION}.tar.gz \
-  ) && \
-  tar -C /koha --strip-components=1 -xzf koha-${KOHA_VERSION}.tar.gz && \
-  rm -rf koha-${KOHA_VERSION}.tar.gz
+  RES=`curl -iso /dev/null -w "%{http_code}" http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz` && \
+  if [ $RES -eq 200 ]; then \
+    curl -s -o koha.tar.gz http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz ;\
+  else \
+    echo "Trying old_releases archive..." && \
+    curl -s -o koha.tar.gz http://download.koha-community.org/old_releases/koha-${KOHA_VERSION}.tar.gz ;\
+  fi && \
+  tar -C /koha --strip-components=1 -xzf koha.tar.gz && \
+  rm -rf koha.tar
 
 # One of the tests in Logger.t fails in our setup,
 # probably due to user permissions in the docker build-container.
