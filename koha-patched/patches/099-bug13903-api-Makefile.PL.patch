@@ -1,0 +1,12 @@
+diff --git a/Makefile.PL b/Makefile.PL
+--- a/Makefile.PL       2016-04-05 08:35:09.840600489 +0200
++++ b/Makefile.PL       2016-04-05 08:36:17.009155318 +0200
+@@ -342,6 +342,7 @@
+   # ignore files and directories created by the install itself
+   './pm_to_blib'                => 'NONE',
+   './blib'                      => 'NONE',
++  './api'                       => 'INTRANET_CGI_DIR',
+ };
+ 
+ =head1 CONFIGURATION OPTIONS
+
