@@ -38,7 +38,7 @@ new file mode 100644
 index 0000000..beb0abb
 --- /dev/null
 +++ b/Koha/REST/V1/Reserve.pm
-@@ -0,0 +1,160 @@
+@@ -0,0 +1,161 @@
 +package Koha::REST::V1::Reserve;
 +
 +# This file is part of Koha.
@@ -107,14 +107,16 @@ index 0000000..beb0abb
 +        }, 400);
 +    }
 +
-+    my $item_biblionumber = C4::Biblio::GetBiblionumberFromItemnumber($itemnumber);
-+    if ($biblionumber and $biblionumber != $item_biblionumber) {
-+        return $c->$cb({
-+            error => "Item $itemnumber doesn't belong to biblio $biblionumber"
-+        }, 400);
++    if ($itemnumber) {
++        my $item_biblionumber = C4::Biblio::GetBiblionumberFromItemnumber($itemnumber);
++        if ($biblionumber and $biblionumber != $item_biblionumber) {
++            return $c->$cb({
++                error => "Item $itemnumber doesn't belong to biblio $biblionumber"
++            }, 400);
++        }
++        $biblionumber ||= $item_biblionumber;
 +    }
 +
-+    $biblionumber ||= $item_biblionumber;
 +    my $biblio = C4::Biblio::GetBiblio($biblionumber);
 +
 +    my $can_reserve =
