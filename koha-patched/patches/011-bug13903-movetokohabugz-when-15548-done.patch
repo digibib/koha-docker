@@ -38,7 +38,7 @@ new file mode 100644
 index 0000000..beb0abb
 --- /dev/null
 +++ b/Koha/REST/V1/Reserve.pm
-@@ -0,0 +1,161 @@
+@@ -0,0 +1,162 @@
 +package Koha::REST::V1::Reserve;
 +
 +# This file is part of Koha.
