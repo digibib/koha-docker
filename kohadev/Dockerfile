@@ -3,7 +3,7 @@
 # Baser on debian wheezy vanilla Koha
 #######
 
-FROM digibib/koha:8e0ff03040bb328305b572c68668c11dea2dc197
+FROM digibib/koha:816d7b39c72977a655d55d8adadb37fd486bdaaa
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
@@ -55,6 +55,8 @@ RUN cd /kohadev && \
 ADD apache-kohadev.conf /srv/salt/koha/files/apache.tmpl
 ADD koha-conf.xml.tmpl /srv/salt/koha/files/koha-conf.xml.tmpl
 ADD log4perl.conf /srv/salt/koha/files/log4perl.conf
+ADD plack.psgi /srv/salt/koha/files/plack.psgi
+ADD apache-shared-intranet-plack.conf.tmpl /srv/salt/koha/files/apache-shared-intranet-plack.conf.tmpl
 
 # Use SIP2 Development version from git
 ADD sip2-dev.sls /srv/salt/koha/sip2-dev.sls
