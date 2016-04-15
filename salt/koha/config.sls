@@ -65,24 +65,21 @@ config_apacheinstance:
   file.symlink:
     - target: /usr/share/koha/intranet/cgi-bin/api
 
+# Enable REST API under plack
+/etc/koha/plack.psgi:
+  file.managed:
+    - source: salt://koha/files/plack.psgi
+
+/etc/koha/apache-shared-intranet-plack.conf:
+  file.managed:
+    - source: salt://koha/files/apache-shared-intranet-plack.conf.tmpl
+
+# Overwrite api definitions from Koha
 # /usr/share/koha/api:
 #   file.recurse:
 #     - source: salt://koha/files/api
 #     - include_empty: True
 #     - file_mode: '0775'
-
-# Enable REST API under plack - NOT WORKING YET
-# /etc/koha/plack.psgi:
-#   file.managed:
-#     - source: salt://koha/files/plack.psgi
-
-# /etc/koha/apache-shared-opac-plack.conf:
-#   file.managed:
-#     - source: salt://koha/files/apache-shared-opac-plack.conf.tmpl
-
-# /etc/koha/apache-shared-intranet-plack.conf:
-#   file.managed:
-#     - source: salt://koha/files/apache-shared-intranet-plack.conf.tmpl
 
 #########
 # END NEW RESTFUL API

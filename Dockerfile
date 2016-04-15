@@ -119,11 +119,11 @@ RUN apt-get install -y make cpanminus && \
     apt-get purge -y cpanminus make && apt-get clean
 # Remove them when in stable deb repos
 
-# DISABLED: PLACK not working yet
+ADD ./salt/koha/files/plack.psgi /srv/salt/koha/files/plack.psgi
+ADD ./salt/koha/files/apache-shared-intranet-plack.conf.tmpl /srv/salt/koha/files/apache-shared-intranet-plack.conf.tmpl
+
+# For now we use api definitions from Koha
 #ADD ./salt/koha/files/api /srv/salt/koha/files/api
-#ADD ./salt/koha/files/plack.psgi /srv/salt/koha/files/plack.psgi
-#ADD ./salt/koha/files/apache-shared-opac-plack.conf.tmpl /srv/salt/koha/files/apache-shared-opac-plack.conf.tmpl
-#ADD ./salt/koha/files/apache-shared-intranet-plack.conf.tmpl /srv/salt/koha/files/apache-shared-intranet-plack.conf.tmpl
 
 ENV HOME /root
 WORKDIR /root
