@@ -32,7 +32,7 @@ RUN apt-get update && \
 
 RUN apt-get install -y libdbix-connector-perl libtest-perl-critic-perl && apt-get clean
 
-ENV KOHA_VERSION 3.22.03
+ENV KOHA_VERSION 3.22.06
 
 # Download Koha from tarball, try old_releases if not existing
 RUN mkdir -p /koha && cd /koha && \
@@ -51,9 +51,9 @@ RUN mkdir -p /koha && cd /koha && \
 ##########
 
 # Add mojolicious and swagger2 deps that are not yet in kohadeps
-RUN apt-get install -y make cpanminus && \
-    cpanm Mojolicious@6.0 Swagger2@0.59 && \
-    apt-get clean
+#RUN apt-get install -y make cpanminus && \
+#    cpanm Mojolicious@6.0 Swagger2@0.59 && \
+#    apt-get clean
 
 # One of the tests in Logger.t fails in our setup,
 # probably due to user permissions in the docker build-container.
@@ -75,7 +75,12 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-ENV KOHABUGS     "13666 15126 13903 16271"
+# OK Bug 15126 - REST API: Use newer version of Swagger2
+# Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
+# Bug 13903 - Add API routes to list, create, update, delete holds
+# Bug 16330 - REST API: add routes to add, update and delete patrons
+# Bug 16271 - Allow more filters on /api/v1/holds
+ENV KOHABUGS     "15126"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian

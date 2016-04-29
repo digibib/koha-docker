@@ -41,7 +41,7 @@ RUN mkdir -p /kohadev && cd /kohadev && \
 
 # kohadev dependencies
 RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl \
-    libdbix-connector-perl make libtest-warnings-perl && \
+    libdbix-connector-perl make libtest-warnings-perl libplack-middleware-debug-perl && \
     apt-get clean
 
 # Git bz

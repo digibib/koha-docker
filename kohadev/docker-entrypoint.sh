@@ -100,7 +100,14 @@ salt-call --local state.sls koha.webinstaller \
   pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
 
 /etc/init.d/koha-common restart
-/etc/init.d/apache2 restart
+
+# Enable plack
+sed -i 's_# ProxyPass /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
+sed -i 's_# ProxyPassReverse /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
+koha-plack --enable "$KOHA_INSTANCE"
+koha-plack --start "$KOHA_INSTANCE"
+service apache2 restart
+
 /etc/init.d/cron restart
 
 /usr/bin/tail -f /var/log/apache2/access.log \
@@ -108,4 +115,5 @@ salt-call --local state.sls koha.webinstaller \
   /var/log/koha/${KOHA_INSTANCE}/opac*.log \
   /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
   /var/log/apache2/other_vhosts_access.log \
-  /var/log/koha/${KOHA_INSTANCE}/sip*.log
+  /var/log/koha/${KOHA_INSTANCE}/sip*.log \
+  /var/log/koha/${KOHA_INSTANCE}/plack*.log
