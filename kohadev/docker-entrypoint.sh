@@ -102,8 +102,8 @@ salt-call --local state.sls koha.webinstaller \
 /etc/init.d/koha-common restart
 
 # Enable plack
-sed -i 's_# ProxyPass /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
-sed -i 's_# ProxyPassReverse /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
+sed -i 's_#[\s]*ProxyPass /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
+sed -i 's_#[\s]*ProxyPassReverse /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
 koha-plack --enable "$KOHA_INSTANCE"
 koha-plack --start "$KOHA_INSTANCE"
 service apache2 restart

@@ -24,8 +24,8 @@
        # RequestHeader set X-FORWARDED-PROTO "https"
 
         # Point the intranet site to Plack
-        ProxyPass /cgi-bin/koha "unix:/var/run/koha/${instance}/plack.sock|http://localhost/intranet"
-        ProxyPassReverse /cgi-bin/koha "unix:/var/run/koha/${instance}/plack.sock|http://localhost/intranet"
+        # ProxyPass /cgi-bin/koha "unix:/var/run/koha/${instance}/plack.sock|http://localhost/intranet"
+        # ProxyPassReverse /cgi-bin/koha "unix:/var/run/koha/${instance}/plack.sock|http://localhost/intranet"
 
         # Point the /api endpoint to Plack
         ProxyPass /api "unix:/var/run/koha/${instance}/plack.sock|http://localhost/api/api/api"
