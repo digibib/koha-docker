@@ -78,11 +78,11 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-# OK Bug 15126 - REST API: Use newer version of Swagger2
-# Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
-# Bug 13903 - Add API routes to list, create, update, delete holds
-# Bug 16330 - REST API: add routes to add, update and delete patrons
-# Bug 16271 - Allow more filters on /api/v1/holds
+# OK    Bug 15126 - REST API: Use newer version of Swagger2
+# FAILS Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
+# LOCAL Bug 13903 - Add API routes to list, create, update, delete holds
+# LOCAL Bug 16330 - REST API: add routes to add, update and delete patrons
+# FAILS Bug 16271 - Allow more filters on /api/v1/holds
 ENV KOHABUGS     "15126"
 ENV TEST_QA      0
 
