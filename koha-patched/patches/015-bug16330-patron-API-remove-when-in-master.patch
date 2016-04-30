@@ -38,8 +38,8 @@ index 2851308..0411719 100644
  use C4::Auth qw( haspermission );
 +use Koha::AuthUtils qw(hash_password);
  use Koha::Borrowers;
-+use Koha::Borrower::Categories;
-+use Koha::Libraries;
++use Koha::Patron::Categories;
++use Koha::Branches;
  
  sub list {
      my ($c, $args, $cb) = @_;
@@ -88,11 +88,11 @@ index 2851308..0411719 100644
 +        }
 +    }
 +
-+    my $branch = Koha::Libraries->find({branchcode => $body->{branchcode} });
++    my $branch = Koha::Branches->find({branchcode => $body->{branchcode} });
 +    unless ($branch) {
 +        return $c->$cb({error => "Library with branchcode \"" . $body->{branchcode} . "\" does not exist"}, 404);
 +    }
-+    my $category = Koha::Borrower::Categories->find({ categorycode => $body->{categorycode} });
++    my $category = Koha::Patron::Categories->find({ categorycode => $body->{categorycode} });
 +    unless ($category) {
 +        return $c->$cb({error => "Patron category \"" . $body->{categorycode} . "\" does not exist"}, 404);
 +    }
@@ -142,14 +142,14 @@ index 2851308..0411719 100644
 +    }
 +
 +    if ($body->{branchcode}) {
-+        my $branch = Koha::Libraries->find({branchcode => $body->{branchcode} });
++        my $branch = Koha::Branches->find({branchcode => $body->{branchcode} });
 +        unless ($branch) {
 +            return $c->$cb({error => "Library with branchcode \"" . $body->{branchcode} . "\" does not exist"}, 404);
 +        }
 +    }
 +
 +    if ($body->{categorycode}) {
-+        my $category = Koha::Borrower::Categories->find({ categorycode => $body->{categorycode} });
++        my $category = Koha::Patron::Categories->find({ categorycode => $body->{categorycode} });
 +        unless ($category) {
 +            return $c->$cb({error => "Patron category \"" . $body->{categorycode} . "\" does not exist"}, 404);
 +        }
