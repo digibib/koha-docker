@@ -25,9 +25,9 @@ usage() {
 }
 
 applyBugId() {
-  local FILE=$1
+  local BUGID=$1
   local DIR=$2
-  MSG=`cd $2 && echo yes | git bz apply $1`
+  MSG=`cd $DIR && echo yes | git bz apply $BUGID`
   RETVAL=$?
   if [ ! $RETVAL -eq 0 ]; then exit 1; fi
 

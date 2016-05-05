@@ -1168,7 +1168,7 @@ def do_apply(*args):
             print "ERROR: Patching failed - EXIT!"
             sys.exit(ret)
         else:
-            return
+            continue
 
 def strip_bug_url(bug, commit_body):
     # Strip off the trailing bug URLs we add with -u; we do this before
