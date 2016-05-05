@@ -61,9 +61,22 @@ config_apacheinstance:
 # NEW RESTFUL API
 #########
 
-/usr/share/koha/api:
+# Fix REST API folder
+/usr/share/koha/api/v1:
   file.symlink:
-    - target: /usr/share/koha/intranet/cgi-bin/api
+    - target: /usr/share/koha/api/api/v1
+
+# Overwrite api definitions from Koha, until patching swagger.json works properly
+/usr/share/koha/api/v1/swagger.json:
+  file.managed:
+    - source: salt://koha/files/api/v1/swagger.json
+    - file_mode: '0664'
+
+# Overwrite REST folder, until Koha 3.22 and master is more in sync
+#/usr/share/koha/lib/Koha/REST:
+#  file.directory:
+#    - source: salt://koha/files/api/v1/REST
+#    - file_mode: '0775'
 
 # Enable REST API under plack
 /etc/koha/plack.psgi:
@@ -74,12 +87,6 @@ config_apacheinstance:
   file.managed:
     - source: salt://koha/files/apache-shared-intranet-plack.conf.tmpl
 
-# Overwrite api definitions from Koha
-# /usr/share/koha/api:
-#   file.recurse:
-#     - source: salt://koha/files/api
-#     - include_empty: True
-#     - file_mode: '0775'
 
 #########
 # END NEW RESTFUL API
