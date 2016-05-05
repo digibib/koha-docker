@@ -90,6 +90,10 @@ build:
 	@echo "======= BUILDING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker build -t digibib/koha /vagrant '
 
+build_debianfiles:
+	@echo "======= BUILDING KOHA CONTAINER FROM LOCAL DEBIANFILES ======\n"
+	vagrant ssh -c 'sudo docker build -f /vagrant/Dockerfile.debianfiles -t digibib/koha /vagrant '
+
 stop: 
 	@echo "======= STOPPING KOHA CONTAINER ======\n"
 	vagrant ssh -c 'sudo docker stop koha_docker' || true
