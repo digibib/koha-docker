@@ -123,7 +123,7 @@ ADD ./salt/koha/files/plack.psgi /srv/salt/koha/files/plack.psgi
 ADD ./salt/koha/files/apache-shared-intranet-plack.conf.tmpl /srv/salt/koha/files/apache-shared-intranet-plack.conf.tmpl
 
 # For now we use api definitions from Koha
-#ADD ./salt/koha/files/api /srv/salt/koha/files/api
+ADD ./salt/koha/files/api /srv/salt/koha/files/api
 
 ENV HOME /root
 WORKDIR /root
