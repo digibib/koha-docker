@@ -3,7 +3,7 @@
 # Baser on debian wheezy vanilla Koha
 #######
 
-FROM digibib/koha:816d7b39c72977a655d55d8adadb37fd486bdaaa
+FROM digibib/koha:6179df27131a0dcc64b0caca6e646c9c7ea1d6fa
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
@@ -50,6 +50,9 @@ RUN cd /kohadev && \
     git clone $GITBZ_REPO gitbz && \
     cd gitbz && git checkout -b fishsoup origin/fishsoup && \
     sudo ln -s /kohadev/gitbz/git-bz /usr/local/bin/git-bz
+
+# Global dev settings
+ADD koha-common.tmpl /etc/default/koha-common
 
 # Apache dev settings
 ADD apache-kohadev.conf /srv/salt/koha/files/apache.tmpl

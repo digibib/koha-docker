@@ -45,7 +45,8 @@ update_git:			## Updates git master to HEAD
 
 update_kohadb:		## Runs Koha updatedatabase.pl
 	@echo "======= UPDATING KOHA DATABASE ======\n"
-	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'koha-shell name -c /kohadev/kohaclone/installer/data/mysql/updatedatabase.pl'"
+	#vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'koha-shell name -c /kohadev/kohaclone/installer/data/mysql/updatedatabase.pl'"
+	vagrant ssh -c "sudo docker exec kohadev_docker bash -c 'KOHA_CONF=/etc/koha/sites/name/koha-conf.xml PERL5LIB=/kohadev/kohaclone/ /kohadev/kohaclone/installer/data/mysql/updatedatabase.pl'"
 
 dump_kohadb:		## Dumps Koha database
 	@echo "======= DUMPING KOHA DATABASE ======\n"
