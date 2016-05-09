@@ -83,9 +83,10 @@ ENV DEBFULLNAME  Oslo Public Library
 # OK    Bug 15126 - REST API: Use newer version of Swagger2
 # OK    Bug 13903 - Add API routes to list, create, update, delete holds
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
+# OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
+# OK    Bug 16271 - Allow more filters on /api/v1/holds
 # FAILS Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
-# FAILS Bug 16271 - Allow more filters on /api/v1/holds
-ENV KOHABUGS     "15126 13903 16330"
+ENV KOHABUGS     "15126 13903 16330 13895 16271"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
