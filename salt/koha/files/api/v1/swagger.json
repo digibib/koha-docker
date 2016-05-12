@@ -563,6 +563,49 @@
           }
         }
       }
+    },
+    "/libraries": {
+      "get": {
+        "operationId": "listLibrary",
+        "tags": ["libraries"],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of libraries",
+            "schema": {
+              "$ref": "#/definitions/libraries"
+            }
+          }
+        }
+      }
+    },
+    "/libraries/{branchcode}": {
+      "get": {
+        "operationId": "getLibrary",
+        "tags": ["libraries"],
+        "parameters": [
+          { "$ref": "#/parameters/branchcodePathParam" }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "A library",
+            "schema": {
+              "$ref": "#/definitions/library"
+            }
+          },
+          "404": {
+            "description": "Library not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -582,6 +625,13 @@
       "description": "Internal hold identifier",
       "required": true,
       "type": "integer"
+    },
+    "branchcodePathParam": {
+      "name": "branchcode",
+      "in": "path",
+      "description": "Internal library identifier",
+      "required": true,
+      "type": "string"
     }
   }
 }
