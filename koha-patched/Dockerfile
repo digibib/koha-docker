@@ -85,8 +85,9 @@ ENV DEBFULLNAME  Oslo Public Library
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
 # OK    Bug 16271 - Allow more filters on /api/v1/holds
+# OK    Bug 16497 - REST API: add routes to list libraries
 # FAILS Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
-ENV KOHABUGS     "15126 13903 16330 13895 16271"
+ENV KOHABUGS     "15126 13903 16330 13895 16271 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
