@@ -38,6 +38,55 @@
             }
           }
         }
+      },
+      "post": {
+        "operationId": "addPatron",
+        "tags": ["patrons"],
+        "parameters": [{
+          "name": "body",
+          "in": "body",
+          "description": "A JSON object containing information about the new patron",
+          "required": true,
+          "schema": {
+            "$ref": "#/definitions/patron"
+          }
+        }],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "201": {
+            "description": "A successfully created patron",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/patron"
+              }
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Conflict in creating resource",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
       }
     },
     "/patrons/{borrowernumber}": {
@@ -72,6 +121,94 @@
             }
           }
         }
+      },
+      "put": {
+        "operationId": "editPatron",
+        "tags": ["patrons"],
+        "parameters": [
+          { "$ref": "#/parameters/borrowernumberPathParam" },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "A JSON object containing new information about existing patron",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/patron"
+            }
+          }
+        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "A successfully updated patron",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/patron"
+              }
+            }
+          },
+          "204": {
+            "description": "No Content",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Conflict in updating resource",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePatron",
+        "tags": ["patrons"],
+        "parameters": [
+          { "$ref": "#/parameters/borrowernumberPathParam" }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Patron deleted successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Patron deletion failed",
+            "schema": { "$ref": "#/definitions/error" }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Patron not found",
+            "schema": { "$ref": "#/definitions/error" }
+          }
+        }
       }
     },
     "/holds": {
@@ -80,11 +217,112 @@
         "tags": ["borrowers", "holds"],
         "parameters": [
           {
+            "name": "reserve_id",
+            "in": "query",
+            "description": "Internal reserve identifier",
+            "type": "integer"
+          },
+          {
             "name": "borrowernumber",
             "in": "query",
             "description": "Internal borrower identifier",
-            "required": true,
             "type": "integer"
+          },
+          {
+            "name": "reservedate",
+            "in": "query",
+            "description": "Reserve date",
+            "type": "string"
+          },
+          {
+            "name": "biblionumber",
+            "in": "query",
+            "description": "Internal biblio identifier",
+            "type": "integer"
+          },
+          {
+            "name": "branchcode",
+            "in": "query",
+            "description": "Branch code",
+            "type": "string"
+          },
+          {
+            "name": "notificationdate",
+            "in": "query",
+            "description": "Notification date",
+            "type": "string"
+          },
+          {
+            "name": "reminderdate",
+            "in": "query",
+            "description": "Reminder date",
+            "type": "string"
+          },
+          {
+            "name": "cancellationdate",
+            "in": "query",
+            "description": "Cancellation date",
+            "type": "string"
+          },
+          {
+            "name": "reservenotes",
+            "in": "query",
+            "description": "Reserve notes",
+            "type": "string"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "description": "Priority",
+            "type": "integer"
+          },
+          {
+            "name": "found",
+            "in": "query",
+            "description": "Found status",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "description": "Time of latest update",
+            "type": "string"
+          },
+          {
+            "name": "itemnumber",
+            "in": "query",
+            "description": "Internal item identifier",
+            "type": "integer"
+          },
+          {
+            "name": "waitingdate",
+            "in": "query",
+            "description": "Date the item was marked as waiting for the patron",
+            "type": "string"
+          },
+          {
+            "name": "expirationdate",
+            "in": "query",
+            "description": "Date the hold expires",
+            "type": "string"
+          },
+          {
+            "name": "lowestPriority",
+            "in": "query",
+            "description": "Lowest priority",
+            "type": "integer"
+          },
+          {
+            "name": "suspend",
+            "in": "query",
+            "description": "Suspended",
+            "type": "integer"
+          },
+          {
+            "name": "suspend_until",
+            "in": "query",
+            "description": "Suspended until",
+            "type": "string"
           }
         ],
         "produces": ["application/json"],
@@ -227,6 +465,100 @@
           },
           "404": {
             "description": "Hold not found",
+            "schema": { "$ref": "#/definitions/error" }
+          }
+        }
+      }
+    },
+    "/checkouts": {
+      "get": {
+        "operationId": "listCheckouts",
+        "tags": ["borrowers", "checkouts"],
+        "parameters": [
+          {
+            "name": "borrowernumber",
+            "in": "query",
+            "description": "Internal patron identifier",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of checkouts",
+            "schema": {
+              "$ref": "#/definitions/checkouts"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": { "$ref": "#/definitions/error" }
+          },
+          "404": {
+            "description": "Borrower not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/checkouts/{checkout_id}": {
+      "get": {
+        "operationId": "getCheckout",
+        "tags": ["borrowers", "checkouts"],
+        "parameters": [
+          {
+            "name": "checkout_id",
+            "in": "path",
+            "description": "Internal checkout identifier",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Updated borrower's checkout",
+            "schema": { "$ref": "#/definitions/checkout" }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": { "$ref": "#/definitions/error" }
+          },
+          "404": {
+            "description": "Checkout not found",
+            "schema": { "$ref": "#/definitions/error" }
+          }
+        }
+      },
+      "put": {
+        "operationId": "renewCheckout",
+        "tags": ["borrowers", "checkouts"],
+        "parameters": [
+          {
+            "name": "checkout_id",
+            "in": "path",
+            "description": "Internal checkout identifier",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Updated borrower's checkout",
+            "schema": { "$ref": "#/definitions/checkout" }
+          },
+          "403": {
+            "description": "Cannot renew checkout",
+            "schema": { "$ref": "#/definitions/error" }
+          },
+          "404": {
+            "description": "Checkout not found",
             "schema": { "$ref": "#/definitions/error" }
           }
         }
