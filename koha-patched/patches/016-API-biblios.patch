@@ -67,7 +67,7 @@ index 0000000..11f9578
 +  "type": "object",
 +    "properties": {
 +    "biblionumber": {
-+      "type": ["integer"],
++      "type": ["string"],
 +      "description": "Unique internal ID of biblio"
 +    },
 +    "author": {
@@ -87,7 +87,7 @@ index 0000000..11f9578
 +      "description": "values from the general notes field in the MARC record (500$a in MARC21) split by bar (|)"
 +    },
 +    "serial": {
-+      "type": ["integer", "null"],
++      "type": ["string", "null"],
 +      "description": "Boolean indicating whether biblio is for a serial"
 +    },
 +    "seriestitle": {
