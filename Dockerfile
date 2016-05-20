@@ -128,6 +128,11 @@ ADD ./salt/koha/files/api /srv/salt/koha/files/api
 ENV HOME /root
 WORKDIR /root
 
+# Setup cron job to sync holdingbranches to services
+COPY holdingbranches.sh /root/holdingbranches.sh
+COPY update_holdingbranches.sh /root/update_holdingbranches.sh
+COPY branch-sync /etc/cron.d/branch-sync
+
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
