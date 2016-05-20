@@ -656,6 +656,72 @@
             "schema": {
               "$ref": "#/definitions/error"
             }
+          },
+          "404": {
+            "description": "Item not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/biblios/{biblionumber}": {
+      "get": {
+        "operationId": "getBiblio",
+        "tags": ["biblios"],
+        "parameters": [
+          { "$ref": "#/parameters/biblionumberPathParam" }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "A biblio record",
+            "schema": { "$ref": "#/definitions/biblio" }
+
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Biblio not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/biblios/{biblionumber}/items": {
+      "get": {
+        "operationId": "getitemsByBiblio",
+        "tags": ["biblios", "items"],
+        "parameters": [
+          { "$ref": "#/parameters/biblionumberPathParam" }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "A biblio record with items"
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Biblio not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
           }
         }
       }
@@ -690,6 +756,13 @@
       "name": "itemnumber",
       "in": "path",
       "description": "Internal item identifier",
+      "required": true,
+      "type": "integer"
+    },
+    "biblionumberPathParam": {
+      "name": "biblionumber",
+      "in": "path",
+      "description": "Internal biblio identifier",
       "required": true,
       "type": "integer"
     }

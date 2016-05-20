@@ -1,3 +1,16 @@
+015 - Koha API Items Patch
+Patch against Koha $GITREF 9648cd2917f4b530c9da9b39e4fe606e457511a2
+curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/9648cd2917f4b530c9da9b39e4fe606e457511a2
+or https://github.com/Koha-Community/Koha/archive/v16.05.00-beta.tar.gz
+
+prerequisites:
+# OK    Bug 15126 - REST API: Use newer version of Swagger2
+# OK    Bug 13903 - Add API routes to list, create, update, delete holds
+# OK    Bug 16330 - REST API: add routes to add, update and delete patrons
+# OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
+# OK    Bug 16271 - Allow more filters on /api/v1/holds
+# OK    Bug 16497 - REST API: add routes to list libraries
+
 diff --git a/Koha/REST/V1/Item.pm b/Koha/REST/V1/Item.pm
 new file mode 100644
 index 0000000..ee7eb73
