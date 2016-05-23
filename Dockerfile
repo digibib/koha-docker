@@ -132,6 +132,7 @@ WORKDIR /root
 COPY holdingbranches.sh /root/holdingbranches.sh
 COPY update_holdingbranches.sh /root/update_holdingbranches.sh
 COPY branch-sync /etc/cron.d/branch-sync
+RUN chmod 0644 /etc/cron.d/branch-sync
 
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
