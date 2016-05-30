@@ -725,6 +725,63 @@
           }
         }
       }
+    },
+    "/messagepreferences/{borrowernumber}": {
+      "get": {
+        "operationId": "getMessagepreferencesByUser",
+        "tags": ["patrons", "messages"],
+        "parameters": [
+          {
+            "$ref": "#/parameters/borrowernumberPathParam"
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Patron message preferences"
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Patron not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "setMessagepreferencesByUser",
+        "tags": ["patrons", "messages"],
+        "parameters": [
+          {
+            "$ref": "#/parameters/borrowernumberPathParam"
+          }
+        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Patron message preferences"
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Patron not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
