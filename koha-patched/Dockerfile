@@ -12,7 +12,7 @@ MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBIAN_PRIORITY critical
 ENV DEBCONF_NOWARNINGS yes
-ENV REFRESHED_AT 2015-12-09
+ENV REFRESHED_AT 2016-05-30
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -q -y vim.tiny telnet screen htop curl git \
@@ -32,8 +32,8 @@ RUN apt-get update && \
 
 RUN apt-get install -y libdbix-connector-perl libtest-perl-critic-perl && apt-get clean
 
-ENV KOHA_VERSION 3.23.00
-ENV GITREF 9648cd2917f4b530c9da9b39e4fe606e457511a2
+ENV KOHA_VERSION 16.05.00
+ENV GITREF 625e1b77ae7a640acc06ffbec65bbec2129d597e
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -44,9 +44,6 @@ RUN /root/pull.sh
 ##########
 
 # Add mojolicious and swagger2 deps that are not yet in kohadeps
-#RUN apt-get install -y make cpanminus && \
-#    cpanm Mojolicious@6.0 Swagger2@0.59 && \
-#    apt-get clean
 
 # One of the tests in Logger.t fails in our setup,
 # probably due to user permissions in the docker build-container.
@@ -57,6 +54,12 @@ RUN rm /koha/t/Prices.t
 
 # 3 Failing cache tests to be fixed in 3.24
 RUN rm /koha/t/Cache.t
+
+# Add missing perl dependency DBIx and Elasticsearch module
+COPY debian_control /koha/debian/control
+RUN apt-get install -y make cpanminus && \
+    cpanm DBIx::RunSQL Catmandu::Store::ElasticSearch Catmandu::Importer::MARC && \
+    apt-get clean
 
 ##########
 # MASTER / 3.24 extras
@@ -80,14 +83,12 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-# OK    Bug 15126 - REST API: Use newer version of Swagger2
-# OK    Bug 13903 - Add API routes to list, create, update, delete holds
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
 # OK    Bug 16271 - Allow more filters on /api/v1/holds
 # OK    Bug 16497 - REST API: add routes to list libraries
 # FAILS Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
-ENV KOHABUGS     "15126 13903 16330 13895 16271 16497"
+ENV KOHABUGS     "16330 13895 16271 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
