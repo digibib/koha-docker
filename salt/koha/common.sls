@@ -21,7 +21,7 @@ koharepo:
 koha-common:
   pkg.installed:
     - skip_verify: True
-    - version: 3.23.00+201605301025~patched
+    - version: 16.05.00+201606021043~patched
     - require:
       - pkgrepo: deichmanrepo
       - pkgrepo: koharepo
