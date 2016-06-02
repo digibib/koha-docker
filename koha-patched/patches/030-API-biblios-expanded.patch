@@ -1,0 +1,101 @@
+diff --git a/api/v1/swagger.json b/api/v1/swagger.json
+index 6f0c49b..1c82031 100644
+--- a/api/v1/swagger.json
++++ b/api/v1/swagger.json
+@@ -726,6 +726,35 @@
+         }
+       }
+     },
++    "/biblios/{biblionumber}/expanded": {
++      "get": {
++        "operationId": "getexpandedByBiblio",
++        "tags": ["biblios", "items", "item status"],
++        "parameters": [
++          { "$ref": "#/parameters/biblionumberPathParam" }
++        ],
++        "produces": [
++          "application/json"
++        ],
++        "responses": {
++          "200": {
++            "description": "A biblio record with items and item statuses"
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "404": {
++            "description": "Biblio not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      }
++    },
+     "/messagepreferences/{borrowernumber}": {
+       "get": {
+         "operationId": "getMessagepreferencesByUser",
+@@ -825,3 +854,4 @@
+     }
+   }
+ }
++
+diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
+index 06eb454..3825728 100644
+--- a/Koha/REST/V1/Biblio.pm
++++ b/Koha/REST/V1/Biblio.pm
+@@ -21,6 +21,9 @@ use Mojo::Base 'Mojolicious::Controller';
+
+ use C4::Biblio qw( GetBiblioData );
+ use Koha::Biblios;
++use Koha::Holds;
++
++#use Data::Dumper;
+
+ sub get {
+     my ($c, $args, $cb) = @_;
+@@ -42,4 +45,41 @@ sub getitems {
+     return $c->$cb({ biblio => $biblio->unblessed, items => $biblio->items->unblessed }, 200);
+ }
+
++sub getexpanded {
++    my ($c, $args, $cb) = @_;
++
++    my $biblio = Koha::Biblios->find($args->{biblionumber});
++    unless ($biblio) {
++        return $c->$cb({error => "Biblio not found"}, 404);
++    }
++    my $expanded = $biblio->items->unblessed;
++    for my $item (@{$expanded}) {
++
++        # we assume item is available by default
++        $item->{status} = "Ledig";
++
++        if ($item->{onloan}) {
++            $item->{status} = "Utlånt"
++        }
++
++        if ($item->{restricted}) {
++            $item->{status} = "Ikke til utlån";
++        }
++
++        # mark as unavailable if notforloan, damaged, lost, or withdrawn
++        if ($item->{damaged} || $item->{lost} || $item->{withdrawn} || $item->{notforloan}) {
++            $item->{status} = "Utilgjengelig";
++        }
++
++        my $holds = Koha::Holds->search({itemnumber => $item->{itemnumber}})->unblessed;
++
++        # mark as checked out if item marked as hold
++        if (scalar(@{$holds}) > 0) {
++            $item->{status} = "Utlånt";
++        }
++    }
++
++    return $c->$cb({ biblio => $biblio->unblessed, items => $expanded }, 200);
++}
++
+ 1;
