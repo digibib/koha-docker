@@ -547,6 +547,7 @@
             "type": "integer"
           }
         ],
+        "consumes": ["application/json"],
         "produces": ["application/json"],
         "responses": {
           "200": {
@@ -695,6 +696,65 @@
             }
           }
         }
+      },
+      "put": {
+        "operationId": "updateBiblio",
+        "tags": ["biblios"],
+        "parameters": [
+          { "$ref": "#/parameters/biblionumberPathParam" }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "An updated biblio record",
+            "schema": { "$ref": "#/definitions/biblio" }
+
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Biblio not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteBiblio",
+        "tags": ["biblios"],
+        "parameters": [
+          { "$ref": "#/parameters/biblionumberPathParam" }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Biblio record deleted successfully",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Biblio deletion failed",
+            "schema": { "$ref": "#/definitions/error" }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Biblio not found",
+            "schema": { "$ref": "#/definitions/error" }
+          }
+        }
       }
     },
     "/biblios/{biblionumber}/items": {
@@ -755,6 +815,28 @@
         }
       }
     },
+    "/biblios": {
+      "post": {
+        "operationId": "addBiblio",
+        "tags": ["biblios"],
+        "produces": ["application/json"],
+        "responses": {
+          "201": {
+            "description": "A new biblio record"
+          },
+          "400": {
+            "description": "Unable to create biblio record",
+            "schema": { "$ref": "#/definitions/error" }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/messagepreferences/{borrowernumber}": {
       "get": {
         "operationId": "getMessagepreferencesByUser",
@@ -789,6 +871,9 @@
         "parameters": [
           {
             "$ref": "#/parameters/borrowernumberPathParam"
+          },
+          {
+            "$ref": "#/parameters/messagepreferencesBodyParam"
           }
         ],
         "consumes": ["application/json"],
@@ -851,6 +936,41 @@
       "description": "Internal biblio identifier",
       "required": true,
       "type": "integer"
+    },
+    "messagepreferencesBodyParam": {
+      "name": "body",
+      "in": "body",
+      "description": "A JSON object containing fields to modify",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "item_due": {
+            "description": "Notice on checkout passed due date",
+            "type": "string",
+            "minimum": 1
+          },
+          "advance_notice": {
+            "description": "Notice on number of days before due date",
+            "type": "integer"
+          },
+          "hold_filled": {
+            "description": "Notice on hold awaiting pickup",
+            "type": "string",
+            "format": "date"
+          },
+          "item_check_in": {
+            "description": "Notice on checkin",
+            "type": "string",
+            "format": "date"
+          },
+          "item_checkout": {
+            "description": "Notice on checkout",
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
     }
   }
 }
