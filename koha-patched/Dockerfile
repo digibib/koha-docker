@@ -12,7 +12,7 @@ MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBIAN_PRIORITY critical
 ENV DEBCONF_NOWARNINGS yes
-ENV REFRESHED_AT 2016-05-30
+ENV REFRESHED_AT 2016-06-01
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -q -y vim.tiny telnet screen htop curl git \
@@ -65,7 +65,8 @@ RUN apt-get install -y make cpanminus && \
 # MASTER / v16.05 extras - remove when packages are in perldeps
 ##########
 
-RUN apt-get update &&
+COPY debian_control /koha/debian/control
+RUN apt-get update && \
 	apt-get install -y libxml2-utils xsltproc docbook-xsl libnet-sftp-foreign-perl && apt-get clean
 
 ##########

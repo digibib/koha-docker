@@ -63,7 +63,7 @@ done
 if [ -z "$SKIP_BUILD" ]; then
   mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
-  dch --force-distribution -D "wheezy" \
+  dch --force-distribution -D "jessie" \
       --newversion "${KOHA_VERSION}+$(date +%Y%m%d%H%M)~patched" \
       "Patched version of koha ${KOHA_VERSION} - Bugpatches included: ${KOHABUGS}"
   dch --append "Local patches:"
