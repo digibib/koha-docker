@@ -33,7 +33,7 @@ RUN apt-get update && \
 RUN apt-get install -y libdbix-connector-perl libtest-perl-critic-perl && apt-get clean
 
 ENV KOHA_VERSION 16.05.00
-ENV GITREF 625e1b77ae7a640acc06ffbec65bbec2129d597e
+ENV GITREF e0143f3205ebbf07aa479b89d8ba8aab426496b2
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -56,16 +56,17 @@ RUN rm /koha/t/Prices.t
 RUN rm /koha/t/Cache.t
 
 # Add missing perl dependency DBIx and Elasticsearch module
-COPY debian_control /koha/debian/control
 RUN apt-get install -y make cpanminus && \
-    cpanm DBIx::RunSQL Catmandu::Store::ElasticSearch Catmandu::Importer::MARC && \
+    cpanm --notest DBIx::RunSQL Catmandu::Store::ElasticSearch Catmandu::Importer::MARC && \
     apt-get clean
 
+
 ##########
-# MASTER / 3.24 extras
+# MASTER / v16.05 extras - remove when packages are in perldeps
 ##########
 
-RUN apt-get install -y libnet-sftp-foreign-perl && apt-get clean
+RUN apt-get update &&
+	apt-get install -y libxml2-utils xsltproc docbook-xsl libnet-sftp-foreign-perl && apt-get clean
 
 ##########
 # GIT-BZ, PATCHLIBS AND BUILDSCRIPT
