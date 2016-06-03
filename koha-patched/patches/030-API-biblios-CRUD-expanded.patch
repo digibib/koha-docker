@@ -1,0 +1,441 @@
+030-API-biblios-CRUD-expanded
+
+Patch to enable full CRUD on /api/v1/biblios
+Delete all items on DELETE as default, except if items have holds or issues
+Also enables expanded item with status
+
+diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
+new file mode 100644
+index 0000000..549c551
+--- /dev/null
++++ b/Koha/REST/V1/Biblio.pm
+@@ -0,0 +1,191 @@
++package Koha::REST::V1::Biblio;
++
++# This file is part of Koha.
++#
++# Koha is free software; you can redistribute it and/or modify it under the
++# terms of the GNU General Public License as published by the Free Software
++# Foundation; either version 3 of the License, or (at your option) any later
++# version.
++#
++# Koha is distributed in the hope that it will be useful, but WITHOUT ANY
++# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
++# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License along
++# with Koha; if not, write to the Free Software Foundation, Inc.,
++# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++use Modern::Perl;
++
++use Mojo::Base 'Mojolicious::Controller';
++
++use C4::Auth qw( haspermission );
++use Koha::AuthUtils qw(hash_password);
++use C4::Biblio qw( GetBiblioData AddBiblio ModBiblio DelBiblio );
++use C4::Items qw ( AddItemBatchFromMarc );
++use Koha::Biblios;
++use MARC::Record;
++use MARC::Batch;
++use MARC::File::USMARC;
++use MARC::File::XML;
++
++use Data::Dumper;
++
++sub get {
++    my ($c, $args, $cb) = @_;
++
++    my $biblio = &GetBiblioData($args->{biblionumber});
++    unless ($biblio) {
++        return $c->$cb({error => "Biblio not found"}, 404);
++    }
++    return $c->$cb($biblio, 200);
++}
++
++sub getitems {
++    my ($c, $args, $cb) = @_;
++
++    #my $biblio = &GetBiblioData($args->{biblionumber});
++    my $biblio = Koha::Biblios->find($args->{biblionumber});
++    unless ($biblio) {
++        return $c->$cb({error => "Biblio not found"}, 404);
++    }
++    return $c->$cb({ biblio => $biblio->unblessed, items => $biblio->items->unblessed }, 200);
++}
++
++sub getexpanded {
++    my ($c, $args, $cb) = @_;
++
++    my $biblio = Koha::Biblios->find($args->{biblionumber});
++    unless ($biblio) {
++        return $c->$cb({error => "Biblio not found"}, 404);
++    }
++    my $expanded = $biblio->items->unblessed;
++    for my $item (@{$expanded}) {
++
++        # we assume item is available by default
++        $item->{status} = "Ledig";
++
++        if ($item->{onloan}) {
++            $item->{status} = "Utlånt"
++        }
++
++        if ($item->{restricted}) {
++            $item->{status} = "Ikke til utlån";
++        }
++
++        # mark as unavailable if notforloan, damaged, lost, or withdrawn
++        if ($item->{damaged} || $item->{lost} || $item->{withdrawn} || $item->{notforloan}) {
++            $item->{status} = "Utilgjengelig";
++        }
++
++        my $holds = Koha::Holds->search({itemnumber => $item->{itemnumber}})->unblessed;
++
++        # mark as checked out if item marked as hold
++        if (scalar(@{$holds}) > 0) {
++            $item->{status} = "Utlånt";
++        }
++    }
++
++    return $c->$cb({ biblio => $biblio->unblessed, items => $expanded }, 200);
++}
++
++sub add {
++    my ($c, $args, $cb) = @_;
++
++    my $user = $c->stash('koha.user');
++
++    unless ( $user && haspermission($user->userid, {borrowers => 1}) ) {
++        return $c->$cb({error => "You don't have the required permission"}, 403);
++    }
++    my $biblionumber;
++    my $biblioitemnumber;
++
++    my $body = $c->req->body;
++    unless ($body) {
++        return $c->$cb({error => "Missing MARCXML body"}, 400);
++    }
++
++    my $record = eval {MARC::Record::new_from_xml( $body, "utf8", '')};
++    if ($@) {
++        return $c->$cb({error => $@}, 400);
++    } else {
++        ( $biblionumber, $biblioitemnumber ) = &AddBiblio($record, '');
++    }
++    if ($biblionumber) {
++        $c->res->headers->location($c->url_for('/v1/biblios/')->to_abs . $biblionumber);
++        my ( $itemnumbers, $errors ) = &AddItemBatchFromMarc( $record, $biblionumber, $biblioitemnumber, '' );
++        unless (@{$errors}) {
++            return $c->$cb({biblionumber => $biblionumber, items => join(",", @{$itemnumbers})}, 201);
++        } else {
++            warn Dumper($errors);
++            return $c->$cb({error => "Error creating items, see Koha Logs for details.", biblionumber => $biblionumber, items => join(",", @{$itemnumbers})}, 400);
++        }
++    } else {
++        return $c->$cb({error => "unable to create record"}, 400);
++    }
++}
++
++# This will not update items, Items is a separate API route
++sub update {
++    my ($c, $args, $cb) = @_;
++
++    my $user = $c->stash('koha.user');
++
++    unless ( $user && haspermission($user->userid, {borrowers => 1}) ) {
++        return $c->$cb({error => "You don't have the required permission"}, 403);
++    }
++    my $biblionumber = $args->{biblionumber};
++
++    my $biblio = Koha::Biblios->find($biblionumber);
++    unless ($biblio) {
++        return $c->$cb({error => "Biblio not found"}, 404);
++    }
++
++    my $success;
++    my $body = $c->req->body;
++    my $record = eval {MARC::Record::new_from_xml( $body, "utf8", '')};
++    if ($@) {
++        return $c->$cb({error => $@}, 400);
++    } else {
++        $success = &ModBiblio($record, $biblionumber, '');
++    }
++    if ($success) {
++        $c->res->headers->location($c->url_for('/v1/biblios/')->to_abs . $biblionumber);
++        return $c->$cb({biblio => Koha::Biblios->find($biblionumber)->unblessed}, 200);
++    } else {
++        return $c->$cb({error => "unable to update record"}, 400);
++    }
++}
++
++sub delete {
++    my ($c, $args, $cb) = @_;
++    my $user = $c->stash('koha.user');
++
++    unless ( $user && haspermission($user->userid, {borrowers => 1}) ) {
++        return $c->$cb({error => "You don't have the required permission"}, 403);
++    }
++
++    my $biblio = Koha::Biblios->find($args->{biblionumber});
++    unless ($biblio) {
++        return $c->$cb({error => "Biblio not found"}, 404);
++    }
++    my @items = $biblio->items;
++    # Delete items first
++    my @item_errors = ();
++    foreach my $item (@items) {
++        my $res = $item->delete;
++        unless ($res eq 1) {
++            push @item_errors, $item->unblessed->{itemnumber};
++        }
++    }
++    my $res = $biblio->delete;
++    if ($res eq '1') {
++        return $c->$cb({}, 200);
++    } elsif ($res eq '-1') {
++        return $c->$cb({error => "Not found. Error code: " . $res, items => @item_errors}, 404);
++    } else {
++        return $c->$cb({error => "Error code: " . $res, items => @item_errors}, 400);
++    }
++}
++
++1;
+diff --git a/api/v1/swagger.json b/api/v1/swagger.json
+index e0af44a..0ee6f7b 100644
+--- a/api/v1/swagger.json
++++ b/api/v1/swagger.json
+@@ -120,6 +120,7 @@
+               "$ref": "#/definitions/error"
+             }
+           }
++        }
+       },
+       "put": {
+         "operationId": "editPatron",
+@@ -208,7 +209,6 @@
+             "schema": { "$ref": "#/definitions/error" }
+           }
+         }
+-        }
+       }
+     },
+     "/holds": {
+@@ -547,6 +547,7 @@
+             "type": "integer"
+           }
+         ],
++        "consumes": ["application/json"],
+         "produces": ["application/json"],
+         "responses": {
+           "200": {
+@@ -656,23 +657,31 @@
+             "schema": {
+               "$ref": "#/definitions/error"
+             }
++          },
++          "404": {
++            "description": "Item not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
+           }
+         }
+       }
+     },
+-    "/messagepreferences/{borrowernumber}": {
++    "/biblios/{biblionumber}": {
+       "get": {
+-        "operationId": "getMessagepreferencesByUser",
+-        "tags": ["patrons", "messages"],
++        "operationId": "getBiblio",
++        "tags": ["biblios"],
+         "parameters": [
+-          {
+-            "$ref": "#/parameters/borrowernumberPathParam"
+-          }
++          { "$ref": "#/parameters/biblionumberPathParam" }
++        ],
++        "produces": [
++          "application/json"
+         ],
+-        "produces": ["application/json"],
+         "responses": {
+           "200": {
+-            "description": "Patron message preferences"
++            "description": "A biblio record",
++            "schema": { "$ref": "#/definitions/biblio" }
++
+           },
+           "403": {
+             "description": "Access forbidden",
+@@ -681,7 +690,7 @@
+             }
+           },
+           "404": {
+-            "description": "Patron not found",
++            "description": "Biblio not found",
+             "schema": {
+               "$ref": "#/definitions/error"
+             }
+@@ -689,18 +698,53 @@
+         }
+       },
+       "put": {
+-        "operationId": "setMessagepreferencesByUser",
+-        "tags": ["patrons", "messages"],
++        "operationId": "updateBiblio",
++        "tags": ["biblios"],
+         "parameters": [
+-          {
+-            "$ref": "#/parameters/borrowernumberPathParam"
++          { "$ref": "#/parameters/biblionumberPathParam" }
++        ],
++        "produces": [
++          "application/json"
++        ],
++        "responses": {
++          "200": {
++            "description": "An updated biblio record"
++          },
++          "400": {
++            "description": "Biblio update failed",
++            "schema": { "$ref": "#/definitions/error" }
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "404": {
++            "description": "Biblio not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
+           }
++        }
++      },
++      "delete": {
++        "operationId": "deleteBiblio",
++        "tags": ["biblios"],
++        "parameters": [
++          { "$ref": "#/parameters/biblionumberPathParam" }
+         ],
+-        "consumes": ["application/json"],
+         "produces": ["application/json"],
+         "responses": {
+           "200": {
+-            "description": "Patron message preferences"
++            "description": "Biblio record deleted successfully",
++            "schema": {
++              "type": "object"
++            }
++          },
++          "400": {
++            "description": "Biblio deletion failed",
++            "schema": { "$ref": "#/definitions/error" }
+           },
+           "403": {
+             "description": "Access forbidden",
+@@ -709,7 +753,85 @@
+             }
+           },
+           "404": {
+-            "description": "Patron not found",
++            "description": "Biblio not found",
++            "schema": { "$ref": "#/definitions/error" }
++          }
++        }
++      }
++    },
++    "/biblios/{biblionumber}/items": {
++      "get": {
++        "operationId": "getitemsByBiblio",
++        "tags": ["biblios", "items"],
++        "parameters": [
++          { "$ref": "#/parameters/biblionumberPathParam" }
++        ],
++        "produces": [
++          "application/json"
++        ],
++        "responses": {
++          "200": {
++            "description": "A biblio record with items"
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "404": {
++            "description": "Biblio not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      }
++    },
++    "/biblios/{biblionumber}/expanded": {
++      "get": {
++        "operationId": "getexpandedByBiblio",
++        "tags": ["biblios", "items", "item status"],
++        "parameters": [
++          { "$ref": "#/parameters/biblionumberPathParam" }
++        ],
++        "produces": [
++          "application/json"
++        ],
++        "responses": {
++          "200": {
++            "description": "A biblio record with items and item statuses"
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "404": {
++            "description": "Biblio not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      }
++    },
++    "/biblios": {
++      "post": {
++        "operationId": "addBiblio",
++        "tags": ["biblios"],
++        "produces": ["application/json"],
++        "responses": {
++          "201": {
++            "description": "A new biblio record"
++          },
++          "400": {
++            "description": "Unable to create biblio record",
++            "schema": { "$ref": "#/definitions/error" }
++          },
++          "403": {
++            "description": "Access forbidden",
+             "schema": {
+               "$ref": "#/definitions/error"
+             }
+@@ -806,6 +928,13 @@
+       "description": "Internal item identifier",
+       "required": true,
+       "type": "integer"
++    },
++    "biblionumberPathParam": {
++      "name": "biblionumber",
++      "in": "path",
++      "description": "Internal biblio identifier",
++      "required": true,
++      "type": "integer"
+     }
+   }
+ }
