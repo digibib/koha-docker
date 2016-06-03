@@ -708,9 +708,11 @@
         ],
         "responses": {
           "200": {
-            "description": "An updated biblio record",
-            "schema": { "$ref": "#/definitions/biblio" }
-
+            "description": "An updated biblio record"
+          },
+          "400": {
+            "description": "Biblio update failed",
+            "schema": { "$ref": "#/definitions/error" }
           },
           "403": {
             "description": "Access forbidden",
@@ -871,9 +873,6 @@
         "parameters": [
           {
             "$ref": "#/parameters/borrowernumberPathParam"
-          },
-          {
-            "$ref": "#/parameters/messagepreferencesBodyParam"
           }
         ],
         "consumes": ["application/json"],
@@ -936,41 +935,6 @@
       "description": "Internal biblio identifier",
       "required": true,
       "type": "integer"
-    },
-    "messagepreferencesBodyParam": {
-      "name": "body",
-      "in": "body",
-      "description": "A JSON object containing fields to modify",
-      "required": true,
-      "schema": {
-        "type": "object",
-        "properties": {
-          "item_due": {
-            "description": "Notice on checkout passed due date",
-            "type": "string",
-            "minimum": 1
-          },
-          "advance_notice": {
-            "description": "Notice on number of days before due date",
-            "type": "integer"
-          },
-          "hold_filled": {
-            "description": "Notice on hold awaiting pickup",
-            "type": "string",
-            "format": "date"
-          },
-          "item_check_in": {
-            "description": "Notice on checkin",
-            "type": "string",
-            "format": "date"
-          },
-          "item_checkout": {
-            "description": "Notice on checkout",
-            "type": "string",
-            "format": "date"
-          }
-        }
-      }
     }
   }
 }
