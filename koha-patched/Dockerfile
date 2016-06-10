@@ -47,10 +47,12 @@ RUN /root/pull.sh
 # probably due to user permissions in the docker build-container.
 RUN rm /koha/t/Logger.t
 
-# Failing test due to db dependency
+# Failing test, check here for updates:
+# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=16674
 RUN rm /koha/t/Ris.t
 
-# Failing test due to ?
+# Failing test, check here for updates:
+# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=16675
 RUN rm /koha/t/Languages.t
 
 
