@@ -10,7 +10,7 @@ fi
 
 mkdir -p /koha && cd /koha
 if [ "$GITREF" ]; then
-	curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/${GITREF}
+	curl -sSk -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/${GITREF}
 else
   RES=`curl -iso /dev/null -w "%{http_code}" http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz`
   if [ $RES -eq 200 ]; then

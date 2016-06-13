@@ -12,7 +12,7 @@ MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBIAN_PRIORITY critical
 ENV DEBCONF_NOWARNINGS yes
-ENV REFRESHED_AT 2016-06-01
+ENV REFRESHED_AT 2016-06-10
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -q -y vim.tiny telnet screen htop curl git \
@@ -23,21 +23,22 @@ RUN apt-get update && \
 # KOHA SOURCES AND DEPS
 #######################
 
-# Install Koha deps
+# Add Koha Stable repo
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
-RUN apt-get update && \
-    apt-get install -y koha-deps koha-perldeps make build-essential && \
-    apt-get clean
 
-RUN apt-get install -y libdbix-connector-perl libtest-perl-critic-perl && apt-get clean
 
 ENV KOHA_VERSION 16.05.00
-ENV GITREF 7d916c380a03904c47035f189d1ee666f00d9a11
+ENV GITREF c91b16bd9e82588c7625f69e37d6435dd378915e
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
 RUN /root/pull.sh
+
+# Install Koha deps
+RUN apt-get update && \
+    apt-get install -y koha-deps koha-perldeps make build-essential && \
+    apt-get clean
 
 ##########
 # WORKAROUNDS - REMOVE WHEN OBSOLETE
@@ -46,29 +47,6 @@ RUN /root/pull.sh
 # One of the tests in Logger.t fails in our setup,
 # probably due to user permissions in the docker build-container.
 RUN rm /koha/t/Logger.t
-
-# Failing test, check here for updates:
-# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=16674
-RUN rm /koha/t/Ris.t
-
-# Failing test, check here for updates:
-# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=16675
-RUN rm /koha/t/Languages.t
-
-
-# Add missing perl dependency DBIx and Elasticsearch module
-RUN apt-get install -y make cpanminus && \
-    cpanm --notest DBIx::RunSQL Catmandu::Store::ElasticSearch Catmandu::Importer::MARC && \
-    apt-get clean
-
-
-##########
-# MASTER / v16.05 extras - remove when packages are in perldeps
-##########
-
-COPY debian_control /koha/debian/control
-RUN apt-get update && \
-	apt-get install -y libxml2-utils xsltproc docbook-xsl libnet-sftp-foreign-perl && apt-get clean
 
 ##########
 # GIT-BZ, PATCHLIBS AND BUILDSCRIPT
