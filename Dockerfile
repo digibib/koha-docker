@@ -112,13 +112,6 @@ ADD ./salt/koha/files/Authen_CAS_Client_Response_Failure.pm /srv/salt/koha/files
 ADD ./salt/koha/files/Authen_CAS_Client_Response_Success.pm /srv/salt/koha/files/Authen_CAS_Client_Response_Success.pm
 
 # Activate Plack and REST API
-
-# Add mojolicious and swagger2 deps that are not yet in kohadeps
-RUN apt-get install -y make cpanminus && \
-    cpanm Mojolicious@6.0 Swagger2@0.59 && \
-    apt-get purge -y cpanminus make && apt-get clean
-# Remove them when in stable deb repos
-
 ADD ./salt/koha/files/plack.psgi /srv/salt/koha/files/plack.psgi
 ADD ./salt/koha/files/apache-shared-intranet-plack.conf.tmpl /srv/salt/koha/files/apache-shared-intranet-plack.conf.tmpl
 
