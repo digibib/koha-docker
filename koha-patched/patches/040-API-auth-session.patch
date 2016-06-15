@@ -1,0 +1,194 @@
+040-API-auth-session
+
+Patch to enable session authentication on /api/v1/auth/session
+This allows for login and logout using session cookie.
+It also allows for permission checking based on session cookie
+
+diff --git a/api/v1/swagger.json b/api/v1/swagger.json
+index 0ee6f7b..1e80f42 100644
+--- a/api/v1/swagger.json
++++ b/api/v1/swagger.json
+@@ -895,6 +898,81 @@
+           }
+         }
+       }
++    },
++    "/auth/session": {
++      "get": {
++        "operationId": "getsessionByAuth",
++        "tags": ["session", "authentication"],
++        "responses": {
++          "200": {
++            "description": "Permissions for session"
++          },
++          "404": {
++            "description": "Session not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      },
++      "post": {
++        "operationId": "loginAuth",
++        "tags": ["session", "authentication"],
++        "parameters": [
++          {
++            "name": "body",
++            "in": "body",
++            "description": "A JSON object containing auth fields",
++            "required": true,
++            "schema": {
++              "type": "object",
++              "properties": {
++                "userid": {
++                  "description": "User identifier",
++                  "type": "string"
++                },
++                "password": {
++                  "description": "User secret",
++                  "type": "string"
++                }
++              }
++            }
++          }
++        ],
++        "consumes": ["application/json"],
++        "responses": {
++          "201": {
++            "description": "A valid login session"
++          },
++          "400": {
++            "description": "Error creating session",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "403": {
++            "description": "Invalid credentials",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      },
++      "delete": {
++        "operationId": "logoutAuth",
++        "tags": ["session", "authentication"],
++        "responses": {
++          "200": {
++            "description": "A successful logout"
++          },
++          "404": {
++            "description": "Session not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      }
+     }
+   },
+   "definitions": {
+diff --git a/Koha/REST/V1/Auth.pm b/Koha/REST/V1/Auth.pm
+new file mode 100644
+index 0000000..d0357c4
+--- /dev/null
++++ b/Koha/REST/V1/Auth.pm
+@@ -0,0 +1,96 @@
++package Koha::REST::V1::Auth;
++
++# This file is part of Koha.
++#
++# Koha is free software; you can redistribute it and/or modify it under the
++# terms of the GNU General Public License as published by the Free Software
++# Foundation; either version 3 of the License, or (at your option) any later
++# version.
++#
++# Koha is distributed in the hope that it will be useful, but WITHOUT ANY
++# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
++# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License along
++# with Koha; if not, write to the Free Software Foundation, Inc.,
++# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++use Modern::Perl;
++use Mojo::Base 'Mojolicious::Controller';
++use C4::Auth qw/check_api_auth get_session haspermission/;
++use C4::Context;
++use CGI qw /-utf8/;
++use strict;
++use warnings;
++
++sub getsession {
++ my ($c, $args, $cb) = @_;
++ my $sessionID = $c->cookie("CGISESSID");
++ unless ($sessionID) {
++   return $c->$cb({error => "Session id missing"}, 404);
++ }
++ my $session = get_session($sessionID);
++ # get_session creates a new session that needs to be deleted if undefined
++ if ($sessionID eq $session->id()) {
++   my $userid = $session->param('id');
++   my $permissions = haspermission($userid); # defaults to all permissions
++   # delete all empty permissions
++   while ( my ($key, $val) = each %{$permissions} ) {
++       delete $permissions->{$key} unless $val;
++   }
++   return $c->$cb({
++     userid => $userid,
++     cardnumber => $session->param('cardnumber'),
++     surname => $session->param('surname'),
++     email => $session->param('emailaddress'),
++     borrowernumber => $session->param('number'),
++     branchcode => $session->param('branch'),
++     lasttime => $session->param('lasttime'),
++     ip => $session->param('ip'),
++     permissions => $permissions
++   }, 200);
++ } else {
++     $session->delete();
++     $session->flush();
++     return $c->$cb({error => "Invalid session id"}, 404);
++ }
++}
++
++sub login {
++ my ($c, $args, $cb) = @_;
++ my $body = $c->req->json;
++ my $userid = $body->{userid};
++ my $password = $body->{password};
++ # This test will be handled by newer Swagger
++ unless ($userid && $password) {
++        return $c->$cb({error => "Missing userid or password"}, 400);
++    }
++    # second param is hash of permissions
++ my $q = new CGI; # Yes, we rewrite to a CGI query to please C4::Auth::check_api_auth
++ $q->param("userid", $userid);
++ $q->param("password", $password);
++ my ($status, $cookie, $sessionID) = check_api_auth($q, {} );
++
++ if ($status eq "ok") {
++   $c->res->headers->set_cookie($cookie);
++     return $c->$cb({}, 201); # session created
++ } else {
++     return $c->$cb({error => $status}, 403); # failed login
++ }
++}
++
++sub logout {
++    my ($c, $args, $cb) = @_;
++    warn Dumper($c->req->headers);
++ my $sessionID = $c->cookie("CGISESSID");
++ unless ($sessionID) {
++   return $c->$cb({error => "Session id missing"}, 404);
++ }
++ my $session = get_session($sessionID);
++    $session->delete();
++    $session->flush;
++    C4::Context->_unset_userenv($sessionID);
++    return $c->$cb({}, 200); # session deleted
++}
++
++1;
