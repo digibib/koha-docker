@@ -895,6 +895,81 @@
           }
         }
       }
+    },
+    "/auth/session": {
+      "get": {
+        "operationId": "getsessionByAuth",
+        "tags": ["session", "authentication"],
+        "responses": {
+          "200": {
+            "description": "Permissions for session"
+          },
+          "404": {
+            "description": "Session not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "loginAuth",
+        "tags": ["session", "authentication"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "A JSON object containing auth fields",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userid": {
+                  "description": "User identifier",
+                  "type": "string"
+                },
+                "password": {
+                  "description": "User secret",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "consumes": ["application/json"],
+        "responses": {
+          "201": {
+            "description": "A valid login session"
+          },
+          "400": {
+            "description": "Error creating session",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "logoutAuth",
+        "tags": ["session", "authentication"],
+        "responses": {
+          "200": {
+            "description": "A successful logout"
+          },
+          "404": {
+            "description": "Session not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
