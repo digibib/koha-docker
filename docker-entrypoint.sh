@@ -121,6 +121,15 @@ if [ -n "$API_PASSPHRASE" ]; then
   sed -i "s/__API_PASSPHRASE__/$API_PASSPHRASE" /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
 fi
 
+# National Library Card config
+if [ -n "$NLVENDORURL" ]; then
+  echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
+  echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
+  echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
+  sed -i "s/__NLVENDORUSER__/$NLVENDORUSER" /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
+  sed -i "s/__NLVENDORPASS__/$NLVENDORPASS" /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
+fi
+
 # SIP2 Server config
 salt-call --local state.sls koha.sip2 \
   pillar="{koha: {instance: $KOHA_INSTANCE, sip_port: $SIP_PORT, \
