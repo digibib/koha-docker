@@ -116,6 +116,11 @@ if [ -n "$SMS_SERVER_HOST" ]; then
       koha-mysql $KOHA_INSTANCE
 fi
 
+# Koha REST API config
+if [ -n "$API_PASSPHRASE" ]; then
+  sed -i "s/__API_PASSPHRASE__/$API_PASSPHRASE" /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
+fi
+
 # SIP2 Server config
 salt-call --local state.sls koha.sip2 \
   pillar="{koha: {instance: $KOHA_INSTANCE, sip_port: $SIP_PORT, \
