@@ -1,7 +1,7 @@
 <yazgfs>
 
-<listen id="biblioserver" >unix:/var/run/koha/{{ pillar['koha']['instance'] }}/bibliosocket</listen>
-<listen id="authorityserver" >unix:/var/run/koha/{{ pillar['koha']['instance'] }}/authoritysocket</listen>
+<listen id="biblioserver" >unix:/var/run/koha/$KOHA_INSTANCE/bibliosocket</listen>
+<listen id="authorityserver" >unix:/var/run/koha/$KOHA_INSTANCE/authoritysocket</listen>
 
 <!-- Uncomment the following entry if you want to run the public Z39.50 server.
     Also uncomment the <server> and <serverinfo> sections for id 'publicserver'
@@ -17,16 +17,16 @@
 <!--
 <listen id="mergeserver">tcp:@:__MERGE_SERVER_PORT__</listen>
 <server id="mergeserver"  listenref="mergeserver">
-    <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/biblios</directory>
-    <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-biblios-dom.cfg</config>
-    <cql2rpn>/var/lib/koha/{{ pillar['koha']['instance'] }}/pqf.properties</cql2rpn>
+    <directory>/var/lib/koha/$KOHA_INSTANCE/biblios</directory>
+    <config>/etc/koha/sites/$KOHA_INSTANCE/zebra-biblios-dom.cfg</config>
+    <cql2rpn>/var/lib/koha/$KOHA_INSTANCE/pqf.properties</cql2rpn>
 </server>
 -->
 
 <!-- BIBLIOGRAPHIC RECORDS -->
 <server id="biblioserver"  listenref="biblioserver">
-    <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/biblios</directory>
-    <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-biblios-dom.cfg</config>
+    <directory>/var/lib/koha/$KOHA_INSTANCE/biblios</directory>
+    <config>/etc/koha/sites/$KOHA_INSTANCE/zebra-biblios-dom.cfg</config>
     <cql2rpn>/etc/koha/zebradb/pqf.properties</cql2rpn>
     <xi:include href="/etc/koha/normarc-retrieval-info-bib-dom.xml"
   xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -101,14 +101,14 @@
 </server>
 <serverinfo id="biblioserver">
         <ccl2rpn>/etc/koha/zebradb/ccl.properties</ccl2rpn>
-        <user>{{ pillar['koha']['zebrauser'] }}</user>
-        <password>{{ pillar['koha']['zebrapass'] }}</password>
+        <user>$KOHA_ZEBRAUSER</user>
+        <password>$KOHA_ZEBRAPASS</password>
 </serverinfo>
 
 <!-- AUTHORITY RECORDS -->
 <server id="authorityserver"  listenref="authorityserver" >
-    <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/authorities</directory>
-    <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-authorities-dom.cfg</config>
+    <directory>/var/lib/koha/$KOHA_INSTANCE/authorities</directory>
+    <config>/etc/koha/sites/$KOHA_INSTANCE/zebra-authorities-dom.cfg</config>
     <cql2rpn>/etc/koha/zebradb/pqf.properties</cql2rpn>
 
     <xi:include href="/etc/koha/normarc-retrieval-info-auth-dom.xml"
@@ -176,16 +176,16 @@
 </server>
 <serverinfo id="authorityserver">
     <ccl2rpn>/etc/koha/zebradb/ccl.properties</ccl2rpn>
-    <user>{{ pillar['koha']['zebrauser'] }}</user>
-    <password>{{ pillar['koha']['zebrapass'] }}</password>
+    <user>$KOHA_ZEBRAUSER</user>
+    <password>$KOHA_ZEBRAPASS</password>
 </serverinfo>
 
 <!-- PUBLICSERVER'S BIBLIOGRAPHIC RECORDS -->
 <!-- This can be used to set up a public Z39.50/SRU server.
 
 <server id="publicserver"  listenref="publicserver">
-    <directory>/var/lib/koha/{{ pillar['koha']['instance'] }}/biblios</directory>
-    <config>/etc/koha/sites/{{ pillar['koha']['instance'] }}/zebra-biblios-dom.cfg</config>
+    <directory>/var/lib/koha/$KOHA_INSTANCE/biblios</directory>
+    <config>/etc/koha/sites/$KOHA_INSTANCE/zebra-biblios-dom.cfg</config>
     <cql2rpn>/etc/koha/zebradb/pqf.properties</cql2rpn>
     <xi:include href="/etc/koha/normarc-retrieval-info-bib-dom.xml"
   xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -263,16 +263,16 @@
 
 <config>
  <db_scheme>mysql</db_scheme>
- <database>koha_{{ pillar['koha']['instance'] }}</database>
+ <database>koha_$KOHA_INSTANCE</database>
  <hostname>koha_mysql</hostname>
  <port>3306</port>
- <user>{{ pillar['koha']['adminuser'] }}</user>
- <pass>{{ pillar['koha']['adminpass'] }}</pass>
+ <user>$KOHA_ADMINUSER</user>
+ <pass>$KOHA_ADMINPASS</pass>
  <biblioserver>biblios</biblioserver>
  <biblioservershadow>1</biblioservershadow>
  <authorityserver>authorities</authorityserver>
  <authorityservershadow>1</authorityservershadow>
- <pluginsdir>/var/lib/koha/{{ pillar['koha']['instance'] }}/plugins</pluginsdir>
+ <pluginsdir>/var/lib/koha/$KOHA_INSTANCE/plugins</pluginsdir>
  <enable_plugins>1</enable_plugins>
  <upload_path></upload_path>
  <intranetdir>/kohadev/kohaclone</intranetdir>
@@ -280,9 +280,9 @@
  <opachtdocs>/kohadev/kohaclone/koha-tmpl/opac-tmpl</opachtdocs>
  <intrahtdocs>/kohadev/kohaclone/koha-tmpl/intranet-tmpl</intrahtdocs>
  <includes>/kohadev/kohaclone/koha-tmpl/intranet-tmpl/prog/en/includes/</includes>
- <logdir>/var/log/koha/{{ pillar['koha']['instance'] }}</logdir>
+ <logdir>/var/log/koha/$KOHA_INSTANCE</logdir>
  <docdir>/usr/share/doc/koha-common</docdir>
- <backupdir>/var/spool/koha/{{ pillar['koha']['instance'] }}</backupdir>
+ <backupdir>/var/spool/koha/$KOHA_INSTANCE</backupdir>
  <!-- Enable the two following to allow superlibrarians to download
       database and configuration dumps (respectively) from the Export
       tool -->
@@ -298,13 +298,17 @@
  <useshibboleth>0</useshibboleth><!-- see C4::Auth_with_shibboleth for extra configs you must do to turn this on -->
  <zebra_bib_index_mode>dom</zebra_bib_index_mode>
  <zebra_auth_index_mode>dom</zebra_auth_index_mode>
- <zebra_lockdir>/var/lock/koha/{{ pillar['koha']['instance'] }}</zebra_lockdir>
+ <zebra_lockdir>/var/lock/koha/$KOHA_INSTANCE</zebra_lockdir>
  <use_zebra_facets>1</use_zebra_facets>
  <queryparser_config>/etc/koha/searchengine/queryparser.yaml</queryparser_config>
- <log4perl_conf>/etc/koha/sites/{{ pillar['koha']['instance'] }}/log4perl.conf</log4perl_conf>
+ <log4perl_conf>/etc/koha/sites/$KOHA_INSTANCE/log4perl.conf</log4perl_conf>
 
  <!-- Secret passphrase used by Mojolicious for signed cookies -->
- <api_secret_passphrase>CHANGEME</api_secret_passphrase>
+ <api_secret_passphrase>$API_PASSPHRASE</api_secret_passphrase>
+
+ <!-- Norwegian Patron Database config -->
+ <nlvendoruser>$NLVENDORUSER</nlvendoruser>
+ <nlvendorpass>$NLVENDORPASS</nlvendorpass>
 
  <!-- true type font mapping accoding to type from $font_types in C4/Creators/Lib.pm -->
  <ttf>

@@ -1,6 +1,7 @@
 #######
-# DEVELOPMENT IMAGE OF KOHA - PROVISIONED BY SALT
-# Baser on debian wheezy vanilla Koha
+# DEVELOPMENT IMAGE OF KOHA
+# Based on debian jessy Koha 
+# USES a docker image built from GITREF from koha-salt-docker 
 #######
 
 FROM digibib/koha:6179df27131a0dcc64b0caca6e646c9c7ea1d6fa
@@ -8,10 +9,6 @@ FROM digibib/koha:6179df27131a0dcc64b0caca6e646c9c7ea1d6fa
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
 ENV REFRESHED_AT 2015-12-09
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    sudo apt-get install -q -y cpanminus vim git-email telnet screen wget less curl htop && \
-    apt-get clean
 
 #########################
 # KOHA INSTANCE VARIABLES
@@ -36,6 +33,10 @@ ENV MY_REPO      https://github.com/digibib/koha-work
 ENV GITBZ_REPO   https://github.com/digibib/git-bz.git
 ENV QATOOLS_REPO https://github.com/Koha-Community/qa-test-tools.git
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    sudo apt-get install -q -y cpanminus vim git-email telnet screen wget less curl htop && \
+    apt-get clean
+
 RUN mkdir -p /kohadev && cd /kohadev && \
     git clone --depth=1 $KOHA_REPO kohaclone
 
@@ -49,21 +50,20 @@ RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl \
 RUN cd /kohadev && \
     git clone $GITBZ_REPO gitbz && \
     cd gitbz && git checkout -b fishsoup origin/fishsoup && \
-    sudo ln -s /kohadev/gitbz/git-bz /usr/local/bin/git-bz
+    ln -s /kohadev/gitbz/git-bz /usr/local/bin/git-bz
 
 # Global dev settings
 ADD koha-common.tmpl /etc/default/koha-common
+ADD apache-shared-intranet-plack.conf.tmpl /etc/koha/apache-shared-intranet-plack.conf
+ADD plack.psgi /etc/koha/plack.psgi
 
-# Apache dev settings
-ADD apache-kohadev.conf /srv/salt/koha/files/apache.tmpl
-ADD koha-conf.xml.tmpl /srv/salt/koha/files/koha-conf.xml.tmpl
-ADD log4perl.conf /srv/salt/koha/files/log4perl.conf
-ADD plack.psgi /srv/salt/koha/files/plack.psgi
-ADD apache-shared-intranet-plack.conf.tmpl /srv/salt/koha/files/apache-shared-intranet-plack.conf.tmpl
+# Override with kohadev templates
+ADD koha-conf.xml.tmpl /templates/instance/koha.conf.xml.tmpl
+ADD apache.tmpl /templates/instance/apache.tmpl
 
 # Use SIP2 Development version from git
-ADD sip2-dev.sls /srv/salt/koha/sip2-dev.sls
-ADD sip2-dev-stop.sls /srv/salt/koha/sip2-dev-stop.sls
+#ADD sip2-dev.sls /srv/salt/koha/sip2-dev.sls
+#ADD sip2-dev-stop.sls /srv/salt/koha/sip2-dev-stop.sls
 
 ENV HOME /root
 WORKDIR /root
