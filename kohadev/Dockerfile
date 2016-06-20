@@ -4,11 +4,11 @@
 # USES a docker image built from GITREF from koha-salt-docker 
 #######
 
-FROM digibib/koha:6179df27131a0dcc64b0caca6e646c9c7ea1d6fa
+FROM digibib/koha:67c38f6aa0d05980c20dc09199df18eef9e317c9
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
-ENV REFRESHED_AT 2015-12-09
+ENV REFRESHED_AT 2016-06-20
 
 #########################
 # KOHA INSTANCE VARIABLES
@@ -75,5 +75,6 @@ EXPOSE 6001 8080 8081
 
 VOLUME ["/kohadev"]
 
-# Script for checking if koha is up & ready (to be executed using docker exec)
+# Script and deps for checking if koha is up & ready (to be executed using docker exec)
+RUN apt-get install -y python-requests && apt-get clean
 COPY docker-wait_until_ready.py /root/wait_until_ready.py
