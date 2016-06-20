@@ -39,7 +39,7 @@ RUN echo "mysql-server mysql-server/root_password password $KOHA_ADMINPASS" | de
 COPY ./files/local-apt-repo.tmpl /etc/apt/preferences.d/local-apt-repo
 
 # Install Koha Common
-ENV KOHA_VERSION 16.05.00+201606200946~patched
+ENV KOHA_VERSION 16.05.00+201606201336~patched
 RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
