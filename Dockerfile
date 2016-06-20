@@ -11,7 +11,8 @@ ENV REFRESHED_AT 2015-01-06
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get upgrade --yes && \
     apt-get install -y wget less curl git nmap socat netcat tree htop \ 
-                       unzip python-software-properties libswitch-perl && \
+                       unzip python-software-properties libswitch-perl \
+                       libnet-ssleay-perl libcrypt-ssleay-perl apache2 && \
     apt-get clean
 
 ENV KOHA_ADMINUSER admin
@@ -20,77 +21,42 @@ ENV KOHA_INSTANCE  name
 ENV KOHA_ZEBRAUSER zebrauser
 ENV KOHA_ZEBRAPASS lkjasdpoiqrr
 ENV KOHA_DBHOST    koha_mysql
-ENV SALT_VERSION 2015.5.2
 
 #######
-# Salt Install
+# Mysql config for initial db
 #######
+RUN echo "mysql-server mysql-server/root_password password $KOHA_ADMINPASS" | debconf-set-selections && \
+    echo "mysql-server mysql-server/root_password_again password $KOHA_ADMINPASS" | debconf-set-selections && \
+    apt-get install -y mysql-server && \
+    sed "/max_allowed_packet/c\*/max_allowed_packet = 64M" /etc/mysql/my.cnf && \
+    sed "/wait_timeout/c\*/wait_timeout = 6000" /etc/mysql/my.cnf
 
-# Salt dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install -y python-m2crypto python-yaml python-jinja2 python-requests python-markupsafe \
-      msgpack-python python-zmq && \
-    apt-get clean
+########
+# Files and templates
+########
 
-# Install salt
-RUN curl -O https://pypi.python.org/packages/source/s/salt/salt-${SALT_VERSION}.tar.gz && \
-  tar -xzvf salt-${SALT_VERSION}.tar.gz && \
-  cd salt-${SALT_VERSION} && \
-  python setup.py install && \
-  rm -rf salt-${SALT_VERSION}
+# Global files
+COPY ./files/local-apt-repo.tmpl /etc/apt/preferences.d/local-apt-repo
 
-#######
-# Salt Configuration
-#######
+# Install Koha Common
+ENV KOHA_VERSION 16.05.00+201606151322~patched
+RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
+    echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
+    wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
+    apt-get update && apt-get install -y --force-yes koha-common=$KOHA_VERSION && apt-get clean
 
-# enable salt grains cache for speed improvement
-RUN mkdir -p /etc/salt && \
-  echo "grains_cache: True" >> /etc/salt/minion
+# Installer files
+COPY ./files/installer /installer
 
-#######
-# Salt Provisioning
-# Package installs
-#######
-
-ADD ./pillar /srv/pillar/
-COPY ./pillar/koha/admin.sls.example /srv/pillar/koha/admin.sls
-
-ADD ./salt/common/init.sls /srv/salt/common/init.sls
-RUN salt-call --local --retcode-passthrough state.sls common
-
-ADD ./salt/koha/init.sls /srv/salt/koha/init.sls 
-RUN salt-call --local --retcode-passthrough state.sls koha
-
-# Need mysql server to create initial db
-ADD ./salt/mysql/server.sls /srv/salt/mysql/server.sls
-RUN salt-call --local --retcode-passthrough state.sls mysql.server
-
-# Koha common settings
-ADD ./salt/koha/common.sls /srv/salt/koha/common.sls
-ADD ./salt/koha/files/koha-common.cnf /srv/salt/koha/files/koha-common.cnf
-ADD ./salt/koha/files/koha-conf.xml.tmpl /srv/salt/koha/files/koha-conf.xml.tmpl
-ADD ./salt/koha/files/zebra.passwd.tmpl /srv/salt/koha/files/zebra.passwd.tmpl
-ADD ./salt/koha/files/local-apt-repo.tmpl /srv/salt/koha/files/local-apt-repo.tmpl
-RUN salt-call --local --retcode-passthrough state.sls koha.common
-
-#######
-# Salt Provisioning - step 2
-# Configuration files
-#######
+# Templates
+ADD ./files/templates /templates
 
 # Apache settings
-ADD ./salt/koha/apache2.sls /srv/salt/koha/apache2.sls
-ADD ./salt/koha/files/apache.tmpl /srv/salt/koha/files/apache.tmpl
-ADD ./salt/koha/files/log4perl.conf /srv/salt/koha/files/log4perl.conf
-
-# Koha instance settings
-ADD ./salt/koha/sites-config.sls /srv/salt/koha/sites-config.sls
-ADD ./salt/koha/files/koha-sites.conf /srv/salt/koha/files/koha-sites.conf
-ADD ./salt/koha/files/passwd /srv/salt/koha/files/passwd
-
-# Koha DB settings, and post-config
-ADD ./salt/koha/files/SIPconfig.xml /srv/salt/koha/files/SIPconfig.xml
-ADD ./salt/koha/sip2.sls /srv/salt/koha/sip2.sls
+COPY ./files/apache-shared-intranet-plack.conf.tmpl /etc/koha/apache-shared-intranet-plack.conf
+COPY ./files/plack.psgi /etc/koha/plack.psgi
+RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
+    a2dissite 000-default && \
+    a2enmod rewrite headers proxy_http cgi
 
 # Koha SIP2 server
 ENV SIP_PORT      6001
@@ -98,25 +64,17 @@ ENV SIP_WORKERS   3
 ENV SIP_AUTOUSER1 autouser
 ENV SIP_AUTOPASS1 autopass
 
-ADD ./salt/koha/createdb.sls /srv/salt/koha/createdb.sls
-ADD ./salt/koha/config.sls /srv/salt/koha/config.sls
 
-# Koha automated webinstaller
-ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
-ADD ./salt/koha/files/KohaWebInstallAutomation.pl /srv/salt/koha/files/KohaWebInstallAutomation.pl
-ADD ./salt/koha/files/updatekohadbversion.sh /srv/salt/koha/files/updatekohadbversion.sh
-ADD ./salt/koha/webinstaller.sls /srv/salt/koha/webinstaller.sls
+#############
+# WORKAROUNDS
+#############
 
 # CAS bug workaround
-ADD ./salt/koha/files/Authen_CAS_Client_Response_Failure.pm /srv/salt/koha/files/Authen_CAS_Client_Response_Failure.pm
-ADD ./salt/koha/files/Authen_CAS_Client_Response_Success.pm /srv/salt/koha/files/Authen_CAS_Client_Response_Success.pm
+ADD ./files/Authen_CAS_Client_Response_Failure.pm /usr/share/perl5/Authen/CAS/Client/Response/Failure.pm
+ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Client/Response/Success.pm
 
-# Activate Plack and REST API
-ADD ./salt/koha/files/plack.psgi /srv/salt/koha/files/plack.psgi
-ADD ./salt/koha/files/apache-shared-intranet-plack.conf.tmpl /srv/salt/koha/files/apache-shared-intranet-plack.conf.tmpl
-
-# For now we use api definitions from Koha
-ADD ./salt/koha/files/api /srv/salt/koha/files/api
+# Overwrite swagger definition file
+COPY ./files/swagger.json /usr/share/koha/api/v1/swagger.json
 
 ENV HOME /root
 WORKDIR /root

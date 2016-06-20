@@ -1,77 +1,52 @@
 #!/bin/bash
 set -e
 
-#######################
-# INSTANCE DEFAULTS
-#######################
-# KOHA_INSTANCE  name
-# KOHA_ADMINUSER admin
-# KOHA_ADMINPASS secret
-# KOHA_ZEBRAUSER zebrauser
-# KOHA_ZEBRAPASS lkjasdpoiqrr
-# KOHA_DBHOST    koha_mysql
-#######################
-# SIP2 DEFAULT SETTINGS
-#######################
-# SIP_HOST      0.0.0.0
-# SIP_PORT      6001
-# SIP_WORKERS   3
-# SIP_AUTOUSER1 autouser
-# SIP_AUTOPASS1 autopass
-########################
-# KOHA LANGUAGE SETTINGS
-########################
-# DEFAULT_LANGUAGE
-# INSTALL_LANGUAGES
-########################
-# EMAIL_ENABLED    false
-# SMTP_SERVER_HOST localhost
-# SMTP_SERVER_PORT 25
-# MESSAGE_QUEUE_FREQUENCY 15
-########################
-# SMS_SERVER_HOST  smsproxy:9999
-########################
+echo "Koha Sites global config ..."
+envsubst < /templates/global/koha-sites.conf.tmpl > /etc/koha/koha-sites.conf
+envsubst < /templates/global/passwd.tmpl > /etc/koha/passwd
 
-# Apache Koha instance config
-salt-call --local state.sls koha.apache2 pillar="{koha: {instance: $KOHA_INSTANCE}}"
-
-# Koha Sites global config
-salt-call --local state.sls koha.sites-config \
-  pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
-
-# Using linked mysql container if it exists
+echo "Mysql server setup ..."
 if ping -c 1 -W 1 $KOHA_DBHOST ; then
-  echo "Using linked mysql container $KOHA_DBHOST"
+  printf "Using linked mysql container $KOHA_DBHOST\n"
 else
-  echo "Unable to connect to linked mysql container $KOHA_DBHOST -- initializing local mysql"
+  printf "Unable to connect to linked mysql container $KOHA_DBHOST\n-- initializing local mysql ...\n"
   /etc/init.d/mysql start
+  sleep 3 # waiting for mysql to spin up
   echo "127.0.0.1  $KOHA_DBHOST" >> /etc/hosts
-  echo "CREATE USER '$KOHA_ADMINUSER'@'%' IDENTIFIED BY '$KOHA_ADMINPASS' ;
+  echo "CREATE USER '$KOHA_ADMINUSER'@'%' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
+        CREATE USER '$KOHA_ADMINUSER'@'localhost' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
         CREATE DATABASE IF NOT EXISTS koha_$KOHA_INSTANCE ; \
         GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
-        FLUSH PRIVILEGES ;" | mysql -u root
+        GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'localhost' WITH GRANT OPTION ; \
+        FLUSH PRIVILEGES ;" | mysql -u root -p$KOHA_ADMINPASS
 fi
 
-# Request and populate DB
-salt-call --local state.sls koha.createdb \
-  pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
+echo "Initializing local instance ..."
+envsubst < /templates/instance/koha-common.cnf.tmpl > /etc/mysql/koha-common.cnf
+koha-create --request-db $KOHA_INSTANCE || true
+koha-create --populate-db $KOHA_INSTANCE
 
-# Local instance config
-salt-call --local state.sls koha.config \
-  pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS, \
-  zebrauser: $KOHA_ZEBRAUSER, zebrapass: $KOHA_ZEBRAPASS}}"
+echo "Configuring local instance ..."
+envsubst < /templates/instance/koha-conf.xml.tmpl > /etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml
+envsubst < /templates/instance/log4perl.conf.tmpl > /etc/koha/sites/$KOHA_INSTANCE/log4perl.conf
+envsubst < /templates/instance/zebra.passwd.tmpl > /etc/koha/sites/$KOHA_INSTANCE/zebra.passwd
 
+envsubst < /templates/instance/apache.tmpl > /etc/apache2/sites-available/$KOHA_INSTANCE.conf
+envsubst < /templates/instance/SIPconfig.xml.tmpl > /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml
+
+echo "Configuring languages ..."
 # Install languages in Koha
 for language in $INSTALL_LANGUAGES
 do
     koha-translate --install $language
 done
 
-# Run webinstaller to autoupdate/validate install
-salt-call --local state.sls koha.webinstaller \
-  pillar="{koha: {instance: $KOHA_INSTANCE, adminuser: $KOHA_ADMINUSER, adminpass: $KOHA_ADMINPASS}}"
+echo "Running webinstaller - please be patient ..."
+service apache2 restart
+sleep 1 # waiting for apache to respond
+cd /usr/share/koha/lib && /installer/updatekohadbversion.sh
 
-# Install the default language if not already installed
+echo "Installing the default language if not already installed ..."
 if [ -n "$DEFAULT_LANGUAGE" ]; then
     if [ -z `koha-translate --list | grep -Fx $DEFAULT_LANGUAGE` ] ; then
         koha-translate --install $DEFAULT_LANGUAGE
@@ -82,12 +57,13 @@ if [ -n "$DEFAULT_LANGUAGE" ]; then
         koha-mysql $KOHA_INSTANCE
 fi
 
-# MESSAGING SETTINGS
+echo "Configuring messaging settings ..."
 if [ -n "$MESSAGE_QUEUE_FREQUENCY" ]; then
   sed -i "/process_message_queue/c\*/${MESSAGE_QUEUE_FREQUENCY} * * * * root koha-foreach --enabled --email \
   /usr/share/koha/bin/cronjobs/process_message_queue.pl" /etc/cron.d/koha-common
 fi
 
+echo "Configuring email settings ..."
 if [ -n "$EMAIL_ENABLED" ]; then
   # Koha uses default sendmail localhost, so need to override perl Sendmail config
   if [ -n "$SMTP_SERVER_HOST" ]; then
@@ -108,6 +84,7 @@ if [ -n "$EMAIL_ENABLED" ]; then
   koha-email-enable $KOHA_INSTANCE
 fi
 
+echo "Configuring SMS settings ..."
 if [ -n "$SMS_SERVER_HOST" ]; then
   # SMS modules need to be in shared perl libs
   mkdir -p /usr/share/perl5/SMS/Send/NO
@@ -116,30 +93,26 @@ if [ -n "$SMS_SERVER_HOST" ]; then
       koha-mysql $KOHA_INSTANCE
 fi
 
-# Koha REST API config
-if [ -n "$API_PASSPHRASE" ]; then
-  sed -i "s/__API_PASSPHRASE__/$API_PASSPHRASE" /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
-fi
-
-# National Library Card config
+echo "Configuring National Library Card settings ..."
 if [ -n "$NLVENDORURL" ]; then
   echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
-  sed -i "s/__NLVENDORUSER__/$NLVENDORUSER" /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
-  sed -i "s/__NLVENDORPASS__/$NLVENDORPASS" /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
 fi
 
-# SIP2 Server config
-salt-call --local state.sls koha.sip2 \
-  pillar="{koha: {instance: $KOHA_INSTANCE, sip_port: $SIP_PORT, \
-  sip_workers: $SIP_WORKERS, sip_autouser1: $SIP_AUTOUSER1, sip_autopass1: $SIP_AUTOPASS1}}"
+#echo "Starting SIP2 Server in DEV mode..."
+screen -dmS kohadev-sip sh -c "cd /kohadev/kohaclone ; \
+  KOHA_CONF=/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml perl -IC4/SIP -MILS C4/SIP/SIPServer.pm \
+  /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml ; exec bash"
 
+echo "Starting cron ..."
 /etc/init.d/cron start
 
-# Enable plack
+echo "Starting plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
 koha-plack --start "$KOHA_INSTANCE"
+
+echo "Restarting apache ..."
 service apache2 restart
 
 # Make sure log files exist before tailing them

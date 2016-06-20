@@ -1,0 +1,74 @@
+# Koha instance kohadev Apache config.
+
+# OPAC
+<VirtualHost *:8080>
+   <IfVersion >= 2.4>
+      Define instance "$KOHA_INSTANCE"
+   </IfVersion>
+   Include /etc/koha/apache-shared.conf
+#  Include /etc/koha/apache-shared-disable.conf
+#  Include /etc/koha/apache-shared-opac-plack.conf
+   Include /etc/koha/apache-shared-opac.conf
+
+   ServerName $KOHA_INSTANCE
+   SetEnv KOHA_CONF "/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml"
+   SetEnv PERL5LIB "/usr/share/koha/lib"
+   SetEnv MEMCACHED_SERVERS ""
+   SetEnv MEMCACHED_NAMESPACE ""
+   AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
+
+   # REST API configuration
+   Alias "/api" "/usr/share/koha/api/v1/app.pl/api"
+   <Directory /usr/share/koha/api>
+     Options +ExecCGI +FollowSymlinks
+     AddHandler cgi-script .pl
+     #SetEnv MOJO_MODE "production"
+     RewriteEngine On
+     RewriteBase /api/
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteCond %{DOCUMENT_ROOT}/../api/$1/app.pl -f
+     RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
+   </Directory>
+
+   ErrorLog    /var/log/koha/$KOHA_INSTANCE/opac-error.log
+#  TransferLog /var/log/koha/$KOHA_INSTANCE/opac-access.log
+#  RewriteLog  /var/log/koha/$KOHA_INSTANCE/opac-rewrite.log
+</VirtualHost>
+
+# Intranet
+<VirtualHost *:8081>
+   <IfVersion >= 2.4>
+      Define instance "$KOHA_INSTANCE"
+   </IfVersion>
+   Include /etc/koha/apache-shared.conf
+#  Include /etc/koha/apache-shared-disable.conf
+#  Include /etc/koha/apache-shared-intranet-plack.conf
+   Include /etc/koha/apache-shared-intranet.conf
+   
+   ServerName $KOHA_INSTANCE
+   SetEnv KOHA_CONF "/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml"
+   SetEnv PERL5LIB "/usr/share/koha/lib"
+   SetEnv MEMCACHED_SERVERS ""
+   SetEnv MEMCACHED_NAMESPACE ""
+
+   AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
+
+   # REST API configuration
+   Alias "/api" "/usr/share/koha/api/v1/app.pl/api"
+   <Directory /usr/share/koha/api>
+     Options +ExecCGI +FollowSymlinks
+     AddHandler cgi-script .pl
+     #SetEnv MOJO_MODE "production"
+     RewriteEngine On
+     RewriteBase /api/
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteCond %{DOCUMENT_ROOT}/../api/$1/app.pl -f
+     RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
+   </Directory>
+
+   ErrorLog    /var/log/koha/$KOHA_INSTANCE/intranet-error.log
+#  TransferLog /var/log/koha/$KOHA_INSTANCE/intranet-access.log
+#  RewriteLog  /var/log/koha/$KOHA_INSTANCE/intranet-rewrite.log
+</VirtualHost>
