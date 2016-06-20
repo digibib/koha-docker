@@ -39,7 +39,7 @@ RUN echo "mysql-server mysql-server/root_password password $KOHA_ADMINPASS" | de
 COPY ./files/local-apt-repo.tmpl /etc/apt/preferences.d/local-apt-repo
 
 # Install Koha Common
-ENV KOHA_VERSION 16.05.00+201606151322~patched
+ENV KOHA_VERSION 16.05.00+201606200946~patched
 RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
@@ -72,6 +72,9 @@ ENV SIP_AUTOPASS1 autopass
 # CAS bug workaround
 ADD ./files/Authen_CAS_Client_Response_Failure.pm /usr/share/perl5/Authen/CAS/Client/Response/Failure.pm
 ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Client/Response/Success.pm
+
+# Symlink api folder - TODO: Remove when unneccesary
+RUN ln -s /usr/share/koha/api/api/v1 /usr/share/koha/api/v1
 
 # Overwrite swagger definition file
 COPY ./files/swagger.json /usr/share/koha/api/v1/swagger.json
