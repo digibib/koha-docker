@@ -1,2 +1,0 @@
-firefox:
-  pkg.installed
