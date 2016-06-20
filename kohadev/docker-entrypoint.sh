@@ -139,13 +139,11 @@ if [ -n "$NLVENDORURL" ]; then
   echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
 fi
 
-# SIP2 Server config
-#/etc/init.d/koha-common restart
+echo "Starting SIP2 Server in DEV mode..."
+screen -dmS kohadev-sip sh -c "cd /kohadev/kohaclone ; \
+  KOHA_CONF=/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml perl -IC4/SIP -MILS C4/SIP/SIPServer.pm \
+  /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml ; exec bash"
 
-echo "Starting SIP2 Server ..."
-/usr/sbin/koha-start-sip $KOHA_INSTANCE
-
-# Enable plack
 echo "Starting plack ..."
 sed -i 's_#[\s]*ProxyPass /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
 sed -i 's_#[\s]*ProxyPassReverse /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
