@@ -16,10 +16,10 @@
 <!-- Settings for special biblio server instance for PazPar2.
      Because PazPar2 only connects to a Z39.50 server using TCP/IP,
      it cannot use the Unix-domain socket that biblioserver uses.
-     Therefore, a custom server is defined.
+     Therefore, a custom server is defined. 
 __PAZPAR2_TOGGLE_XML_PRE__
 <listen id="mergeserver">tcp:@:__MERGE_SERVER_PORT__</listen>
-<server id="mergeserver"  listenref="mergeserver">
+<server id="mergeserver"  listenref="mergeserver"> 
     <directory>__ZEBRA_DATA_DIR__/biblios</directory>
     <config>__ZEBRA_CONF_DIR__/__ZEBRA_BIB_CFG__</config>
     <cql2rpn>__ZEBRA_CONF_DIR__/pqf.properties</cql2rpn>
@@ -78,7 +78,7 @@ __PAZPAR2_TOGGLE_XML_POST__
  <template_cache_dir>/tmp</template_cache_dir>
  <db_scheme>mysql</db_scheme>
  <database>koha_$KOHA_INSTANCE</database>
- <hostname>localhost</hostname>
+ <hostname>koha_mysql</hostname>
  <port>3306</port>
  <user>$KOHA_ADMINUSER</user>
  <pass>$KOHA_ADMINPASS</pass>
