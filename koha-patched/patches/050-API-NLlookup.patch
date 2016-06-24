@@ -1,0 +1,124 @@
+050-API-NLLookup
+
+Patch to extend API to check if existing user locally and 
+in the Norwegian Patron DB. 
+
+diff --git a/api/v1/swagger.json b/api/v1/swagger.json
+index 7657dcc..9327fae 100644
+--- a/api/v1/swagger.json
++++ b/api/v1/swagger.json
+@@ -970,6 +970,49 @@
+           }
+         }
+       }
++    },
++    "/checkexistinguser": {
++      "get": {
++        "operationId": "existingusersInNorwegianPatronDB",
++        "tags": ["patrons", "norwegianpatrondb"],
++        "parameters": [
++          {
++            "name": "surname",
++            "in": "query",
++            "description": "Last name of patron",
++            "type": "string"
++          },
++          {
++            "name": "firstname",
++            "in": "query",
++            "description": "First name of patron",
++            "type": "integer"
++          },
++          {
++            "name": "birthdate",
++            "in": "query",
++            "description": "Birth date of patron",
++            "type": "integer"
++          },
++          {
++            "name": "ssn",
++            "in": "query",
++            "description": "Social security number",
++            "type": "string"
++          }
++        ],
++        "responses": {
++          "200": {
++            "description": "Result of search with given params"
++          },
++          "403": {
++            "description": "Error in lookup",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      }
+     }
+   },
+   "definitions": {
+diff --git a/Koha/REST/V1/NorwegianPatronDB.pm b/Koha/REST/V1/NorwegianPatronDB.pm
+new file mode 100644
+index 0000000..311c9b8
+--- /dev/null
++++ b/Koha/REST/V1/NorwegianPatronDB.pm
+@@ -0,0 +1,59 @@
++package Koha::REST::V1::NorwegianPatronDB;
++
++# This file is part of Koha.
++#
++# Koha is free software; you can redistribute it and/or modify it under the
++# terms of the GNU General Public License as published by the Free Software
++# Foundation; either version 3 of the License, or (at your option) any later
++# version.
++#
++# Koha is distributed in the hope that it will be useful, but WITHOUT ANY
++# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
++# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License along
++# with Koha; if not, write to the Free Software Foundation, Inc.,
++# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++use Modern::Perl;
++
++use Mojo::Base 'Mojolicious::Controller';
++
++use C4::Auth qw( haspermission );
++use Koha::AuthUtils qw(hash_password);
++use Koha::NorwegianPatronDB qw( NLSearch );
++use Koha::Patrons;
++use Data::Dumper;
++
++sub existingusers {
++    my ($c, $args, $cb) = @_;
++
++    my $user = $c->stash('koha.user');
++    unless ($user && haspermission($user->userid, {borrowers => 1})) {
++       return $c->$cb({error => "You don't have the required permission"}, 403);
++    }
++    # lookup by birthdate, name and/or ssn
++    my $params = $c->req->query_params->to_hash;
++    # local lookup
++    my $localpatrons = Koha::Patrons->search({
++        surname => $params->{surname},
++        firstname => $params->{firstname},
++        dateofbirth => $params->{dateofbirth}
++    })->unblessed;
++    warn Dumper($localpatrons);
++    if (scalar(@$localpatrons) > 0) {
++        return $c->$cb({message => "Local user(s) found", results => scalar(@$localpatrons), users => $localpatrons}, 200);
++    }
++
++    # norwegian Patron DB lookup
++    my $res = &NLSearch($params->{ssn});
++    unless ($res->fault) {
++        my $nl = $res->result();
++        warn Dumper($nl);
++        return $c->$cb({message => "Result from central lookup: $nl->{'melding'}", results => int($nl->{'antall_treff'}) }, 200);
++    } else {
++        return $c->$cb({error => "Error in call against Norwegian Patron Database"}, 403);
++    }
++}
++
++1;

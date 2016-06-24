@@ -970,6 +970,49 @@
           }
         }
       }
+    },
+    "/checkexistinguser": {
+      "get": {
+        "operationId": "existingusersInNorwegianPatronDB",
+        "tags": ["patrons", "norwegianpatrondb"],
+        "parameters": [
+          {
+            "name": "surname",
+            "in": "query",
+            "description": "Last name of patron",
+            "type": "string"
+          },
+          {
+            "name": "firstname",
+            "in": "query",
+            "description": "First name of patron",
+            "type": "integer"
+          },
+          {
+            "name": "birthdate",
+            "in": "query",
+            "description": "Birth date of patron",
+            "type": "integer"
+          },
+          {
+            "name": "ssn",
+            "in": "query",
+            "description": "Social security number",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result of search with given params"
+          },
+          "403": {
+            "description": "Error in lookup",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
