@@ -8,9 +8,9 @@
   #Include /etc/koha/apache-shared.conf
   #Include /etc/koha/apache-shared-opac-git.conf
 
-  ServerName $KOHA_INSTANCE
+  ServerName ${instance}
   DocumentRoot /kohadev/kohaclone/koha-tmpl
-
+  
 
   <Directory "/kohadev/kohaclone">
   Options All
@@ -20,12 +20,12 @@
   Allow from All
   </Directory>
 
-  SetEnv KOHA_CONF "/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml"
+  SetEnv KOHA_CONF "/etc/koha/sites/${instance}/koha-conf.xml"
   SetEnv PERL5LIB "/kohadev/kohaclone"
-
+  
   SetEnv MEMCACHED_SERVERS ""
   SetEnv MEMCACHED_NAMESPACE ""
-  AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
+  AssignUserID ${instance}-koha ${instance}-koha
 
 
   ScriptAlias /cgi-bin/koha/ "/kohadev/kohaclone/opac/"
@@ -39,9 +39,9 @@
   RewriteRule ^/isbn/([^\/]*)/?$ /search?q=isbn:$1 [PT]
   RewriteRule ^/issn/([^\/]*)/?$ /search?q=issn:$1 [PT]
 
-   ErrorLog    /var/log/koha/$KOHA_INSTANCE/opac-error.log
-#  TransferLog /var/log/koha/$KOHA_INSTANCE/opac-access.log
-#  RewriteLog  /var/log/koha/$KOHA_INSTANCE/opac-rewrite.log
+   ErrorLog    /var/log/koha/${instance}/opac-error.log
+#  TransferLog /var/log/koha/${instance}/opac-access.log
+#  RewriteLog  /var/log/koha/${instance}/opac-rewrite.log
 </VirtualHost>
 
 
@@ -54,9 +54,9 @@
   Include /etc/koha/apache-shared-intranet-plack.conf
   #Include /etc/koha/apache-shared-intranet-git.conf
 
-  ServerName $KOHA_INSTANCE
+  ServerName ${instance}
   DocumentRoot /kohadev/kohaclone/koha-tmpl
-
+  
   <Directory "/kohadev/kohaclone">
   Options All
   AllowOverride All
@@ -64,13 +64,13 @@
   Order deny,allow
   Allow from All
   </Directory>
-
-  SetEnv KOHA_CONF "/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml"
+  
+  SetEnv KOHA_CONF "/etc/koha/sites/${instance}/koha-conf.xml"
   SetEnv PERL5LIB "/kohadev/kohaclone"
-
+  
   SetEnv MEMCACHED_SERVERS ""
   SetEnv MEMCACHED_NAMESPACE ""
-  AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
+  AssignUserID ${instance}-koha ${instance}-koha
 
   ScriptAlias /cgi-bin/koha/ "/kohadev/kohaclone/"
   ScriptAlias /index.html "/kohadev/kohaclone/mainpage.pl"
@@ -96,7 +96,7 @@
 #    RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
 #  </Directory>
 
-   ErrorLog    /var/log/koha/$KOHA_INSTANCE/intranet-error.log
-#  TransferLog /var/log/koha/$KOHA_INSTANCE/intranet-access.log
-#  RewriteLog  /var/log/koha/$KOHA_INSTANCE/intranet-rewrite.log
+   ErrorLog    /var/log/koha/${instance}/intranet-error.log
+#  TransferLog /var/log/koha/${instance}/intranet-access.log
+#  RewriteLog  /var/log/koha/${instance}/intranet-rewrite.log
 </VirtualHost>
