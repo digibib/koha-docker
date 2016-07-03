@@ -1,0 +1,101 @@
+---
+version: '2'
+
+networks:
+  backend:
+    driver: bridge
+
+services:
+  koha_build:
+    container_name: koha_build
+    image: "digibib/koha:${KOHA_IMAGE_TAG}"
+    build:
+      context: "${KOHAPATH}"
+      dockerfile: Dockerfile
+    networks:
+      - backend
+    depends_on:
+      - koha_mysql
+      - sip
+    cap_add:
+      - SYS_NICE
+      - DAC_READ_SEARCH
+      - MKNOD
+    environment:
+      KOHA_ADMINPASS: "${KOHA_ADMINPASS}"
+      KOHA_ADMINUSER: "${KOHA_ADMINUSER}"
+      KOHA_INSTANCE: "$KOHA_INSTANCE"
+      KOHA_DBHOST: koha_mysql
+      DEFAULT_LANGUAGE: nb-NO
+      EMAIL_ENABLED: "True"
+      SMTP_SERVER_HOST: mailrelay # access through network 'backend'
+      SMTP_SERVER_PORT: 2525
+      MESSAGE_QUEUE_FREQUENCY: 1
+      SMS_SERVER_HOST: "${SMS_SERVER_HOST}"
+      API_PASSPHRASE: "${API_PASSPHRASE}"
+      NLBASEUSER: "${NLBASEUSER}"
+      NLBASEPASS: "${NLBASEPASS}"
+      NLVENDORURL: "${NLVENDORURL}"
+      NLVENDORUSER: "${NLVENDORUSER}"
+      NLVENDORPASS: "${NLVENDORPASS}"
+      NLVENDORKEY: "${NLVENDORKEY}"
+    ports:
+      - "6001:6001"
+      - "8081:8081"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "2"
+
+  koha_mysql:
+    container_name: koha_mysql
+    image: mysql:5.6.20
+    networks:
+      - backend
+    cap_add:
+      - MKNOD
+    command:
+      - mysqld
+      - "--datadir=/var/lib/mysql"
+      - "--user=mysql"
+      - "--max_allowed_packet=64M"
+      - "--wait_timeout=6000"
+      - "--bind-address=0.0.0.0"
+    environment:
+      MYSQL_DATABASE: "koha_${KOHA_INSTANCE}"
+      MYSQL_PASSWORD: "${KOHA_ADMINPASS}"
+      MYSQL_ROOT_PASSWORD: "${KOHA_ADMINPASS}"
+      MYSQL_USER: "${KOHA_ADMINUSER}"
+    volumes_from:
+      - koha_mysql_data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "2"
+
+  koha_mysql_data:
+    container_name: koha_mysql_data
+    image: "busybox:latest"
+    volumes:
+      - /var/lib/mysql
+
+  sip:
+    container_name: sip_proxy
+    image: "digibib/tcp-proxy:14dc5417bf211317351a0bae084db12c64a1dd45"
+    networks:
+      - backend
+    ports:
+      - "6002:9999"
+    command:
+      - "/app/tcp-proxy"
+      - "-vv"
+      - "-r"
+      - "${HOST}:${SIP_PORT}"
+      - "-replace=(|AB)10([0-9]{14})~$$1$$2"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "2"
