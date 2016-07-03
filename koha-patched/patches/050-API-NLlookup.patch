@@ -59,10 +59,10 @@ index 7657dcc..9327fae 100644
    "definitions": {
 diff --git a/Koha/REST/V1/NorwegianPatronDB.pm b/Koha/REST/V1/NorwegianPatronDB.pm
 new file mode 100644
-index 0000000..311c9b8
+index 0000000..feda8a1
 --- /dev/null
 +++ b/Koha/REST/V1/NorwegianPatronDB.pm
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,73 @@
 +package Koha::REST::V1::NorwegianPatronDB;
 +
 +# This file is part of Koha.
@@ -97,8 +97,16 @@ index 0000000..311c9b8
 +    unless ($user && haspermission($user->userid, {borrowers => 1})) {
 +       return $c->$cb({error => "You don't have the required permission"}, 403);
 +    }
++    my $response = {
++        count => 0,
++        localdb => 0,
++        centraldb => 0,
++        message => ""
++    };
++
 +    # lookup by birthdate, name and/or ssn
 +    my $params = $c->req->query_params->to_hash;
++
 +    # local lookup
 +    my $localpatrons = Koha::Patrons->search({
 +        surname => $params->{surname},
@@ -106,8 +114,11 @@ index 0000000..311c9b8
 +        dateofbirth => $params->{dateofbirth}
 +    })->unblessed;
 +    warn Dumper($localpatrons);
++
 +    if (scalar(@$localpatrons) > 0) {
-+        return $c->$cb({message => "Local user(s) found", results => scalar(@$localpatrons), users => $localpatrons}, 200);
++        $response->{localdb} = scalar(@$localpatrons);
++        $response->{count} += $response->{localdb};
++        $response->{message} += "scalar(@$localpatrons) user(s) found in local db. ";
 +    }
 +
 +    # norwegian Patron DB lookup
@@ -115,7 +126,10 @@ index 0000000..311c9b8
 +    unless ($res->fault) {
 +        my $nl = $res->result();
 +        warn Dumper($nl);
-+        return $c->$cb({message => "Result from central lookup: $nl->{'melding'}", results => int($nl->{'antall_treff'}) }, 200);
++        $response->{centraldb} = int($nl->{'antall_treff'});
++        $response->{count} += $response->{centraldb};
++        $response->{message} += "Result from central lookup: $nl->{'melding'}. ";
++        return $c->$cb($response, 200);
 +    } else {
 +        return $c->$cb({error => "Error in call against Norwegian Patron Database"}, 403);
 +    }
