@@ -55,7 +55,7 @@ services:
     networks:
       - backend
     ports:
-      - "6002:9999"
+      - "6003:9999"
     command:
       - "/app/tcp-proxy"
       - "-vv"
