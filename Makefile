@@ -87,7 +87,7 @@ tag = "$(shell git rev-parse HEAD)"
 tag:
 	$(CMD) -c 'sudo docker tag -f digibib/koha digibib/koha:$(tag)'
 
-push: tag
+push:
 	@echo "======= PUSHING KOHA CONTAINER ======\n"
 	$(CMD) -c 'sudo docker push digibib/koha'
 
