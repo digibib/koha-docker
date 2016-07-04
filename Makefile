@@ -62,10 +62,16 @@ delete: stop
 	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose rm -fv koha_$(KOHAENV) || true'
 
 logs:
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose logs koha_$(KOHAENV)'
+
+logs-nocolor:
 	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose logs --no-color koha_$(KOHAENV)'
 
 logs-f:
 	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose logs -f koha_$(KOHAENV)'
+
+logs-f-nocolor:
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose logs -f --no-color koha_$(KOHAENV)'
 
 browser:
 	$(CMD) -c 'firefox "http://localhost:8081/" > firefox.log 2> firefox.err < /dev/null' &
