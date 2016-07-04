@@ -23,6 +23,7 @@ services:
       - ${KOHAPATH}/koha-patched/patches:/patches
       - ${KOHAPATH}/koha-patched/debian:/debian
     environment:
+      KOHA_VERSION: "${KOHA_VERSION}"
       KOHA_ADMINPASS: "${KOHA_ADMINPASS}"
       KOHA_ADMINUSER: "${KOHA_ADMINUSER}"
       KOHA_INSTANCE: "$KOHA_INSTANCE"

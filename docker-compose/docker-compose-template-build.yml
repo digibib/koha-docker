@@ -12,6 +12,8 @@ services:
     build:
       context: "${KOHAPATH}"
       dockerfile: Dockerfile
+      args:
+        KOHA_VERSION: "${KOHA_VERSION}"
     networks:
       - backend
     depends_on:
@@ -22,9 +24,10 @@ services:
       - DAC_READ_SEARCH
       - MKNOD
     environment:
+      KOHA_VERSION: "${KOHA_VERSION}"
       KOHA_ADMINPASS: "${KOHA_ADMINPASS}"
       KOHA_ADMINUSER: "${KOHA_ADMINUSER}"
-      KOHA_INSTANCE: "$KOHA_INSTANCE"
+      KOHA_INSTANCE: "${KOHA_INSTANCE}"
       KOHA_DBHOST: koha_mysql
       DEFAULT_LANGUAGE: nb-NO
       EMAIL_ENABLED: "True"
