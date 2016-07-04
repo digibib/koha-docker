@@ -1,5 +1,5 @@
 #######
-# Debian Jessie build of Koha - Provisioned by Salt
+# Debian Jessie build of Koha
 #######
 
 FROM debian:jessie

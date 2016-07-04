@@ -8,7 +8,7 @@ networks:
 services:
   koha_build:
     container_name: koha_build
-    image: "digibib/koha:${KOHA_IMAGE_TAG}"
+    image: "digibib/koha:${GITREF}"
     build:
       context: "${KOHAPATH}"
       dockerfile: Dockerfile
