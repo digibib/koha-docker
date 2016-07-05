@@ -27,13 +27,13 @@ index 7657dcc..9327fae 100644
 +            "name": "firstname",
 +            "in": "query",
 +            "description": "First name of patron",
-+            "type": "integer"
++            "type": "string"
 +          },
 +          {
-+            "name": "birthdate",
++            "name": "dateofbirth",
 +            "in": "query",
 +            "description": "Birth date of patron",
-+            "type": "integer"
++            "type": "string"
 +          },
 +          {
 +            "name": "ssn",
@@ -59,10 +59,10 @@ index 7657dcc..9327fae 100644
    "definitions": {
 diff --git a/Koha/REST/V1/NorwegianPatronDB.pm b/Koha/REST/V1/NorwegianPatronDB.pm
 new file mode 100644
-index 0000000..feda8a1
+index 0000000..b8fc783
 --- /dev/null
 +++ b/Koha/REST/V1/NorwegianPatronDB.pm
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,74 @@
 +package Koha::REST::V1::NorwegianPatronDB;
 +
 +# This file is part of Koha.
@@ -113,12 +113,13 @@ index 0000000..feda8a1
 +        firstname => $params->{firstname},
 +        dateofbirth => $params->{dateofbirth}
 +    })->unblessed;
-+    warn Dumper($localpatrons);
 +
++    # TODO: REMOVE DUMPS
++    warn Dumper($localpatrons);
 +    if (scalar(@$localpatrons) > 0) {
 +        $response->{localdb} = scalar(@$localpatrons);
 +        $response->{count} += $response->{localdb};
-+        $response->{message} += "scalar(@$localpatrons) user(s) found in local db. ";
++        $response->{message} .= "User(s) found in local db. ";
 +    }
 +
 +    # norwegian Patron DB lookup
@@ -128,7 +129,7 @@ index 0000000..feda8a1
 +        warn Dumper($nl);
 +        $response->{centraldb} = int($nl->{'antall_treff'});
 +        $response->{count} += $response->{centraldb};
-+        $response->{message} += "Result from central lookup: $nl->{'melding'}. ";
++        $response->{message} .= "Result from central lookup: $nl->{'melding'}. ";
 +        return $c->$cb($response, 200);
 +    } else {
 +        return $c->$cb({error => "Error in call against Norwegian Patron Database"}, 403);
