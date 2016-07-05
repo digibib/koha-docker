@@ -986,13 +986,13 @@
             "name": "firstname",
             "in": "query",
             "description": "First name of patron",
-            "type": "integer"
+            "type": "string"
           },
           {
-            "name": "birthdate",
+            "name": "dateofbirth",
             "in": "query",
             "description": "Birth date of patron",
-            "type": "integer"
+            "type": "string"
           },
           {
             "name": "ssn",
