@@ -11,8 +11,6 @@ services:
     build:
       context: "${KOHAPATH}/koha-patched"
       dockerfile: Dockerfile
-      args:
-        KOHA_BUILD: "${KOHA_BUILD}"
     networks:
       - backend
     depends_on:
