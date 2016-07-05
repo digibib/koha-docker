@@ -13,7 +13,7 @@ services:
       context: "${KOHAPATH}"
       dockerfile: Dockerfile
       args:
-        KOHA_VERSION: "${KOHA_VERSION}"
+        KOHA_BUILD: "${KOHA_BUILD}"
     networks:
       - backend
     depends_on:

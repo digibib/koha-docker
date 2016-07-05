@@ -15,7 +15,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
                        libnet-ssleay-perl libcrypt-ssleay-perl apache2 && \
     apt-get clean
 
-ARG KOHA_VERSION
+ARG KOHA_BUILD
 
 ENV KOHA_ADMINUSER admin
 ENV KOHA_ADMINPASS secret
@@ -44,7 +44,7 @@ COPY ./files/local-apt-repo.tmpl /etc/apt/preferences.d/local-apt-repo
 RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
-    apt-get update && apt-get install -y --force-yes koha-common=$KOHA_VERSION && apt-get clean
+    apt-get update && apt-get install -y --force-yes koha-common=$KOHA_BUILD && apt-get clean
 
 # Installer files
 COPY ./files/installer /installer

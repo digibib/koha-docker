@@ -28,7 +28,6 @@ RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sour
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
 
-ENV KOHA_VERSION 16.05.00
 ENV GITREF c91b16bd9e82588c7625f69e37d6435dd378915e
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing

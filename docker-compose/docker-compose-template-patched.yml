@@ -11,6 +11,8 @@ services:
     build:
       context: "${KOHAPATH}/koha-patched"
       dockerfile: Dockerfile
+      args:
+        KOHA_BUILD: "${KOHA_BUILD}"
     networks:
       - backend
     depends_on:
@@ -26,7 +28,7 @@ services:
       KOHA_VERSION: "${KOHA_VERSION}"
       KOHA_ADMINPASS: "${KOHA_ADMINPASS}"
       KOHA_ADMINUSER: "${KOHA_ADMINUSER}"
-      KOHA_INSTANCE: "$KOHA_INSTANCE"
+      KOHA_INSTANCE: "${KOHA_INSTANCE}"
       KOHA_DBHOST: koha_mysql
       DEFAULT_LANGUAGE: nb-NO
       EMAIL_ENABLED: "True"
