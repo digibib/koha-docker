@@ -1013,6 +1013,29 @@
           }
         }
       }
+    },
+    "/labelgenerator/{barcode}": {
+      "get": {
+        "operationId": "getlabelFromLabelGenerator",
+        "tags": ["biblios", "items"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "$ref": "#/parameters/barcodePathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Label generator details"
+          },
+          "404": {
+            "description": "Barcode not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1053,6 +1076,13 @@
       "description": "Internal biblio identifier",
       "required": true,
       "type": "integer"
+    },
+    "barcodePathParam": {
+      "name": "barcode",
+      "in": "path",
+      "description": "Item barcode identifier",
+      "required": true,
+      "type": "string"
     }
   }
 }
