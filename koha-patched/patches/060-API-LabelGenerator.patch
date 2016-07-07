@@ -1,0 +1,112 @@
+060-API-LabelGenerator
+
+Patch to extend API to allow item lookup by barcode and return 
+information needed for label generation.
+
+diff --git a/api/v1/swagger.json b/api/v1/swagger.json
+index cb40533..09d13f9 100644
+--- a/api/v1/swagger.json
++++ b/api/v1/swagger.json
+@@ -1013,6 +1013,29 @@
+           }
+         }
+       }
++    },
++    "/labelgenerator/{barcode}": {
++      "get": {
++        "operationId": "getlabelFromLabelGenerator",
++        "tags": ["biblios", "items"],
++        "produces": ["application/json"],
++        "parameters": [
++          {
++            "$ref": "#/parameters/barcodePathParam"
++          }
++        ],
++        "responses": {
++          "200": {
++            "description": "Label generator details"
++          },
++          "404": {
++            "description": "Barcode not found",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      }
+     }
+   },
+   "definitions": {
+@@ -1053,6 +1076,13 @@
+       "description": "Internal biblio identifier",
+       "required": true,
+       "type": "integer"
++    },
++    "barcodePathParam": {
++      "name": "barcode",
++      "in": "path",
++      "description": "Item barcode identifier",
++      "required": true,
++      "type": "string"
+     }
+   }
+ }
+diff --git a/Koha/REST/V1/LabelGenerator.pm b/Koha/REST/V1/LabelGenerator.pm
+new file mode 100644
+index 0000000..8c41dc0
+--- /dev/null
++++ b/Koha/REST/V1/LabelGenerator.pm
+@@ -0,0 +1,53 @@
++package Koha::REST::V1::LabelGenerator;
++# This file is part of Koha.
++#
++# Koha is free software; you can redistribute it and/or modify it under the
++# terms of the GNU General Public License as published by the Free Software
++# Foundation; either version 3 of the License, or (at your option) any later
++# version.
++#
++# Koha is distributed in the hope that it will be useful, but WITHOUT ANY
++# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
++# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License along
++# with Koha; if not, write to the Free Software Foundation, Inc.,
++# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++use Modern::Perl;
++
++use Mojo::Base 'Mojolicious::Controller';
++
++use Koha::Biblios;
++use Koha::Items;
++use Data::Dumper;
++
++sub getlabel {
++    my ($c, $args, $cb) = @_;
++
++    my $items = Koha::Items->search({ barcode => $args->{barcode} })->unblessed;
++    unless (scalar(@{$items}) > 0) {
++        return $c->$cb({error => "No items found"}, 404);
++    }
++    my $item = $items->[0];
++    my $biblio = Koha::Biblios->find($item->{biblionumber})->unblessed;
++    unless ($biblio) {
++        return $c->$cb({error => "No attached biblio found"}, 404);
++    }
++    my $label = {
++        barcode => $item->{barcode},
++        biblio => $item->{biblionumber},
++        title => $biblio->{title},
++        creator => $biblio->{author},
++        publicationDate => $biblio->{copyrightdate},
++        homeBranch => $item->{homebranch},
++        holdingBranch => $item->{holdingbranch},
++        callNumber => $item->{itemcallnumber},
++        shelvingLocation => $item->{location},
++        copyNumber => $item->{copynumber}
++    };
++
++    return $c->$cb($label, 200);
++}
++
++1;
