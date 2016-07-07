@@ -12,8 +12,6 @@ services:
     build:
       context: "${KOHAPATH}/kohadev"
       dockerfile: Dockerfile
-      args:
-        KOHA_BUILD: "${KOHA_BUILD}"
     networks:
       - backend
     depends_on:
@@ -42,6 +40,10 @@ services:
       NLVENDORUSER: "${NLVENDORUSER}"
       NLVENDORPASS: "${NLVENDORPASS}"
       NLVENDORKEY: "${NLVENDORKEY}"
+      AUTHOR_NAME: "${AUTHOR_NAME}"
+      AUTHOR_EMAIL: "${AUTHOR_EMAIL}"
+      BUGZ_USER: "${BUGZ_USER}"
+      BUGZ_PASS: "${BUGZ_PASS}"
     ports:
       - "6001:6001"
       - "8080:8080"

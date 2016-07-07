@@ -54,11 +54,11 @@ RUN cd /kohadev && \
 
 # Global dev settings
 ADD koha-common.tmpl /etc/default/koha-common
-ADD apache-shared-intranet-plack.conf.tmpl /etc/koha/apache-shared-intranet-plack.conf
+#ADD apache-shared-intranet-plack.conf.tmpl /etc/koha/apache-shared-intranet-plack.conf
 ADD plack.psgi /etc/koha/plack.psgi
 
 # Override with kohadev templates
-ADD koha-conf.xml.tmpl /templates/instance/koha.conf.xml.tmpl
+ADD koha-conf.xml.tmpl /templates/instance/koha-conf.xml.tmpl
 ADD apache.tmpl /templates/instance/apache.tmpl
 
 # Use SIP2 Development version from git

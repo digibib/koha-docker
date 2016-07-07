@@ -140,9 +140,9 @@ if [ -n "$NLVENDORURL" ]; then
 fi
 
 echo "Starting SIP2 Server in DEV mode..."
-screen -dmS kohadev-sip sh -c "cd /kohadev/kohaclone ; \
-  KOHA_CONF=/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml perl -IC4/SIP -MILS C4/SIP/SIPServer.pm \
-  /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml ; exec bash"
+#screen -dmS kohadev-sip sh -c "cd /kohadev/kohaclone ; \
+#  KOHA_CONF=/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml perl -IC4/SIP -MILS C4/SIP/SIPServer.pm \
+#  /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml ; exec bash"
 
 echo "Starting plack ..."
 sed -i 's_#[\s]*ProxyPass /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf

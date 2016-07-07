@@ -97,6 +97,41 @@ docker_cleanup:						## Clean up unused docker containers and images
 	$(CMD) -c 'sudo docker rmi $$(sudo docker images -aq -f dangling=true) 2> /dev/null || true'
 	$(CMD) -c 'sudo docker volume rm $$(sudo docker volume ls -q -f=dangling=true) 2> /dev/null || true'
 
+######### KOHADEV SPECIFIC TARGETS #########
+
+dump_kohadb:		## Dumps Koha database
+	@echo "======= DUMPING KOHA DATABASE ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose exec koha_$(KOHAENV) bash -c "mysqldump --all-databases > /tmp/kohadump.sql"'
+
+restore_kohadb:	## Restores Koha database
+	@echo "======= RESTORING KOHA DATABASE ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose exec koha_$(KOHAENV) bash -c "mysql < /tmp/kohadump.sql"'
+
+load_testdata:	## Load optional test data
+	@echo "======= LOADING KOHA TESTDATA ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose exec koha_$(KOHAENV) bash -c \
+	"for file in /kohadev/kohaclone/installer/data/mysql/en/optional/*.sql; do \
+	koha-mysql name < \$$file ; \
+	done;"'
+
+reset_git:			## Resets git by removing and doing new shallow clone
+	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose exec koha_$(KOHAENV) bash -c "cd /kohadev/kohaclone && \
+		git clean -xdf && git am --abort || true && git reset --hard && \
+		git checkout master && git branch -D sandbox || true"'
+
+reset_git_hard:	## Resets git by removing and doing new shallow clone
+	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose exec koha_$(KOHAENV) bash -c "cd /kohadev && rm -rf kohaclone && git clone --depth 1 \$$KOHA_REPO kohaclone"'
+
+patch:					## needs PATCHES
+	@echo "======= PATCHING KOHADEV CONTAINER ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose exec koha_$(KOHAENV) bash -c "cd /kohadev/kohaclone && \
+	(git checkout -b sandbox || true) && \
+	for patch in $(PATCHES) ; do \
+		yes | git bz apply \$$patch ; \
+	done"'
+
 ######### OLD MAKE TARGETS ############
 # for REAL forwarding, set env FORWARD_SMTP to receiving smtp service
 gosmtp_start:
