@@ -143,9 +143,9 @@ new file mode 100644
 + * creates <div> with <table>
 + * inserts table to #patronlists and adds highlighted items as they arrive from websocket
 + */
-+
 +$(document).ready(function() {
 +  ws=new WebSocket(rfidhuburl);
++  branch = document.getElementById("logged-in-branch-code") ? document.getElementById("logged-in-branch-code").innerHTML : "ukjent";
 +  state = $("body").attr("id");
 +  // activate RFID Modal
 +  $("#menu ul").append('<li><a href="#" onclick="activateWrite();">Preg RFID</a></li>');
@@ -172,9 +172,9 @@ new file mode 100644
 +            console.log("Connected to RFIDhub");
 +            $('#RFIDStatus .btn').css("backgroundColor", "lightgreen");
 +            if (state == "circ_returns") {
-+              ws.send(JSON.stringify({Action: "CHECKIN"}));
++              ws.send(JSON.stringify({Action: "CHECKIN", Branch: branch}));
 +            } else if (state == "circ_circulation") {
-+              ws.send(JSON.stringify({Action: "CHECKOUT", Patron: "[% borrower.cardnumber %]"})); 
++              ws.send(JSON.stringify({Action: "CHECKOUT", Branch: branch, Patron: "[% borrower.cardnumber %]"}));
 +            }
 +            break;
 +          case "DISCONNECT":
