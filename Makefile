@@ -50,10 +50,15 @@ rebuild:
 
 build_debianfiles:
 	@echo "======= BUILDING KOHA CONTAINER FROM LOCAL DEBIANFILES ======\n"
-	$(CMD) -c 'sudo docker build -f $(KOHAPATH)/Dockerfile.debianfiles -t digibib/koha $(KOHAPATH) '
+	$(CMD) -c 'sudo docker build --build-arg KOHA_BUILD=$(KOHA_BUILD) \
+	-f $(KOHAPATH)/Dockerfile.debianfiles -t digibib/koha $(KOHAPATH)'
 
 run: delete
 	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose up -d koha_$(KOHAENV)'
+
+run_manual: delete
+	@echo "======= MANUAL RUN OF koha_$(KOHAENV) CONTAINER ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose run --rm koha_$(KOHAENV) bash'
 
 stop:
 	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose stop koha_$(KOHAENV) || true'
@@ -106,6 +111,14 @@ dump_kohadb:		## Dumps Koha database
 restore_kohadb:	## Restores Koha database
 	@echo "======= RESTORING KOHA DATABASE ======\n"
 	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose exec koha_$(KOHAENV) bash -c "mysql < /tmp/kohadump.sql"'
+
+delete_mysql_server:		## Stops and removes mysql server
+	@echo "======= STOPPING MYSQL SERVER ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose stop koha_mysql && sudo docker-compose rm -f koha_mysql'
+
+delete_kohadb:	stop delete_mysql_server		## Deletes Koha database
+	@echo "======= DELETING KOHA DATABASE ======\n"
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose rm -f koha_mysql_data'
 
 load_testdata:	## Load optional test data
 	@echo "======= LOADING KOHA TESTDATA ======\n"
