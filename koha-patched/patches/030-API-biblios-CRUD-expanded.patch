@@ -202,25 +202,9 @@ index 0000000..549c551
 +
 +1;
 diff --git a/api/v1/swagger.json b/api/v1/swagger.json
-index e0af44a..0ee6f7b 100644
+index 7401f69..0ee6f7b 100644
 --- a/api/v1/swagger.json
 +++ b/api/v1/swagger.json
-@@ -120,6 +120,7 @@
-               "$ref": "#/definitions/error"
-             }
-           }
-+        }
-       },
-       "put": {
-         "operationId": "editPatron",
-@@ -208,7 +209,6 @@
-             "schema": { "$ref": "#/definitions/error" }
-           }
-         }
--        }
-       }
-     },
-     "/holds": {
 @@ -547,6 +547,7 @@
              "type": "integer"
            }
@@ -229,7 +213,7 @@ index e0af44a..0ee6f7b 100644
          "produces": ["application/json"],
          "responses": {
            "200": {
-@@ -656,23 +657,31 @@
+@@ -656,6 +657,184 @@
              "schema": {
                "$ref": "#/definitions/error"
              }
@@ -239,56 +223,44 @@ index e0af44a..0ee6f7b 100644
 +            "schema": {
 +              "$ref": "#/definitions/error"
 +            }
-           }
-         }
-       }
-     },
--    "/messagepreferences/{borrowernumber}": {
++          }
++        }
++      }
++    },
 +    "/biblios/{biblionumber}": {
-       "get": {
--        "operationId": "getMessagepreferencesByUser",
--        "tags": ["patrons", "messages"],
++      "get": {
 +        "operationId": "getBiblio",
 +        "tags": ["biblios"],
-         "parameters": [
--          {
--            "$ref": "#/parameters/borrowernumberPathParam"
--          }
++        "parameters": [
 +          { "$ref": "#/parameters/biblionumberPathParam" }
 +        ],
 +        "produces": [
 +          "application/json"
-         ],
--        "produces": ["application/json"],
-         "responses": {
-           "200": {
--            "description": "Patron message preferences"
++        ],
++        "responses": {
++          "200": {
 +            "description": "A biblio record",
 +            "schema": { "$ref": "#/definitions/biblio" }
 +
-           },
-           "403": {
-             "description": "Access forbidden",
-@@ -681,7 +690,7 @@
-             }
-           },
-           "404": {
--            "description": "Patron not found",
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "404": {
 +            "description": "Biblio not found",
-             "schema": {
-               "$ref": "#/definitions/error"
-             }
-@@ -689,18 +698,53 @@
-         }
-       },
-       "put": {
--        "operationId": "setMessagepreferencesByUser",
--        "tags": ["patrons", "messages"],
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      },
++      "put": {
 +        "operationId": "updateBiblio",
 +        "tags": ["biblios"],
-         "parameters": [
--          {
--            "$ref": "#/parameters/borrowernumberPathParam"
++        "parameters": [
 +          { "$ref": "#/parameters/biblionumberPathParam" }
 +        ],
 +        "produces": [
@@ -313,7 +285,7 @@ index e0af44a..0ee6f7b 100644
 +            "schema": {
 +              "$ref": "#/definitions/error"
 +            }
-           }
++          }
 +        }
 +      },
 +      "delete": {
@@ -321,12 +293,10 @@ index e0af44a..0ee6f7b 100644
 +        "tags": ["biblios"],
 +        "parameters": [
 +          { "$ref": "#/parameters/biblionumberPathParam" }
-         ],
--        "consumes": ["application/json"],
-         "produces": ["application/json"],
-         "responses": {
-           "200": {
--            "description": "Patron message preferences"
++        ],
++        "produces": ["application/json"],
++        "responses": {
++          "200": {
 +            "description": "Biblio record deleted successfully",
 +            "schema": {
 +              "type": "object"
@@ -335,14 +305,14 @@ index e0af44a..0ee6f7b 100644
 +          "400": {
 +            "description": "Biblio deletion failed",
 +            "schema": { "$ref": "#/definitions/error" }
-           },
-           "403": {
-             "description": "Access forbidden",
-@@ -709,7 +753,85 @@
-             }
-           },
-           "404": {
--            "description": "Patron not found",
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "404": {
 +            "description": "Biblio not found",
 +            "schema": { "$ref": "#/definitions/error" }
 +          }
@@ -422,10 +392,13 @@ index e0af44a..0ee6f7b 100644
 +          },
 +          "403": {
 +            "description": "Access forbidden",
-             "schema": {
-               "$ref": "#/definitions/error"
-             }
-@@ -806,6 +928,13 @@
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
+           }
+         }
+       }
+@@ -749,6 +928,13 @@
        "description": "Internal item identifier",
        "required": true,
        "type": "integer"

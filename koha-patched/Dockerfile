@@ -27,7 +27,7 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF c91b16bd9e82588c7625f69e37d6435dd378915e
+ENV GITREF b7afd4218867ce362f3c140d6dd7ffbceb2eb687
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -64,10 +64,9 @@ ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
-# OK    Bug 16271 - Allow more filters on /api/v1/holds
 # OK    Bug 16497 - REST API: add routes to list libraries
 # FAILS Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
-ENV KOHABUGS     "16330 13895 16271 16497"
+ENV KOHABUGS     "16330 13895 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian

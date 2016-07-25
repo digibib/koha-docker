@@ -77,9 +77,6 @@ ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Cl
 # Symlink api folder - TODO: Remove when unneccesary
 RUN ln -s /usr/share/koha/api/api/v1 /usr/share/koha/api/v1
 
-# Overwrite swagger definition file
-COPY ./files/swagger.json /usr/share/koha/api/v1/swagger.json
-
 ENV HOME /root
 WORKDIR /root
 
