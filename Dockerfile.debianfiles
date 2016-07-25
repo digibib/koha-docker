@@ -6,7 +6,7 @@ FROM debian:jessie
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
-ENV REFRESHED_AT 2015-01-06
+ENV REFRESHED_AT 2016-06-23
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get upgrade --yes && \
@@ -14,6 +14,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
                        unzip python-software-properties libswitch-perl \
                        libnet-ssleay-perl libcrypt-ssleay-perl apache2 && \
     apt-get clean
+
+ARG KOHA_BUILD
 
 ENV KOHA_ADMINUSER admin
 ENV KOHA_ADMINPASS secret
@@ -39,14 +41,13 @@ RUN echo "mysql-server mysql-server/root_password password $KOHA_ADMINPASS" | de
 COPY ./files/local-apt-repo.tmpl /etc/apt/preferences.d/local-apt-repo
 
 # Install Koha Common
-ENV KOHA_VERSION 16.05.00+201606241133~patched
 ADD ./koha-patched/debian /tmp/debian
 RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
-    dpkg -i /tmp/koha-perldeps_$KOHA_VERSION_all.deb || apt-get install -y -f && \
-    dpkg -i /tmp/koha-deps_$KOHA_VERSION_all.deb || apt-get install -y -f && \
-    dpkg -i /tmp/koha-common_$KOHA_VERSION_all.deb || apt-get install -y -f
+    dpkg -i --force-depends /tmp/debian/koha-perldeps_${KOHA_BUILD}_all.deb || true && \
+    dpkg -i --force-depends /tmp/debian/koha-deps_${KOHA_BUILD}_all.deb || true && \
+    dpkg -i --force-depends /tmp/debian/koha-common_${KOHA_BUILD}_all.deb || apt-get install -y -f
 
 # Installer files
 COPY ./files/installer /installer
@@ -77,10 +78,7 @@ ADD ./files/Authen_CAS_Client_Response_Failure.pm /usr/share/perl5/Authen/CAS/Cl
 ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Client/Response/Success.pm
 
 # Symlink api folder - TODO: Remove when unneccesary
-RUN ln -s /usr/share/koha/api/api/v1 /usr/share/koha/api/v1
-
-# Overwrite swagger definition file
-COPY ./files/swagger.json /usr/share/koha/api/v1/swagger.json
+#RUN ln -s /usr/share/koha/api/api/v1 /usr/share/koha/api/v1
 
 ENV HOME /root
 WORKDIR /root
