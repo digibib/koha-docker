@@ -11,13 +11,14 @@ git config --global user.name "$AUTHOR_NAME" && \
     git config --global diff.tool vimdiff && \
     git config --global difftool.prompt false && \
     git config --global alias.d difftool && \
+    git config --global core.editor vim && \
     git config --global alias.update '!sh -c "git checkout master && \
-      (git branch -d newmaster 2>/dev/null || true) && \
-      (git branch -d oldmaster 2>/dev/null || true) && \
-      git fetch origin master:newmaster --depth=1 && \
-      git branch -m master oldmaster && \
-      git branch -m newmaster master && \
-      git checkout master"' && \
+    (git branch -d newmaster 2>/dev/null || true) && \
+    (git branch -d oldmaster 2>/dev/null || true) && \
+    git fetch origin master:newmaster --depth=1 && \
+    git branch -m master oldmaster && \
+    git branch -m newmaster master && \
+    git checkout master"' && \
     # Allows usage like git qa <bugnumber> to set up a branch based on master and fetch patches for <bugnumber> from bugzilla
     git config --global alias.qa '!sh -c "git fetch origin master --depth=1 && git rebase origin/master && git checkout -b qa-$1 origin/master && git bz apply $1"' - && \
     # Allows usage like git qa-tidy <bugnumber> to remove a qa branch when you are through with it
