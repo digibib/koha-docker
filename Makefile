@@ -58,7 +58,8 @@ run: delete
 
 run_manual: delete
 	@echo "======= MANUAL RUN OF koha_$(KOHAENV) CONTAINER ======\n"
-	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose run --rm koha_$(KOHAENV) bash'
+	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && sudo docker-compose run --rm --entrypoint bash \
+	--service-ports koha_$(KOHAENV)'
 
 stop:
 	$(CMD) -c 'cd $(KOHAPATH)/docker-compose && docker-compose stop koha_$(KOHAENV) || true'
