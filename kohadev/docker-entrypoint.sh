@@ -84,7 +84,7 @@ done
 echo "Running webinstaller - please be patient ..."
 service apache2 restart
 sleep 5 # waiting for apache to respond
-cd /usr/share/koha/lib && /installer/updatekohadbversion.sh
+cd /kohadev/kohaclone && /installer/updatekohadbversion.sh
 
 echo "Installing the default language if not already installed ..."
 if [ -n "$DEFAULT_LANGUAGE" ]; then
