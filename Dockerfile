@@ -6,7 +6,7 @@ FROM debian:jessie
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
-ENV REFRESHED_AT 2015-01-06
+ENV REFRESHED_AT 2016-07-29
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get upgrade --yes && \
@@ -53,7 +53,6 @@ COPY ./files/installer /installer
 ADD ./files/templates /templates
 
 # Apache settings
-COPY ./files/apache-shared-intranet-plack.conf.tmpl /etc/koha/apache-shared-intranet-plack.conf
 COPY ./files/plack.psgi /etc/koha/plack.psgi
 RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
     a2dissite 000-default && \
