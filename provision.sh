@@ -7,7 +7,7 @@ export KOHAENV=$1
 export KOHAPATH=$2
 echo -e "\n Provisioning for $KOHAENV env, KOHAENV=$KOHAENV, KOHAPATH=$KOHAPATH\n"
 echo -e "\n1) Installing Docker\n"
-VERSION="1.11.2-0~$(lsb_release -c -s)"
+VERSION="1.12.0-0~$(lsb_release -c -s)"
 INSTALLED=`dpkg -l | grep docker-engine | awk '{print $3}'`
 if [ $VERSION = "$INSTALLED" ] ; then
   echo "docker version $VERSION already installed";
@@ -25,7 +25,7 @@ else
 fi
 
 echo -e "\n2) Installing Docker-compose\n"
-COMPOSEVERSION=1.7.1
+COMPOSEVERSION=1.8.0
 INSTALLED=`which docker-compose && docker-compose -v | cut -d',' -f1 | cut -d' ' -f3`
 if [ $COMPOSEVERSION = "$INSTALLED" ] ; then
   echo "docker-compose version $COMPOSEVERSION already installed"
