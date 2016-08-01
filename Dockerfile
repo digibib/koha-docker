@@ -39,7 +39,6 @@ RUN echo "mysql-server mysql-server/root_password password $KOHA_ADMINPASS" | de
 
 # Global files
 COPY ./files/local-apt-repo /etc/apt/preferences.d/local-apt-repo
-COPY ./files/apache-shared-intranet-plack.conf /etc/koha/apache-shared-intranet-plack.conf
 
 # Install Koha Common
 RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
@@ -54,6 +53,7 @@ COPY ./files/installer /installer
 ADD ./files/templates /templates
 
 # Apache settings
+COPY ./files/apache-shared-intranet-plack.conf /etc/koha/apache-shared-intranet-plack.conf
 COPY ./files/plack.psgi /etc/koha/plack.psgi
 RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
     a2dissite 000-default && \
