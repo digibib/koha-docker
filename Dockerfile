@@ -38,7 +38,7 @@ RUN echo "mysql-server mysql-server/root_password password $KOHA_ADMINPASS" | de
 ########
 
 # Global files
-COPY ./files/local-apt-repo.tmpl /etc/apt/preferences.d/local-apt-repo
+COPY ./files/local-apt-repo /etc/apt/preferences.d/local-apt-repo
 
 # Install Koha Common
 RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
