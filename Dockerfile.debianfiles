@@ -12,7 +12,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get upgrade --yes && \
     apt-get install -y wget less curl git nmap socat netcat tree htop \ 
                        unzip python-software-properties libswitch-perl \
-                       libnet-ssleay-perl libcrypt-ssleay-perl apache2 && \
+                       libnet-ssleay-perl libcrypt-ssleay-perl apache2 \
+                       supervisor && \
     apt-get clean
 
 ARG KOHA_BUILD

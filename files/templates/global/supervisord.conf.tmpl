@@ -1,0 +1,56 @@
+[supervisord]
+nodaemon=true
+
+[program:cron]
+command=/usr/sbin/cron -L 7 -f
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:apache2]
+command=/bin/bash -c 'source /etc/apache2/envvars && exec apachectl -D "FOREGROUND" -k start'
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:apache_vhost]
+command=tail -f /var/log/apache2/other_vhosts_access.log
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:sip]
+command=perl /usr/share/koha/lib/C4/SIP/SIPServer.pm /etc/koha/sites/${KOHA_INSTANCE}/SIPconfig.xml
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
+user=${KOHA_INSTANCE}-koha
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:plack]
+command=/usr/bin/starman -M FindBin --max-requests 50 --workers 2 -E deployment --socket /var/run/koha/name/plack.sock --access-log /dev/stdout --error-log /dev/stdout "/etc/koha/plack.psgi"
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:zebra_server]
+command=/usr/bin/zebrasrv -v 1 -f /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml 
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
+user=${KOHA_INSTANCE}-koha
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:zebra_indexer]
+command=/usr/bin/perl /usr/share/koha/bin/migration_tools/rebuild_zebra.pl -daemon -sleep 5
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
+user=${KOHA_INSTANCE}-koha
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0

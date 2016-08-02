@@ -1,9 +1,12 @@
 #!/bin/bash
 set -e
 
-echo "Koha Sites global config ..."
+echo "Global config ..."
 envsubst < /templates/global/koha-sites.conf.tmpl > /etc/koha/koha-sites.conf
 envsubst < /templates/global/passwd.tmpl > /etc/koha/passwd
+
+echo "Setting up supervisord ..."
+envsubst < /templates/global/supervisord.conf.tmpl > /etc/supervisor/conf.d/supervisord.conf
 
 echo "Mysql server setup ..."
 if ping -c 1 -W 1 $KOHA_DBHOST ; then
@@ -41,8 +44,9 @@ do
     koha-translate --install $language
 done
 
-echo "Running webinstaller - please be patient ..."
+echo "Restarting apache to activate local changes..."
 service apache2 restart
+echo "Running webinstaller - please be patient ..."
 sleep 1 # waiting for apache to respond
 cd /usr/share/koha/lib && /installer/updatekohadbversion.sh
 
@@ -100,29 +104,34 @@ if [ -n "$NLVENDORURL" ]; then
   echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
 fi
 
-echo "Starting SIP2 Server ..."
-/usr/sbin/koha-start-sip $KOHA_INSTANCE
+#echo "Starting SIP2 Server ..."
+#/usr/sbin/koha-start-sip $KOHA_INSTANCE
 
-echo "Starting cron ..."
-/etc/init.d/cron start
+#echo "Starting cron ..."
+#/usr/sbin/cron -L 7
 
-echo "Starting plack ..."
+echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
-koha-plack --start "$KOHA_INSTANCE"
+#koha-plack --start "$KOHA_INSTANCE"
 
-echo "Restarting apache ..."
-service apache2 restart
+echo "Installation finished - Stopping all services and giving supervisord control ..."
+#service apache2 restart
+service apache2 stop
+koha-indexer --stop "$KOHA_INSTANCE"
+koha-stop-zebra "$KOHA_INSTANCE"
 
 # Make sure log files exist before tailing them
-touch /var/log/koha/${KOHA_INSTANCE}/intranet-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
-touch /var/log/koha/${KOHA_INSTANCE}/sip-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-error.log
-touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-output.log
-touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/plack-error.log
+#touch /var/log/koha/${KOHA_INSTANCE}/intranet-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
+#touch /var/log/koha/${KOHA_INSTANCE}/sip-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-error.log
+#touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-output.log
+#touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/plack-error.log
 
-/usr/bin/tail -f /var/log/apache2/access.log \
-  /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
-  /var/log/koha/${KOHA_INSTANCE}/opac*.log \
-  /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
-  /var/log/apache2/other_vhosts_access.log \
-  /var/log/koha/${KOHA_INSTANCE}/sip*.log \
-  /var/log/koha/${KOHA_INSTANCE}/plack*.log
+#/usr/bin/tail -f /var/log/apache2/access.log \
+#  /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
+#  /var/log/koha/${KOHA_INSTANCE}/opac*.log \
+#  /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
+#  /var/log/apache2/other_vhosts_access.log \
+#  /var/log/koha/${KOHA_INSTANCE}/sip*.log \
+#  /var/log/koha/${KOHA_INSTANCE}/plack*.log
+
+supervisord -c /etc/supervisor/conf.d/supervisord.conf
