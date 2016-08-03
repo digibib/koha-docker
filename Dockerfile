@@ -42,7 +42,8 @@ RUN echo "mysql-server mysql-server/root_password password $KOHA_ADMINPASS" | de
 COPY ./files/local-apt-repo /etc/apt/preferences.d/local-apt-repo
 
 # Install Koha Common
-RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
+RUN echo "search deich.folkebibl.no guest.oslo.kommune.no\nnameserver 10.172.2.1\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf && \
+    echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
     apt-get update && apt-get install -y --force-yes koha-common=$KOHA_BUILD && apt-get clean
@@ -95,3 +96,4 @@ EXPOSE 6001 8080 8081
 # Script and deps for checking if koha is up & ready (to be executed using docker exec)
 RUN apt-get install -y python-requests && apt-get clean
 COPY docker-wait_until_ready.py /root/wait_until_ready.py
+RUN apt-get install -y inetutils-syslogd

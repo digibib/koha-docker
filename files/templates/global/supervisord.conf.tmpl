@@ -1,8 +1,33 @@
 [supervisord]
 nodaemon=true
+loglevel=info ; info, debug, warn, trace
+
+[unix_http_server]
+file = /var/run/supervisor.sock
+chmod = 0777
+chown= nobody:nogroup
+username = ${KOHA_ADMINUSER}
+password = ${KOHA_ADMINPASS}
+
+[supervisorctl]
+serverurl=unix:///var/run/supervisor.sock
+username = ${KOHA_ADMINUSER}
+password = ${KOHA_ADMINPASS}
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[program:syslog]
+command=syslogd -n
+priority=10
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
 
 [program:cron]
-command=/usr/sbin/cron -L 7 -f
+command=/usr/sbin/cron -f -L 7
+priority=100
 autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
@@ -30,7 +55,7 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 
 [program:plack]
-command=/usr/bin/starman -M FindBin --max-requests 50 --workers 2 -E deployment --socket /var/run/koha/name/plack.sock --access-log /dev/stdout --error-log /dev/stdout "/etc/koha/plack.psgi"
+command=/usr/bin/starman -M FindBin --max-requests 50 --workers 2 -E deployment --user=${KOHA_INSTANCE}-koha --group=${KOHA_INSTANCE}-koha --socket /var/run/koha/name/plack.sock --access-log /dev/stdout --error-log /dev/stdout "/etc/koha/plack.psgi"
 environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
 autorestart=true
 redirect_stderr=true
@@ -38,7 +63,7 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 
 [program:zebra_server]
-command=/usr/bin/zebrasrv -v 1 -f /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml 
+command=/usr/bin/zebrasrv -v 1 -f /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
 environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
 user=${KOHA_INSTANCE}-koha
 autorestart=true
