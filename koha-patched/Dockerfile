@@ -62,11 +62,12 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
+# OK    Bug 17044 - Wrong destination for 'api' directory
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
 # OK    Bug 16497 - REST API: add routes to list libraries
 # FAILS Bug 13666 - Allow SIP2 checkin/checkout to get branch from institution_id field AO
-ENV KOHABUGS     "16330 13895 16497"
+ENV KOHABUGS     "17044 16330 13895 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian

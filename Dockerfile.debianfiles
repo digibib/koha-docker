@@ -78,9 +78,6 @@ ENV SIP_AUTOPASS1 autopass
 ADD ./files/Authen_CAS_Client_Response_Failure.pm /usr/share/perl5/Authen/CAS/Client/Response/Failure.pm
 ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Client/Response/Success.pm
 
-# Symlink api folder - TODO: Remove when unneccesary
-#RUN ln -s /usr/share/koha/api/api/v1 /usr/share/koha/api/v1
-
 ENV HOME /root
 WORKDIR /root
 
