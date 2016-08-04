@@ -13,7 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y wget less curl git nmap socat netcat tree htop \ 
                        unzip python-software-properties libswitch-perl \
                        libnet-ssleay-perl libcrypt-ssleay-perl apache2 \
-                       supervisor && \
+                       supervisor inetutils-syslogd && \
     apt-get clean
 
 ARG KOHA_BUILD
@@ -79,6 +79,13 @@ ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Cl
 ENV HOME /root
 WORKDIR /root
 
+#############
+# LOGGING AND CRON
+#############
+
+COPY ./files/logrotate.config /etc/logrotate.d/syslog.conf
+COPY ./files/syslog.config /etc/syslog.conf
+
 # Setup cron job to sync holdingbranches to services
 COPY holdingbranches.sh /root/holdingbranches.sh
 COPY update_holdingbranches.sh /root/update_holdingbranches.sh
@@ -93,4 +100,3 @@ EXPOSE 6001 8080 8081
 # Script and deps for checking if koha is up & ready (to be executed using docker exec)
 RUN apt-get install -y python-requests && apt-get clean
 COPY docker-wait_until_ready.py /root/wait_until_ready.py
-RUN apt-get install -y inetutils-syslogd
