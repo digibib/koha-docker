@@ -26,7 +26,7 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 
 [program:cron]
-command=/usr/sbin/cron -f -L 7
+command=/usr/sbin/cron -f -L 5 ; log started and failed cron jobs
 priority=100
 autorestart=true
 redirect_stderr=true
