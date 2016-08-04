@@ -1,0 +1,17 @@
+005b-SIP2_checkin_not_issued
+
+diff --git a/C4/SIP/ILS/Transaction/Checkin.pm b/C4/SIP/ILS/Transaction/Checkin.pm
+index bc1c433..318538f 100644
+--- a/C4/SIP/ILS/Transaction/Checkin.pm
++++ b/C4/SIP/ILS/Transaction/Checkin.pm
+@@ -73,6 +73,10 @@ sub do_checkin {
+     # borrowernumber, reservedate, branchcode
+     # cancellationdate, found, reservenotes, priority, timestamp
+ 
++    if ($messages->{NotIssued}) {
++        $self->alert_type(undef);
++        $self->alert(0);
++    }
+     if ($messages->{BadBarcode}) {
+         $self->alert_type('99');
+     }
