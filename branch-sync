@@ -3,4 +3,4 @@
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/5 * * * * root /root/update_holdingbranches.sh
+00 23 * * * root /root/update_holdingbranches.sh
