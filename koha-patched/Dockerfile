@@ -68,10 +68,11 @@ ENV BUGZ_PASS    bugspass
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
 # OK    Bug 17044 - Wrong destination for 'api' directory
+# OK    Bug 17030 - Configure the REST api on packages install
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
 # OK    Bug 16497 - REST API: add routes to list libraries
-ENV KOHABUGS     "17044 16330 13895 16497"
+ENV KOHABUGS     "17044 17030 16330 13895 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
