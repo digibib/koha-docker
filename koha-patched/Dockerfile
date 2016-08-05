@@ -46,6 +46,11 @@ RUN apt-get update && \
 # probably due to user permissions in the docker build-container.
 RUN rm /koha/t/Logger.t
 
+# Missing perl dependencies
+RUN apt-get update && apt-get install -y \
+    libwww-csrf-perl && \
+    apt-get clean
+
 ##########
 # GIT-BZ, PATCHLIBS AND BUILDSCRIPT
 ##########
