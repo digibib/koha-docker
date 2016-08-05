@@ -74,6 +74,11 @@ ENV SIP_AUTOPASS1 autopass
 ADD ./files/Authen_CAS_Client_Response_Failure.pm /usr/share/perl5/Authen/CAS/Client/Response/Failure.pm
 ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Client/Response/Success.pm
 
+# Missing perl dependencies
+RUN apt-get update && apt-get install -y \
+    libwww-csrf-perl && \
+    apt-get clean
+
 ENV HOME /root
 WORKDIR /root
 
