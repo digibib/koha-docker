@@ -124,7 +124,7 @@ index 0000000..549c551
 +        ( $biblionumber, $biblioitemnumber ) = &AddBiblio($record, '');
 +    }
 +    if ($biblionumber) {
-+        $c->res->headers->location($c->url_for('/v1/biblios/')->to_abs . $biblionumber);
++        $c->res->headers->location($c->url_for('/api/v1/biblios/')->to_abs . $biblionumber);
 +        my ( $itemnumbers, $errors ) = &AddItemBatchFromMarc( $record, $biblionumber, $biblioitemnumber, '' );
 +        unless (@{$errors}) {
 +            return $c->$cb({biblionumber => $biblionumber, items => join(",", @{$itemnumbers})}, 201);
@@ -162,7 +162,7 @@ index 0000000..549c551
 +        $success = &ModBiblio($record, $biblionumber, '');
 +    }
 +    if ($success) {
-+        $c->res->headers->location($c->url_for('/v1/biblios/')->to_abs . $biblionumber);
++        $c->res->headers->location($c->url_for('/api/v1/biblios/')->to_abs . $biblionumber);
 +        return $c->$cb({biblio => Koha::Biblios->find($biblionumber)->unblessed}, 200);
 +    } else {
 +        return $c->$cb({error => "unable to update record"}, 400);
