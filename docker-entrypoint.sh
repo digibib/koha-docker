@@ -104,34 +104,12 @@ if [ -n "$NLVENDORURL" ]; then
   echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
 fi
 
-#echo "Starting SIP2 Server ..."
-#/usr/sbin/koha-start-sip $KOHA_INSTANCE
-
-#echo "Starting cron ..."
-#/usr/sbin/cron -L 7
-
 echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
-#koha-plack --start "$KOHA_INSTANCE"
 
 echo "Installation finished - Stopping all services and giving supervisord control ..."
-#service apache2 restart
 service apache2 stop
 koha-indexer --stop "$KOHA_INSTANCE"
 koha-stop-zebra "$KOHA_INSTANCE"
-
-# Make sure log files exist before tailing them
-#touch /var/log/koha/${KOHA_INSTANCE}/intranet-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
-#touch /var/log/koha/${KOHA_INSTANCE}/sip-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-error.log
-#touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-output.log
-#touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/plack-error.log
-
-#/usr/bin/tail -f /var/log/apache2/access.log \
-#  /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
-#  /var/log/koha/${KOHA_INSTANCE}/opac*.log \
-#  /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
-#  /var/log/apache2/other_vhosts_access.log \
-#  /var/log/koha/${KOHA_INSTANCE}/sip*.log \
-#  /var/log/koha/${KOHA_INSTANCE}/plack*.log
 
 supervisord -c /etc/supervisor/conf.d/supervisord.conf

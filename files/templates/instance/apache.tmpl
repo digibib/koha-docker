@@ -17,20 +17,6 @@
    SetEnv MEMCACHED_NAMESPACE ""
    AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
 
-   # REST API configuration
-   Alias "/api" "/usr/share/koha/api/v1/app.pl/api"
-   <Directory /usr/share/koha/api>
-     Options +ExecCGI +FollowSymlinks
-     AddHandler cgi-script .pl
-     #SetEnv MOJO_MODE "production"
-     RewriteEngine On
-     RewriteBase /api/
-     RewriteCond %{REQUEST_FILENAME} !-f
-     RewriteCond %{REQUEST_FILENAME} !-d
-     RewriteCond %{DOCUMENT_ROOT}/../api/$1/app.pl -f
-     RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
-   </Directory>
-
    ErrorLog    /var/log/koha/$KOHA_INSTANCE/opac-error.log
 #  TransferLog /var/log/koha/$KOHA_INSTANCE/opac-access.log
 #  RewriteLog  /var/log/koha/$KOHA_INSTANCE/opac-rewrite.log
@@ -53,20 +39,6 @@
    SetEnv MEMCACHED_NAMESPACE ""
 
    AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
-
-   # REST API configuration
-   Alias "/api" "/usr/share/koha/api/v1/app.pl/api"
-   <Directory /usr/share/koha/api>
-     Options +ExecCGI +FollowSymlinks
-     AddHandler cgi-script .pl
-     #SetEnv MOJO_MODE "production"
-     RewriteEngine On
-     RewriteBase /api/
-     RewriteCond %{REQUEST_FILENAME} !-f
-     RewriteCond %{REQUEST_FILENAME} !-d
-     RewriteCond %{DOCUMENT_ROOT}/../api/$1/app.pl -f
-     RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
-   </Directory>
 
    ErrorLog    /var/log/koha/$KOHA_INSTANCE/intranet-error.log
 #  TransferLog /var/log/koha/$KOHA_INSTANCE/intranet-access.log

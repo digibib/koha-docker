@@ -55,8 +55,6 @@ COPY ./files/installer /installer
 ADD ./files/templates /templates
 
 # Apache settings
-COPY ./files/apache-shared-intranet-plack.conf /etc/koha/apache-shared-intranet-plack.conf
-COPY ./files/plack.psgi /etc/koha/plack.psgi
 RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
     a2dissite 000-default && \
     a2enmod rewrite headers proxy_http cgi
