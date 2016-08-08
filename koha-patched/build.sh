@@ -41,6 +41,8 @@ echo "Configuring bugzilla..." && \
 ##########
 
 echo "Patching..."
+echo "KOHA_VERSION: $KOHA_VERSION"
+echo "GITREF: $GITREF"
 
 # Patch from bugzilla
 for bugid in ${KOHABUGS}; do \
