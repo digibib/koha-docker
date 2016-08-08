@@ -27,7 +27,7 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF b7afd4218867ce362f3c140d6dd7ffbceb2eb687
+ENV GITREF 7f50e9f686a319a4857f595e46c405f8bc85b48e
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -67,12 +67,12 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-# OK    Bug 17044 - Wrong destination for 'api' directory
-# OK    Bug 17030 - Configure the REST api on packages install
+# TEST  Bug 17069 - Can't create new patron category on the intranet
+# TEST  Bug 17050 - Accessing the REST API through Plack kicks the session out
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
 # OK    Bug 16497 - REST API: add routes to list libraries
-ENV KOHABUGS     "17044 17030 16330 13895 16497"
+ENV KOHABUGS     "17069 17050 16330 13895 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
