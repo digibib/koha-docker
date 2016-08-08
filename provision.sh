@@ -51,14 +51,14 @@ else
 fi
 
 case "$KOHAENV" in
-  'build')
-  envsubst < "docker-compose-template-build.yml" > "docker-compose.yml"
+  'dev')
+  envsubst < "docker-compose-template-dev.yml" > "docker-compose.yml"
   ;;
   'patched')
   envsubst < "docker-compose-template-patched.yml" > "docker-compose.yml"
   ;;
-  *)
-  envsubst < "docker-compose-template-dev.yml" > "docker-compose.yml"
+  'build'|*)
+  envsubst < "docker-compose-template-build.yml" > "docker-compose.yml"
   ;;
 esac
 sudo docker-compose up -d

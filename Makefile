@@ -1,6 +1,6 @@
 .PHONY: all test clean
 
-KOHAENV ?= dev
+KOHAENV ?= build
 
 ifdef NOVAGRANT
 CMD=bash
