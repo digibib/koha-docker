@@ -35,6 +35,7 @@ stdout_logfile_maxbytes=0
 
 [program:apache2]
 command=/bin/bash -c 'source /etc/apache2/envvars && exec apachectl -D "FOREGROUND" -k start'
+priority=300
 autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
@@ -55,8 +56,9 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 
 [program:plack]
-command=/usr/bin/starman -M FindBin --max-requests 50 --workers 2 -E deployment --user=${KOHA_INSTANCE}-koha --group=${KOHA_INSTANCE}-koha --socket /var/run/koha/name/plack.sock --access-log /dev/stdout --error-log /dev/stdout "/etc/koha/plack.psgi"
+command=/usr/bin/starman -M FindBin --max-requests 50 --workers 2 -E deployment --user=${KOHA_INSTANCE}-koha --group=${KOHA_INSTANCE}-koha --socket /var/run/koha/${KOHA_INSTANCE}/plack.sock --access-log /dev/stdout --error-log /dev/stdout "/etc/koha/plack.psgi"
 environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
+priority=200
 autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
