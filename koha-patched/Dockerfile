@@ -68,11 +68,11 @@ ENV BUGZ_PASS    bugspass
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
 # TEST  Bug 17069 - Can't create new patron category on the intranet
-# TEST  Bug 17050 - Accessing the REST API through Plack kicks the session out
+# FAIL  Bug 17050 - Accessing the REST API through Plack kicks the session out
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
 # OK    Bug 16497 - REST API: add routes to list libraries
-ENV KOHABUGS     "17069 17050 16330 13895 16497"
+ENV KOHABUGS     "17069 16330 13895 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
