@@ -1,13 +1,13 @@
-050-API-NLLookup
+050-API_NL_lookup_and_defaults
 
-Patch to extend API to check if existing user locally and 
-in the Norwegian Patron DB. 
+Patch to extend API to check if existing user locally and in the Norwegian Patron DB. 
+Also route to set patron sync defaults and extended patron attribute
 
 diff --git a/api/v1/swagger.json b/api/v1/swagger.json
-index 7657dcc..9327fae 100644
+index 865191b..8615cd3 100644
 --- a/api/v1/swagger.json
 +++ b/api/v1/swagger.json
-@@ -970,6 +970,49 @@
+@@ -970,6 +970,103 @@
            }
          }
        }
@@ -46,8 +46,62 @@ index 7657dcc..9327fae 100644
 +          "200": {
 +            "description": "Result of search with given params"
 +          },
-+          "403": {
++          "400": {
 +            "description": "Error in lookup",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          }
++        }
++      }
++    },
++    "/patronsyncdefaults/{borrowernumber}": {
++      "put": {
++        "operationId": "setpatrondefaultsInNorwegianPatronDB",
++        "tags": ["patrons"],
++        "parameters": [
++          {
++            "$ref": "#/parameters/borrowernumberPathParam"
++          },
++          {
++            "name": "ssn",
++            "in": "query",
++            "description": "Social security number",
++            "type": "string"
++          },
++          {
++            "name": "password",
++            "in": "query",
++            "description": "Personal password",
++            "type": "string"
++          }
++        ],
++        "consumes": ["application/json"],
++        "produces": ["application/json"],
++        "responses": {
++          "200": {
++            "description": "Success setting patron defaults"
++          },
++          "400": {
++            "description": "Error setting patron sync defaults",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "403": {
++            "description": "Access forbidden",
++            "schema": {
++              "$ref": "#/definitions/error"
++            }
++          },
++          "404": {
++            "description": "Patron not found",
 +            "schema": {
 +              "$ref": "#/definitions/error"
 +            }
@@ -59,10 +113,10 @@ index 7657dcc..9327fae 100644
    "definitions": {
 diff --git a/Koha/REST/V1/NorwegianPatronDB.pm b/Koha/REST/V1/NorwegianPatronDB.pm
 new file mode 100644
-index 0000000..b8fc783
+index 0000000..d6cef38
 --- /dev/null
 +++ b/Koha/REST/V1/NorwegianPatronDB.pm
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,101 @@
 +package Koha::REST::V1::NorwegianPatronDB;
 +
 +# This file is part of Koha.
@@ -86,10 +140,15 @@ index 0000000..b8fc783
 +
 +use C4::Auth qw( haspermission );
 +use Koha::AuthUtils qw(hash_password);
-+use Koha::NorwegianPatronDB qw( NLSearch );
++use Koha::NorwegianPatronDB qw( NLSearch NLEncryptPIN );
 +use Koha::Patrons;
++use Koha::Patron::Syncs;
++use C4::Members::Attributes qw( SetBorrowerAttributes );
++use Koha::Database;
 +use Data::Dumper;
 +
++# Check if user exists in local db or central NL db
++# TODO: Rewrite to use params, so swagger can validate input
 +sub existingusers {
 +    my ($c, $args, $cb) = @_;
 +
@@ -114,8 +173,6 @@ index 0000000..b8fc783
 +        dateofbirth => $params->{dateofbirth}
 +    })->unblessed;
 +
-+    # TODO: REMOVE DUMPS
-+    warn Dumper($localpatrons);
 +    if (scalar(@$localpatrons) > 0) {
 +        $response->{localdb} = scalar(@$localpatrons);
 +        $response->{count} += $response->{localdb};
@@ -126,14 +183,38 @@ index 0000000..b8fc783
 +    my $res = &NLSearch($params->{ssn});
 +    unless ($res->fault) {
 +        my $nl = $res->result();
-+        warn Dumper($nl);
 +        $response->{centraldb} = int($nl->{'antall_treff'});
 +        $response->{count} += $response->{centraldb};
 +        $response->{message} .= "Result from central lookup: $nl->{'melding'}. ";
 +        return $c->$cb($response, 200);
 +    } else {
-+        return $c->$cb({error => "Error in call against Norwegian Patron Database"}, 403);
++        return $c->$cb({error => "Error in call against Norwegian Patron Database"}, 400);
 +    }
++}
++
++# Add default sync settings to central NL db and extended patron attributes
++# PUT params: borrowernumber, ssn, password
++sub setpatrondefaults {
++    my ($c, $args, $cb) = @_;
++
++    my $user = $c->stash('koha.user');
++    unless ($user && ( $user->borrowernumber == $args->{borrowernumber}
++        || haspermission($user->userid, {borrowers => 1}) ) )
++    {
++        return $c->$cb({error => "You don't have the required permission"}, 403);
++    }
++    my $sync = Koha::Patron::Syncs->find_or_create({
++      borrowernumber => $args->{borrowernumber},
++      synctype       => 'norwegianpatrondb',
++      sync           => 1,
++      syncstatus     => 'new',
++      hashed_pin     => &NLEncryptPIN( $args->{password} ),
++    });
++    my $success = &SetBorrowerAttributes($args->{borrowernumber}, [ {code => 'fnr', value => $args->{ssn}} ]);
++    if (!$success) {
++        return $c->$cb({error => "Unable to set patron extended attributes"}, 400);
++    }
++    return $c->$cb({}, 200);
 +}
 +
 +1;
