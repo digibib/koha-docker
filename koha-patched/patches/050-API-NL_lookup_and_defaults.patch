@@ -218,3 +218,111 @@ index 0000000..d6cef38
 +}
 +
 +1;
+diff --git a/Koha/Patron/Syncs.pm b/Koha/Patron/Syncs.pm
+new file mode 100644
+index 0000000..0a7cebb
+--- /dev/null
++++ b/Koha/Patron/Syncs.pm
+@@ -0,0 +1,50 @@
++package Koha::Patron::Syncs;
++
++# This file is part of Koha.
++#
++# Koha is free software; you can redistribute it and/or modify it under the
++# terms of the GNU General Public License as published by the Free Software
++# Foundation; either version 3 of the License, or (at your option) any later
++# version.
++#
++# Koha is distributed in the hope that it will be useful, but WITHOUT ANY
++# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
++# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License along
++# with Koha; if not, write to the Free Software Foundation, Inc.,
++# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++use Modern::Perl;
++
++use Carp;
++
++use Koha::Database;
++
++use Koha::Patron::Sync;
++
++use base qw(Koha::Objects);
++
++=head1 NAME
++
++Koha::Patron::Syncs - Koha Patron Sync Object set class
++
++=head1 API
++
++=head2 Class Methods
++
++=cut
++
++=head3 type
++
++=cut
++
++sub _type {
++    return 'BorrowerSync';
++}
++
++sub object_class {
++    return 'Koha::Patron::Sync';
++}
++
++1;
+diff --git a/Koha/Patron/Sync.pm b/Koha/Patron/Sync.pm
+new file mode 100644
+index 0000000..8927229
+--- /dev/null
++++ b/Koha/Patron/Sync.pm
+@@ -0,0 +1,46 @@
++package Koha::Patron::Sync;
++
++# Copyright 2015 Koha Development Team
++#
++# This file is part of Koha.
++#
++# Koha is free software; you can redistribute it and/or modify it under the
++# terms of the GNU General Public License as published by the Free Software
++# Foundation; either version 3 of the License, or (at your option) any later
++# version.
++#
++# Koha is distributed in the hope that it will be useful, but WITHOUT ANY
++# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
++# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License along
++# with Koha; if not, write to the Free Software Foundation, Inc.,
++# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++use Modern::Perl;
++
++use Carp;
++
++use Koha::Database;
++
++use base qw(Koha::Object);
++
++=head1 NAME
++
++Koha::Patron::Sync - Koha Patron Sync Object class
++
++=head1 API
++
++=head2 Class Methods
++
++=cut
++
++=head3 type
++
++=cut
++
++sub _type {
++    return 'BorrowerSync';
++}
++
++1;
