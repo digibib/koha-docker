@@ -133,7 +133,7 @@ index 0000000..6d9f0dc
 +
 +# PUT /messagepreferences/{borrowernumber}
 +# JSON BODY params example:
-+#   "item_due": {          (item_due, )
++#   "item_due": {          (valid keys are : item_due, advance_notice, hold_filled, item_check_in, item_checkout )
 +#     "transports": ["sms", "email"],
 +#     days_in_advance: 5
 +#     wants_digest: true
