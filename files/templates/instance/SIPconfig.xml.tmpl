@@ -38,7 +38,38 @@
   </listeners>
 
   <accounts>
-    <login encoding="utf8" id="$SIP_AUTOUSER1"  password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled" institution="HUTL" checked_in_ok="1" />
+    <login encoding="utf8" id="$SIP_AUTOUSER1"  password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled" institution="HUTL" checked_in_ok="1">
+        <!-- Checkout screen messages we can translate directly -->
+        <screen_msg_regex find="Item checked out to another patron.*$" replace="Materialet er lånt ut til en annen låner." />
+        <screen_msg_regex find="Item already checked out to you: renewing item." replace="Denne fornyes siden du allerede har lånt den." />
+        <screen_msg_regex find="Item was reserved for you." replace="Du hadde reservert denne." />
+        <screen_msg_regex find="Item is reserved for another patron upon return." replace="Materialet er reservert av en annen låner." />
+        <screen_msg_regex find="Item already checked out to another patron.  Please return item for check-in." replace="Materialet er allerede lånt ut til en annen låner. Vennligst returner det." />
+        <screen_msg_regex find="Outstanding Fines block issue.*" replace="Du kan ikke låne grunnet utestående gebyrer." />
+        <screen_msg_regex find="Loan period reduced for high-demand item" replace="Låneperioden er redusert pga stor etterspørsel" />
+        <screen_msg_regex find="Item is on hold shelf for another patron" replace="Materialet står til avhenting av en annen låner" />
+        <screen_msg_regex find="Invalid Item" replace="Ugyldig eksemplar" />
+        <screen_msg_regex find="Invalid Patron" replace="Ugyldig lånekort" />
+
+        <!-- Renew -->
+        <screen_msg_regex find="Item unavailable due to outstanding holds" replace="Materialet er utilgjengelig pga ventende reservasjoner" />
+        <screen_msg_regex find="Item has reached maximum renewals" replace="Materialet kan ikke lånes flere ganger" />
+
+        <!-- Missing screen messages in Koha and other quirks -->
+        <screen_msg_regex find="^.*Patron owes.+$" replace="Du har utestående gebyrer - henvend deg til personalet." />
+        <screen_msg_regex find="^Patron Blocked$" replace="Lånekortet er sperret - henvend deg til personalet." />
+
+        <screen_msg_regex find="TOO_MANY_CHECKOUTS" replace="For mange utlån" />
+        <screen_msg_regex find="NOT_FOR_LOAN.*$" replace="Materialet er ikke til utlån." />
+        <screen_msg_regex find="item_notforloan.*$" replace="Materialet er ikke til utlån." />
+
+        <!-- Bug 15438 - Checking out an on-hold item sends holder's borrowernumber in AF (screen message) field. -->
+        <!-- gjelder også utlån av samme eksemplar to ganger -->
+        <screen_msg_regex find="^\d{1,}$" replace="Materialet er allerede utlånt/reservert." />
+
+        <!-- Last resort -->
+        <screen_msg_regex find="Greetings from Koha.*$" replace="Velkommen til Deichmanske bibliotek." />
+    </login>
   </accounts>
 
 <!--
