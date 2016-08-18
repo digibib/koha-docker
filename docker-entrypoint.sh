@@ -69,7 +69,7 @@ fi
 
 echo "Configuring email settings ..."
 if [ -n "$EMAIL_ENABLED" ]; then
-  # Koha uses default sendmail localhost, so need to override perl Sendmail config
+  # Koha uses perl5 Sendmail module defaulting to localhost, so need to override perl Sendmail config
   if [ -n "$SMTP_SERVER_HOST" ]; then
     sub="%mailcfg = (
       'smtp'    => [ '$SMTP_SERVER_HOST' ],
@@ -85,6 +85,11 @@ if [ -n "$EMAIL_ENABLED" ]; then
     awk -v sb="$sub" '/^%mailcfg/,/;/ { if ( $0 ~ /\);/ ) print sb; next } 1' $sendmail > tmp && \
       mv tmp $sendmail
   fi
+  # setup default debian exim4 to use smtp relay (used by sendmail and MIME::Lite)
+  sed -i "s/dc_smarthost.*/dc_smarthost='mailrelay::2525'/" /etc/exim4/update-exim4.conf.conf
+  sed -i "s/dc_eximconfig_configtype.*/dc_eximconfig_configtype='smarthost'/" /etc/exim4/update-exim4.conf.conf
+  update-exim4.conf -v
+
   koha-email-enable $KOHA_INSTANCE
 fi
 
