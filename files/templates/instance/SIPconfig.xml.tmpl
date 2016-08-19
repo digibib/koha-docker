@@ -27,14 +27,14 @@
       port="8023/tcp"
       transport="telnet"
       protocol="SIP/2.00"
-      timeout="180" />
-      
+      timeout="1800" />
+
 <!-- external listener -->
     <service
       port="$SIP_PORT/tcp"
       transport="RAW"
       protocol="SIP/2.00"
-      timeout="180" />
+      timeout="1800" />
   </listeners>
 
   <accounts>
@@ -85,7 +85,7 @@ in our case "ILS".
     <institution id="HUTL" implementation="ILS" parms="">
           <policy checkin="true" renewal="true" checkout="true"
       status_update="false" offline="false"
-      timeout="100"
+      timeout="1800"
       retries="5" />
     </institution>
 </institutions>
