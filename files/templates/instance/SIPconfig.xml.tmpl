@@ -38,7 +38,10 @@
   </listeners>
 
   <accounts>
-    <login encoding="utf8" id="$SIP_AUTOUSER1"  password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled" institution="hutl" checked_in_ok="1">
+    <login encoding="utf8" id="$SIP_AUTOUSER1"  password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled" institution="HUTL" checked_in_ok="1">
+       <!-- General messages -->
+        <screen_msg_regex find="^.*Invalid password.*$" replace="Feil passord" />
+
         <!-- Checkout screen messages we can translate directly -->
         <screen_msg_regex find="Item checked out to another patron.*$" replace="Materialet er lånt ut til en annen låner." />
         <screen_msg_regex find="Item already checked out to you: renewing item." replace="Denne fornyes siden du allerede har lånt den." />
@@ -50,7 +53,9 @@
         <screen_msg_regex find="Item is on hold shelf for another patron" replace="Materialet står til avhenting av en annen låner" />
         <screen_msg_regex find="Invalid Item" replace="Ugyldig eksemplar" />
         <screen_msg_regex find="Invalid Patron" replace="Ugyldig lånekort" />
-        <screen_msg_regex find="Greetings from Koha.  -- Invalid password" replace="Feil pin-kode" />
+        <screen_msg_regex find="Invalid cardnumber" replace="Ugyldig lånekort" />
+        <screen_msg_regex find="^.*Borrower.s card reported lost.*$" replace="Lånekortet er meldt tapt. Vennligst kontakt personalet." />
+        <screen_msg_regex find="^.*Borrower has no valid address.*$" replace="Feil i adresse. Vennligst kontakt personalet." />
 
         <!-- Renew -->
         <screen_msg_regex find="Item unavailable due to outstanding holds" replace="Materialet er utilgjengelig pga ventende reservasjoner" />
@@ -69,8 +74,7 @@
         <screen_msg_regex find="^\d{1,}$" replace="Materialet er allerede utlånt/reservert." />
 
         <!-- Last resort -->
-        <screen_msg_regex find="Greetings from Koha.*$" replace="Velkommen til Deichmanske bibliotek." />
-        <screen_msg_regex find="Thank you.*$" replace="Tusen takk!" />
+        <screen_msg_regex find="Greetings from Koha." replace="Melding fra biblioteket:" />
     </login>
   </accounts>
 
