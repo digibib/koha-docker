@@ -48,6 +48,15 @@ RUN echo "search deich.folkebibl.no guest.oslo.kommune.no\nnameserver 10.172.2.1
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
     apt-get update && apt-get install -y --force-yes koha-common=$KOHA_BUILD && apt-get clean
 
+
+# Script and deps for checking if koha is up & ready (to be executed using docker exec)
+COPY docker-wait_until_ready.py /root/wait_until_ready.py
+RUN apt-get install -y python-requests && apt-get clean
+# Missing perl dependencies
+RUN apt-get update && apt-get install -y \
+    libwww-csrf-perl && \
+    apt-get clean
+
 # Installer files
 COPY ./files/installer /installer
 
@@ -74,10 +83,6 @@ ENV SIP_AUTOPASS1 autopass
 ADD ./files/Authen_CAS_Client_Response_Failure.pm /usr/share/perl5/Authen/CAS/Client/Response/Failure.pm
 ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Client/Response/Success.pm
 
-# Missing perl dependencies
-RUN apt-get update && apt-get install -y \
-    libwww-csrf-perl && \
-    apt-get clean
 
 ENV HOME /root
 WORKDIR /root
@@ -99,7 +104,3 @@ COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
 EXPOSE 6001 8080 8081
-
-# Script and deps for checking if koha is up & ready (to be executed using docker exec)
-RUN apt-get install -y python-requests && apt-get clean
-COPY docker-wait_until_ready.py /root/wait_until_ready.py

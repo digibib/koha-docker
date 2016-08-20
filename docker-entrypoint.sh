@@ -14,13 +14,13 @@ if ping -c 1 -W 1 $KOHA_DBHOST ; then
 else
   printf "Unable to connect to linked mysql container $KOHA_DBHOST\n-- initializing local mysql ...\n"
   /etc/init.d/mysql start
-  sleep 3 # waiting for mysql to spin up
+  sleep 1 # waiting for mysql to spin up on slow computers
   echo "127.0.0.1  $KOHA_DBHOST" >> /etc/hosts
   echo "CREATE USER '$KOHA_ADMINUSER'@'%' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
-        CREATE USER '$KOHA_ADMINUSER'@'localhost' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
+        CREATE USER '$KOHA_ADMINUSER'@'koha_mysql' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
         CREATE DATABASE IF NOT EXISTS koha_$KOHA_INSTANCE ; \
         GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
-        GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'localhost' WITH GRANT OPTION ; \
+        GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'koha_mysql' WITH GRANT OPTION ; \
         FLUSH PRIVILEGES ;" | mysql -u root -p$KOHA_ADMINPASS
 fi
 
