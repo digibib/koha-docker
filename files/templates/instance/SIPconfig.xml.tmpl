@@ -34,11 +34,28 @@
       port="$SIP_PORT/tcp"
       transport="RAW"
       protocol="SIP/2.00"
-      timeout="1800" />
+      timeout="1800"
+      client_timeout="600" />
+      <!--
+        client_timeout: seconds to wait before disconnecting idle clients
+        timeout:        seconds to wait before disconnecting failed logons
+        -->
   </listeners>
 
   <accounts>
-    <login encoding="utf8" id="$SIP_AUTOUSER1"  password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled" institution="HUTL" checked_in_ok="1">
+    <!-- example login
+    <login encoding="utf8" id="$SIP_AUTOUSER1" password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled" institution="HUTL"
+      checked_in_ok="1"                   : dont fail checkin on non checked out items
+      send_patron_home_library_in_af="1"  : add home library to patron status
+      av_field_template="[% accountline.description %] [% accountline.amountoutstanding | format('%.2f') %]"    : Fine items template
+      validate_patron_attribute="MEROPPET"    : a patron attribute to validate patron against in patron information request.
+                                                Anything but 1 in this fields means no access/not able to loan.
+      >
+        <screen_msg_regex find="Greetings from Koha." replace="Welcome to your library!" />
+    </login>
+    -->
+    <login encoding="utf8" id="$SIP_AUTOUSER1" password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled"
+      institution="HUTL" checked_in_ok="1" validate_patron_attribute="dooraccess">
        <!-- General messages -->
         <screen_msg_regex find="^.*Invalid password.*$" replace="Feil passord" />
 

@@ -27,7 +27,7 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF 26f20d64cb6336b4911f91befa736539946a0a0c
+ENV GITREF 4b140a2e914f76fd283de50fb1c061376e22f444
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -67,11 +67,13 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-# FAIL  Bug 17050 - Accessing the REST API through Plack kicks the session out
+# OK    Bug 16694 - Limit SIP2 auth by patron attribute
+# WAITFORQA  Bug 16699 - Swagger: Split parameters and paths, and specify required permissions for resource
+# WAITFORQA  Bug 14868 - REST API: Swagger2-driven permission checking
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
 # OK    Bug 16497 - REST API: add routes to list libraries
-ENV KOHABUGS     "16330 13895 16497"
+ENV KOHABUGS     "16694 16330 13895 16497"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian

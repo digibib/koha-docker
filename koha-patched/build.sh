@@ -59,6 +59,12 @@ for patch in $(find /patches -name *.patch | sort -n); do \
 done
 
 ############
+# MINIFY SWAGGER
+############
+echo "Minifying swagger definitions..."
+perl /koha/misc/devel/minifySwagger.pl -s /koha/api/v1/swagger.json -d /koha/api/v1/swagger.min.json
+
+############
 # CHANGELOG AND BUILD DEPS
 ############
 
