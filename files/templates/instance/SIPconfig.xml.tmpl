@@ -35,7 +35,7 @@
       transport="RAW"
       protocol="SIP/2.00"
       timeout="1800"
-      client_timeout="600" />
+      client_timeout="1800" />
       <!--
         client_timeout: seconds to wait before disconnecting idle clients
         timeout:        seconds to wait before disconnecting failed logons
@@ -55,7 +55,7 @@
     </login>
     -->
     <login encoding="utf8" id="$SIP_AUTOUSER1" password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled"
-      institution="HUTL" checked_in_ok="1" validate_patron_attribute="dooraccess">
+      institution="hutl" checked_in_ok="1" validate_patron_attribute="dooraccess">
        <!-- General messages -->
         <screen_msg_regex find="^.*Invalid password.*$" replace="Feil passord" />
 
