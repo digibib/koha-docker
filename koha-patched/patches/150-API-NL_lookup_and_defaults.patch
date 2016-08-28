@@ -3,114 +3,6 @@
 Patch to extend API to check if existing user locally and in the Norwegian Patron DB. 
 Also route to set patron sync defaults and extended patron attribute
 
-diff --git a/api/v1/swagger.json b/api/v1/swagger.json
-index 865191b..8615cd3 100644
---- a/api/v1/swagger.json
-+++ b/api/v1/swagger.json
-@@ -970,6 +970,103 @@
-           }
-         }
-       }
-+    },
-+    "/checkexistinguser": {
-+      "get": {
-+        "operationId": "existingusersInNorwegianPatronDB",
-+        "tags": ["patrons", "norwegianpatrondb"],
-+        "parameters": [
-+          {
-+            "name": "surname",
-+            "in": "query",
-+            "description": "Last name of patron",
-+            "type": "string"
-+          },
-+          {
-+            "name": "firstname",
-+            "in": "query",
-+            "description": "First name of patron",
-+            "type": "string"
-+          },
-+          {
-+            "name": "dateofbirth",
-+            "in": "query",
-+            "description": "Birth date of patron",
-+            "type": "string"
-+          },
-+          {
-+            "name": "ssn",
-+            "in": "query",
-+            "description": "Social security number",
-+            "type": "string"
-+          }
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "Result of search with given params"
-+          },
-+          "400": {
-+            "description": "Error in lookup",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-+    },
-+    "/patronsyncdefaults/{borrowernumber}": {
-+      "put": {
-+        "operationId": "setpatrondefaultsInNorwegianPatronDB",
-+        "tags": ["patrons"],
-+        "parameters": [
-+          {
-+            "$ref": "#/parameters/borrowernumberPathParam"
-+          },
-+          {
-+            "name": "ssn",
-+            "in": "query",
-+            "description": "Social security number",
-+            "type": "string"
-+          },
-+          {
-+            "name": "password",
-+            "in": "query",
-+            "description": "Personal password",
-+            "type": "string"
-+          }
-+        ],
-+        "consumes": ["application/json"],
-+        "produces": ["application/json"],
-+        "responses": {
-+          "200": {
-+            "description": "Success setting patron defaults"
-+          },
-+          "400": {
-+            "description": "Error setting patron sync defaults",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Patron not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-     }
-   },
-   "definitions": {
 diff --git a/Koha/REST/V1/NorwegianPatronDB.pm b/Koha/REST/V1/NorwegianPatronDB.pm
 new file mode 100644
 index 0000000..d6cef38
@@ -326,3 +218,112 @@ index 0000000..8927229
 +}
 +
 +1;
+diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
+index 413db59..274ea3d 100644
+--- a/api/v1/swagger/paths.json
++++ b/api/v1/swagger/paths.json
+@@ -43,5 +43,11 @@
+   },
+   "/messagepreferences/{borrowernumber}": {
+     "$ref": "paths/messagepreferences.json#/~1messagepreferences~1{borrowernumber}"
++  },
++  "/checkexistinguser": {
++    "$ref": "paths/norwegianpatrondb.json#/~1checkexistinguser"
++  },
++  "/patronsyncdefaults/{borrowernumber}": {
++    "$ref": "paths/norwegianpatrondb.json#/~1patronsyncdefaults~1{borrowernumber}"
+   }
+ }
+diff --git a/api/v1/swagger/paths/norwegianpatrondb.json b/api/v1/swagger/paths/norwegianpatrondb.json
+new file mode 100644
+index 0000000..2d1bb8a
+--- /dev/null
++++ b/api/v1/swagger/paths/norwegianpatrondb.json
+@@ -0,0 +1,87 @@
++{
++  "/checkexistinguser": {
++    "get": {
++      "operationId": "existingusersInNorwegianPatronDB",
++      "tags": ["patrons", "norwegianpatrondb"],
++      "parameters": [
++        {
++          "name": "surname",
++          "in": "query",
++          "description": "Last name of patron",
++          "type": "string"
++        },
++        {
++          "name": "firstname",
++          "in": "query",
++          "description": "First name of patron",
++          "type": "string"
++        },
++        {
++          "name": "dateofbirth",
++          "in": "query",
++          "description": "Birth date of patron",
++          "type": "string"
++        },
++        {
++          "name": "ssn",
++          "in": "query",
++          "description": "Social security number",
++          "type": "string"
++        }
++      ],
++      "responses": {
++        "200": {
++          "description": "Result of search with given params"
++        },
++        "400": {
++          "description": "Error in lookup",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  },
++  "/patronsyncdefaults/{borrowernumber}": {
++    "put": {
++      "operationId": "setpatrondefaultsInNorwegianPatronDB",
++      "tags": ["patrons"],
++      "parameters": [
++        {
++          "$ref": "../parameters.json#/borrowernumberPathParam"
++        },
++        {
++          "name": "ssn",
++          "in": "query",
++          "description": "Social security number",
++          "type": "string"
++        },
++        {
++          "name": "password",
++          "in": "query",
++          "description": "Personal password",
++          "type": "string"
++        }
++      ],
++      "consumes": ["application/json"],
++      "produces": ["application/json"],
++      "responses": {
++        "200": {
++          "description": "Success setting patron defaults"
++        },
++        "400": {
++          "description": "Error setting patron sync defaults",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        },
++        "404": {
++          "description": "Patron not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  }
++}

@@ -27,7 +27,7 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF 4b140a2e914f76fd283de50fb1c061376e22f444
+ENV GITREF 53631f9ffdc86c1afbcc3108ac3ddf1f73fef40e
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -67,13 +67,14 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
+# MASTER  Bug 16699 - Swagger: Split parameters and paths, and specify required permissions for resource
 # OK    Bug 16694 - Limit SIP2 auth by patron attribute
-# WAITFORQA  Bug 16699 - Swagger: Split parameters and paths, and specify required permissions for resource
-# WAITFORQA  Bug 14868 - REST API: Swagger2-driven permission checking
+# OK    Bug 17004 - REST API: add route to authenticate patron (Single Sign On - SSO)
+# OK    Bug 14868 - REST API: Swagger2-driven permission checking
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
-# OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
-# OK    Bug 16497 - REST API: add routes to list libraries
-ENV KOHABUGS     "16694 16330 13895 16497"
+# LOCAL    Bug 16497 - REST API: add routes to list libraries
+# LOCAL    Bug 13895 - Add API routes for checkouts retrieval and renewal
+ENV KOHABUGS     "16694 17004 14868 16330"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian

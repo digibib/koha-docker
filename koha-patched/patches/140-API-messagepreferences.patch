@@ -1,4 +1,4 @@
-017 - Koha API Messagepreferences Patch
+140 - Koha API Messagepreferences Patch
 Patch against Koha $GITREF 9648cd2917f4b530c9da9b39e4fe606e457511a2
 curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/9648cd2917f4b530c9da9b39e4fe606e457511a2
 or https://github.com/Koha-Community/Koha/archive/v16.05.00-beta.tar.gz
@@ -6,81 +6,12 @@ or https://github.com/Koha-Community/Koha/archive/v16.05.00-beta.tar.gz
 prerequisites:
 # LOCAL 015 - Koha API Items Patch
 
-diff --git a/api/v1/swagger.json b/api/v1/swagger.json
-index 466b077..a40f798 100644
---- a/api/v1/swagger.json
-+++ b/api/v1/swagger.json
-@@ -659,6 +659,63 @@
-           }
-         }
-       }
-+    },
-+    "/messagepreferences/{borrowernumber}": {
-+      "get": {
-+        "operationId": "getMessagepreferencesByUser",
-+        "tags": ["patrons", "messages"],
-+        "parameters": [
-+          {
-+            "$ref": "#/parameters/borrowernumberPathParam"
-+          }
-+        ],
-+        "produces": ["application/json"],
-+        "responses": {
-+          "200": {
-+            "description": "Patron message preferences"
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Patron not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      },
-+      "put": {
-+        "operationId": "setMessagepreferencesByUser",
-+        "tags": ["patrons", "messages"],
-+        "parameters": [
-+          {
-+            "$ref": "#/parameters/borrowernumberPathParam"
-+          }
-+        ],
-+        "consumes": ["application/json"],
-+        "produces": ["application/json"],
-+        "responses": {
-+          "200": {
-+            "description": "Patron message preferences"
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Patron not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-     }
-   },
-   "definitions": {
-
 diff --git a/Koha/REST/V1/Messagepreference.pm b/Koha/REST/V1/Messagepreference.pm
 new file mode 100644
-index 0000000..6d9f0dc
+index 0000000..e73d0a6
 --- /dev/null
 +++ b/Koha/REST/V1/Messagepreference.pm
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,104 @@
 +package Koha::REST::V1::Messagepreference;
 +
 +# This file is part of Koha.
@@ -102,7 +33,6 @@ index 0000000..6d9f0dc
 +
 +use Mojo::Base 'Mojolicious::Controller';
 +
-+use C4::Auth qw( haspermission );
 +use Koha::Patrons;
 +use C4::Members::Messaging;
 +use Data::Dumper;
@@ -111,15 +41,6 @@ index 0000000..6d9f0dc
 +# GET /messagepreferences/{borrowernumber}/{message_name}
 +sub get {
 +    my ($c, $args, $cb) = @_;
-+
-+    my $user = $c->stash('koha.user');
-+
-+    unless ( $user
-+        && ( $user->borrowernumber == $args->{borrowernumber}
-+            || haspermission($user->userid, {borrowers => 1}) ) )
-+    {
-+        return $c->$cb({error => "You don't have the required permission"}, 403);
-+    }
 +
 +    my $patron = Koha::Patrons->find($args->{borrowernumber});
 +    unless ($patron) {
@@ -140,15 +61,6 @@ index 0000000..6d9f0dc
 +#   },
 +sub set {
 +    my ($c, $args, $cb) = @_;
-+
-+    my $user = $c->stash('koha.user');
-+
-+    unless ( $user
-+        && ( $user->borrowernumber == $args->{borrowernumber}
-+            || haspermission($user->userid, {borrowers => 1}) ) )
-+    {
-+        return $c->$cb({error => "You don't have the required permission"}, 403);
-+    }
 +
 +    my $body = $c->req->json;
 +    warn Dumper($body);
@@ -204,3 +116,69 @@ index 0000000..6d9f0dc
 +}
 +
 +1;
+diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
+index 0c01289..413db59 100644
+--- a/api/v1/swagger/paths.json
++++ b/api/v1/swagger/paths.json
+@@ -40,5 +40,8 @@
+   },
+   "/biblios/{biblionumber}/expanded": {
+     "$ref": "paths/biblios.json#/~1biblios~1{biblionumber}~1expanded"
++  },
++  "/messagepreferences/{borrowernumber}": {
++    "$ref": "paths/messagepreferences.json#/~1messagepreferences~1{borrowernumber}"
+   }
+ }
+diff --git a/api/v1/swagger/paths/messagepreferences.json b/api/v1/swagger/paths/messagepreferences.json
+new file mode 100644
+index 0000000..3940eff
+--- /dev/null
++++ b/api/v1/swagger/paths/messagepreferences.json
+@@ -0,0 +1,47 @@
++{
++  "/messagepreferences/{borrowernumber}": {
++    "get": {
++      "operationId": "getMessagepreferencesByUser",
++      "tags": ["patrons", "messages"],
++      "parameters": [
++        {
++          "$ref": "../parameters.json#/borrowernumberPathParam"
++        }
++      ],
++      "produces": ["application/json"],
++      "responses": {
++        "200": {
++          "description": "Patron message preferences"
++        },
++        "404": {
++          "description": "Patron not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    },
++    "put": {
++      "operationId": "setMessagepreferencesByUser",
++      "tags": ["patrons", "messages"],
++      "parameters": [
++        {
++          "$ref": "../parameters.json#/borrowernumberPathParam"
++        }
++      ],
++      "consumes": ["application/json"],
++      "produces": ["application/json"],
++      "responses": {
++        "200": {
++          "description": "Patron message preferences"
++        },
++        "404": {
++          "description": "Patron not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  }
++}

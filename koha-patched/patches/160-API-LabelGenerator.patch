@@ -3,54 +3,6 @@
 Patch to extend API to allow item lookup by barcode and return 
 information needed for label generation.
 
-diff --git a/api/v1/swagger.json b/api/v1/swagger.json
-index cb40533..09d13f9 100644
---- a/api/v1/swagger.json
-+++ b/api/v1/swagger.json
-@@ -1013,6 +1013,29 @@
-           }
-         }
-       }
-+    },
-+    "/labelgenerator/{barcode}": {
-+      "get": {
-+        "operationId": "getlabelFromLabelGenerator",
-+        "tags": ["biblios", "items"],
-+        "produces": ["application/json"],
-+        "parameters": [
-+          {
-+            "$ref": "#/parameters/barcodePathParam"
-+          }
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "Label generator details"
-+          },
-+          "404": {
-+            "description": "Barcode not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-     }
-   },
-   "definitions": {
-@@ -1053,6 +1076,13 @@
-       "description": "Internal biblio identifier",
-       "required": true,
-       "type": "integer"
-+    },
-+    "barcodePathParam": {
-+      "name": "barcode",
-+      "in": "path",
-+      "description": "Item barcode identifier",
-+      "required": true,
-+      "type": "string"
-     }
-   }
- }
 diff --git a/Koha/REST/V1/LabelGenerator.pm b/Koha/REST/V1/LabelGenerator.pm
 new file mode 100644
 index 0000000..8c41dc0
@@ -110,3 +62,47 @@ index 0000000..8c41dc0
 +}
 +
 +1;
+diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
+index 274ea3d..1403022 100644
+--- a/api/v1/swagger/paths.json
++++ b/api/v1/swagger/paths.json
+@@ -49,5 +49,8 @@
+   },
+   "/patronsyncdefaults/{borrowernumber}": {
+     "$ref": "paths/norwegianpatrondb.json#/~1patronsyncdefaults~1{borrowernumber}"
++  },
++  "/labelgenerator/{barcode}": {
++    "$ref": "paths/labelgenerator.json#/~1labelgenerator~1{barcode}"
+   }
+ }
+diff --git a/api/v1/swagger/paths/labelgenerator.json b/api/v1/swagger/paths/labelgenerator.json
+new file mode 100644
+index 0000000..29c9ed0
+--- /dev/null
++++ b/api/v1/swagger/paths/labelgenerator.json
+@@ -0,0 +1,25 @@
++{
++  "/labelgenerator/{barcode}": {
++    "get": {
++      "operationId": "getlabelFromLabelGenerator",
++      "tags": ["biblios", "items"],
++      "produces": ["application/json"],
++      "parameters": [
++        {
++          "$ref": "../parameters.json#/barcodePathParam"
++        }
++      ],
++      "responses": {
++        "200": {
++          "description": "Label generator details"
++        },
++        "404": {
++          "description": "Barcode not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  }
++}

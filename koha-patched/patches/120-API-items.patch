@@ -1,15 +1,16 @@
-015 - Koha API Items Patch
-Patch against Koha $GITREF 9648cd2917f4b530c9da9b39e4fe606e457511a2
-curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/9648cd2917f4b530c9da9b39e4fe606e457511a2
-or https://github.com/Koha-Community/Koha/archive/v16.05.00-beta.tar.gz
+120 - Koha API Items Patch
+Patch against Koha GITREF 53631f9ffdc86c1afbcc3108ac3ddf1f73fef40e
+curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/53631f9ffdc86c1afbcc3108ac3ddf1f73fef40e
+or https://github.com/Koha-Community/Koha/archive/v16.05.02.tar.gz
 
 prerequisites:
-# OK    Bug 15126 - REST API: Use newer version of Swagger2
-# OK    Bug 13903 - Add API routes to list, create, update, delete holds
+# OK    Bug 16694 - Limit SIP2 auth by patron attribute
+# OK    Bug 17004 - REST API: add route to authenticate patron (Single Sign On - SSO)
+# OK    Bug 14868 - REST API: Swagger2-driven permission checking
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
-# OK    Bug 13895 - Add API routes for checkouts retrieval and renewal
-# OK    Bug 16271 - Allow more filters on /api/v1/holds
-# OK    Bug 16497 - REST API: add routes to list libraries
+# LOCAL Bug 16497 - REST API: add routes to list libraries
+# LOCAL Bug 13895 - Add API routes for checkouts retrieval and renewal
+# NO    Bug 16271 - Allow more filters on /api/v1/holds
 
 diff --git a/Koha/REST/V1/Item.pm b/Koha/REST/V1/Item.pm
 new file mode 100644
@@ -66,23 +67,28 @@ index 0000000..ee7eb73
 +}
 +
 +1;
-diff --git a/api/v1/definitions/index.json b/api/v1/definitions/index.json
-index f7ab98a..11c67c5 100644
---- a/api/v1/definitions/index.json
-+++ b/api/v1/definitions/index.json
-@@ -6,5 +6,7 @@
-     "checkout": { "$ref": "checkout.json" },
-     "libraries": { "$ref": "libraries.json" },
-     "library": { "$ref": "library.json" },
-+    "items": { "$ref": "items.json" },
-+    "item": { "$ref": "item.json" },
-     "error": { "$ref": "error.json" }
- }
-diff --git a/api/v1/definitions/item.json b/api/v1/definitions/item.json
+diff --git a/api/v1/swagger/definitions.json b/api/v1/swagger/definitions.json
+index cdc4c44..0c37e8c 100644
+--- a/api/v1/swagger/definitions.json
++++ b/api/v1/swagger/definitions.json
+@@ -20,6 +20,12 @@
+   "library": {
+     "$ref": "definitions/library.json"
+   },
++  "items": {
++    "$ref": "definitions/items.json"
++  },
++  "item": {
++    "$ref": "definitions/item.json"
++  },
+   "error": {
+     "$ref": "definitions/error.json"
+   }
+diff --git a/api/v1/swagger/definitions/item.json b/api/v1/swagger/definitions/item.json
 new file mode 100644
 index 0000000..beab11a
 --- /dev/null
-+++ b/api/v1/definitions/item.json
++++ b/api/v1/swagger/definitions/item.json
 @@ -0,0 +1,181 @@
 +{
 +    "type": "object",
@@ -265,92 +271,129 @@ index 0000000..beab11a
 +    }
 +  }
 +}
-diff --git a/api/v1/definitions/items.json b/api/v1/definitions/items.json
+diff --git a/api/v1/swagger/definitions/items.json b/api/v1/swagger/definitions/items.json
 new file mode 100644
 index 0000000..8d7ccaa
 --- /dev/null
-+++ b/api/v1/definitions/items.json
++++ b/api/v1/swagger/definitions/items.json
 @@ -0,0 +1,5 @@
 +{
 +    "type": "array",
 +    "items": { "$ref": "item.json" }
 +}
 +
-diff --git a/api/v1/swagger.json b/api/v1/swagger.json
-index 6c2c289..db5fb8e 100644
---- a/api/v1/swagger.json
-+++ b/api/v1/swagger.json
-@@ -274,6 +274,59 @@
-           }
-         }
-       }
-+    },
-+    "/items/{itemnumber}": {
-+      "get": {
-+        "operationId": "getItem",
-+        "tags": ["items"],
-+        "parameters": [
-+          { "$ref": "#/parameters/itemnumberPathParam" }
-+        ],
-+        "produces": [
-+          "application/json"
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "An item"
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Item not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-+    },
-+    "/items/{itemnumber}/biblio": {
-+      "get": {
-+        "operationId": "getbiblioByItem",
-+        "tags": ["biblios"],
-+        "parameters": [
-+          { "$ref": "#/parameters/itemnumberPathParam" }
-+        ],
-+        "produces": [
-+          "application/json"
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "A full biblio record"
-+
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-     }
+diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
+index f11987b..11278e2 100644
+--- a/api/v1/swagger/parameters.json
++++ b/api/v1/swagger/parameters.json
+@@ -13,5 +13,11 @@
    },
-   "definitions": {
-@@ -300,6 +353,13 @@
-       "description": "Internal library identifier",
-       "required": true,
-       "type": "string"
-+    },
-+    "itemnumberPathParam": {
-+      "name": "itemnumber",
-+      "in": "path",
-+      "description": "Internal item identifier",
-+      "required": true,
-+      "type": "integer"
-     }
+   "checkoutIdPathParam": {
+     "$ref": "parameters/checkout.json#/checkoutIdPathParam"
++  },
++  "itemnumberPathParam": {
++    "$ref": "parameters/item.json#/itemnumberPathParam"
++  },
++  "barcodePathParam": {
++    "$ref": "parameters/item.json#/barcodePathParam"
    }
  }
+diff --git a/api/v1/swagger/parameters/item.json b/api/v1/swagger/parameters/item.json
+new file mode 100644
+index 0000000..6678df8
+--- /dev/null
++++ b/api/v1/swagger/parameters/item.json
+@@ -0,0 +1,16 @@
++{
++  "itemnumberPathParam": {
++    "name": "itemnumber",
++    "in": "path",
++    "description": "Internal item identifier",
++    "required": true,
++    "type": "integer"
++  },
++  "barcodePathParam": {
++    "name": "barcode",
++    "in": "path",
++    "description": "Item barcode identifier",
++    "required": true,
++    "type": "string"
++  }
++}
+diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
+index 3328166..4ac9786 100644
+--- a/api/v1/swagger/paths.json
++++ b/api/v1/swagger/paths.json
+@@ -22,5 +22,11 @@
+   },
+   "/libraries/{branchcode}": {
+     "$ref": "paths/libraries.json#/~1libraries~1{branchcode}"
++  },
++  "/items/{itemnumber}": {
++    "$ref": "paths/items.json#/~1items~1{itemnumber}"
++  },
++  "/items/{itemnumber}/biblio": {
++    "$ref": "paths/items.json#/~1items~1{itemnumber}~1biblio"
+   }
+ }
+diff --git a/api/v1/swagger/paths/items.json b/api/v1/swagger/paths/items.json
+new file mode 100644
+index 0000000..3622497
+--- /dev/null
++++ b/api/v1/swagger/paths/items.json
+@@ -0,0 +1,55 @@
++{
++  "/items/{itemnumber}": {
++    "get": {
++      "operationId": "getItem",
++      "tags": ["items"],
++      "parameters": [
++        { "$ref": "../parameters.json#/itemnumberPathParam" }
++      ],
++      "produces": [
++        "application/json"
++      ],
++      "responses": {
++        "200": {
++          "description": "An item"
++        },
++        "403": {
++          "description": "Access forbidden",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        },
++        "404": {
++          "description": "Item not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  },
++  "/items/{itemnumber}/biblio": {
++    "get": {
++      "operationId": "getbiblioByItem",
++      "tags": ["biblios"],
++      "parameters": [
++        { "$ref": "../parameters.json#/itemnumberPathParam" }
++      ],
++      "produces": [
++        "application/json"
++      ],
++      "responses": {
++        "200": {
++          "description": "A full biblio record"
++
++        },
++        "403": {
++          "description": "Access forbidden",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  }
++}

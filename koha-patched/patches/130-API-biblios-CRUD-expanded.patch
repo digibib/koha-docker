@@ -1,4 +1,4 @@
-030-API-biblios-CRUD-expanded
+130-API-biblios-CRUD-expanded
 
 Patch to enable full CRUD on /api/v1/biblios
 Delete all items on DELETE as default, except if items have holds or issues
@@ -6,10 +6,10 @@ Also enables expanded item with status
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..549c551
+index 0000000..8db7361
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,191 @@
+@@ -0,0 +1,175 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -31,7 +31,6 @@ index 0000000..549c551
 +
 +use Mojo::Base 'Mojolicious::Controller';
 +
-+use C4::Auth qw( haspermission );
 +use Koha::AuthUtils qw(hash_password);
 +use C4::Biblio qw( GetBiblioData AddBiblio ModBiblio DelBiblio );
 +use C4::Items qw ( AddItemBatchFromMarc );
@@ -104,11 +103,6 @@ index 0000000..549c551
 +sub add {
 +    my ($c, $args, $cb) = @_;
 +
-+    my $user = $c->stash('koha.user');
-+
-+    unless ( $user && haspermission($user->userid, {borrowers => 1}) ) {
-+        return $c->$cb({error => "You don't have the required permission"}, 403);
-+    }
 +    my $biblionumber;
 +    my $biblioitemnumber;
 +
@@ -141,11 +135,6 @@ index 0000000..549c551
 +sub update {
 +    my ($c, $args, $cb) = @_;
 +
-+    my $user = $c->stash('koha.user');
-+
-+    unless ( $user && haspermission($user->userid, {borrowers => 1}) ) {
-+        return $c->$cb({error => "You don't have the required permission"}, 403);
-+    }
 +    my $biblionumber = $args->{biblionumber};
 +
 +    my $biblio = Koha::Biblios->find($biblionumber);
@@ -171,11 +160,6 @@ index 0000000..549c551
 +
 +sub delete {
 +    my ($c, $args, $cb) = @_;
-+    my $user = $c->stash('koha.user');
-+
-+    unless ( $user && haspermission($user->userid, {borrowers => 1}) ) {
-+        return $c->$cb({error => "You don't have the required permission"}, 403);
-+    }
 +
 +    my $biblio = Koha::Biblios->find($args->{biblionumber});
 +    unless ($biblio) {
@@ -201,251 +185,72 @@ index 0000000..549c551
 +}
 +
 +1;
-diff --git a/api/v1/swagger.json b/api/v1/swagger.json
-index 7401f69..0ee6f7b 100644
---- a/api/v1/swagger.json
-+++ b/api/v1/swagger.json
-@@ -547,6 +547,7 @@
-             "type": "integer"
-           }
-         ],
-+        "consumes": ["application/json"],
-         "produces": ["application/json"],
-         "responses": {
-           "200": {
-@@ -656,6 +657,184 @@
-             "schema": {
-               "$ref": "#/definitions/error"
-             }
-+          },
-+          "404": {
-+            "description": "Item not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-+    },
-+    "/biblios/{biblionumber}": {
-+      "get": {
-+        "operationId": "getBiblio",
-+        "tags": ["biblios"],
-+        "parameters": [
-+          { "$ref": "#/parameters/biblionumberPathParam" }
-+        ],
-+        "produces": [
-+          "application/json"
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "A biblio record",
-+            "schema": { "$ref": "#/definitions/biblio" }
-+
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Biblio not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      },
-+      "put": {
-+        "operationId": "updateBiblio",
-+        "tags": ["biblios"],
-+        "parameters": [
-+          { "$ref": "#/parameters/biblionumberPathParam" }
-+        ],
-+        "produces": [
-+          "application/json"
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "An updated biblio record"
-+          },
-+          "400": {
-+            "description": "Biblio update failed",
-+            "schema": { "$ref": "#/definitions/error" }
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Biblio not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      },
-+      "delete": {
-+        "operationId": "deleteBiblio",
-+        "tags": ["biblios"],
-+        "parameters": [
-+          { "$ref": "#/parameters/biblionumberPathParam" }
-+        ],
-+        "produces": ["application/json"],
-+        "responses": {
-+          "200": {
-+            "description": "Biblio record deleted successfully",
-+            "schema": {
-+              "type": "object"
-+            }
-+          },
-+          "400": {
-+            "description": "Biblio deletion failed",
-+            "schema": { "$ref": "#/definitions/error" }
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Biblio not found",
-+            "schema": { "$ref": "#/definitions/error" }
-+          }
-+        }
-+      }
-+    },
-+    "/biblios/{biblionumber}/items": {
-+      "get": {
-+        "operationId": "getitemsByBiblio",
-+        "tags": ["biblios", "items"],
-+        "parameters": [
-+          { "$ref": "#/parameters/biblionumberPathParam" }
-+        ],
-+        "produces": [
-+          "application/json"
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "A biblio record with items"
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Biblio not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-+    },
-+    "/biblios/{biblionumber}/expanded": {
-+      "get": {
-+        "operationId": "getexpandedByBiblio",
-+        "tags": ["biblios", "items", "item status"],
-+        "parameters": [
-+          { "$ref": "#/parameters/biblionumberPathParam" }
-+        ],
-+        "produces": [
-+          "application/json"
-+        ],
-+        "responses": {
-+          "200": {
-+            "description": "A biblio record with items and item statuses"
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          },
-+          "404": {
-+            "description": "Biblio not found",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-+          }
-+        }
-+      }
-+    },
-+    "/biblios": {
-+      "post": {
-+        "operationId": "addBiblio",
-+        "tags": ["biblios"],
-+        "produces": ["application/json"],
-+        "responses": {
-+          "201": {
-+            "description": "A new biblio record"
-+          },
-+          "400": {
-+            "description": "Unable to create biblio record",
-+            "schema": { "$ref": "#/definitions/error" }
-+          },
-+          "403": {
-+            "description": "Access forbidden",
-+            "schema": {
-+              "$ref": "#/definitions/error"
-+            }
-           }
-         }
-       }
-@@ -749,6 +928,13 @@
-       "description": "Internal item identifier",
-       "required": true,
-       "type": "integer"
-+    },
-+    "biblionumberPathParam": {
-+      "name": "biblionumber",
-+      "in": "path",
-+      "description": "Internal biblio identifier",
-+      "required": true,
-+      "type": "integer"
-     }
+diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
+index 11278e2..77063c7 100644
+--- a/api/v1/swagger/parameters.json
++++ b/api/v1/swagger/parameters.json
+@@ -19,5 +19,8 @@
+   },
+   "barcodePathParam": {
+     "$ref": "parameters/item.json#/barcodePathParam"
++  },
++  "biblionumberPathParam": {
++    "$ref": "parameters/biblio.json#/biblionumberPathParam"
    }
  }
-diff --git a/api/v1/definitions/index.json b/api/v1/definitions/index.json
-index 422eef2..2665d02 100644
---- a/api/v1/definitions/index.json
-+++ b/api/v1/definitions/index.json
-@@ -8,5 +8,7 @@
-     "library": { "$ref": "library.json" },
-     "items": { "$ref": "items.json" },
-     "item": { "$ref": "item.json" },
-+    "biblios": { "$ref": "biblios.json" },
-+    "biblio": { "$ref": "biblio.json" },
-     "error": { "$ref": "error.json" }
- }
-diff --git a/api/v1/definitions/biblios.json b/api/v1/definitions/biblios.json
+diff --git a/api/v1/swagger/parameters/biblio.json b/api/v1/swagger/parameters/biblio.json
+new file mode 100644
+index 0000000..1d1316a
+--- /dev/null
++++ b/api/v1/swagger/parameters/biblio.json
+@@ -0,0 +1,9 @@
++{
++   "biblionumberPathParam": {
++     "name": "biblionumber",
++     "in": "path",
++     "description": "Internal biblio identifier",
++     "required": true,
++     "type": "integer"
++  }
++}
+diff --git a/api/v1/swagger/definitions.json b/api/v1/swagger/definitions.json
+index 0c37e8c..52a9c84 100644
+--- a/api/v1/swagger/definitions.json
++++ b/api/v1/swagger/definitions.json
+@@ -26,6 +26,12 @@
+   "item": {
+     "$ref": "definitions/item.json"
+   },
++  "biblios": {
++    "$ref": "definitions/biblios.json"
++  },
++  "biblio": {
++    "$ref": "definitions/biblio.json"
++  },
+   "error": {
+     "$ref": "definitions/error.json"
+   }
+diff --git a/api/v1/swagger/definitions/biblios.json b/api/v1/swagger/definitions/biblios.json
 new file mode 100644
 index 0000000..b0600e8
 --- /dev/null
-+++ b/api/v1/definitions/biblios.json
++++ b/api/v1/swagger/definitions/biblios.json
 @@ -0,0 +1,4 @@
 +{
 +    "type": "array",
 +    "items": { "$ref": "biblio.json" }
 +}
-diff --git a/api/v1/definitions/biblio.json b/api/v1/definitions/biblio.json
+diff --git a/api/v1/swagger/definitions/biblio.json b/api/v1/swagger/definitions/biblio.json
 new file mode 100644
-index 0000000..7f85aa5
+index 0000000..bde3f8f
 --- /dev/null
-+++ b/api/v1/definitions/biblio.json
-@@ -0,0 +1,49 @@
++++ b/api/v1/swagger/definitions/biblio.json
+@@ -0,0 +1,48 @@
 +{
 +  "type": "object",
 +    "properties": {
 +    "biblionumber": {
-+      "type": ["string"],
-+      "description": "Unique internal ID of biblio"
++      "$ref": "../x-primitives.json#/biblionumber"
 +    },
 +    "author": {
 +      "type": ["string", "null"],
@@ -486,6 +291,187 @@ index 0000000..7f85aa5
 +    "abstract": {
 +      "type": ["string", "null"],
 +      "description": "summary from the MARC record (520$a in MARC21)"
++    }
++  }
++}
+diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
+index 4ac9786..0c01289 100644
+--- a/api/v1/swagger/paths.json
++++ b/api/v1/swagger/paths.json
+@@ -28,5 +28,17 @@
+   },
+   "/items/{itemnumber}/biblio": {
+     "$ref": "paths/items.json#/~1items~1{itemnumber}~1biblio"
++  },
++  "/biblios": {
++    "$ref": "paths/biblios.json#/~1biblios"
++  },
++  "/biblios/{biblionumber}": {
++    "$ref": "paths/biblios.json#/~1biblios~1{biblionumber}"
++  },
++  "/biblios/{biblionumber}/items": {
++    "$ref": "paths/biblios.json#/~1biblios~1{biblionumber}~1items"
++  },
++  "/biblios/{biblionumber}/expanded": {
++    "$ref": "paths/biblios.json#/~1biblios~1{biblionumber}~1expanded"
+   }
+ }
+diff --git a/api/v1/swagger/paths/biblios.json b/api/v1/swagger/paths/biblios.json
+new file mode 100644
+index 0000000..d58f205
+--- /dev/null
++++ b/api/v1/swagger/paths/biblios.json
+@@ -0,0 +1,153 @@
++{
++  "/biblios/{biblionumber}": {
++    "get": {
++      "operationId": "getBiblio",
++      "tags": ["biblios"],
++      "parameters": [
++        { "$ref": "../parameters.json#/biblionumberPathParam" }
++      ],
++      "produces": [
++        "application/json"
++      ],
++      "responses": {
++        "200": {
++          "description": "A biblio record",
++          "schema": { "$ref": "../definitions.json#/biblio" }
++
++        },
++        "404": {
++          "description": "Biblio not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    },
++    "put": {
++      "operationId": "updateBiblio",
++      "tags": ["biblios"],
++      "parameters": [
++        { "$ref": "../parameters.json#/biblionumberPathParam" }
++      ],
++      "produces": [
++        "application/json"
++      ],
++      "responses": {
++        "200": {
++          "description": "An updated biblio record"
++        },
++        "400": {
++          "description": "Biblio update failed",
++          "schema": { "$ref": "../definitions.json#/error" }
++        },
++        "404": {
++          "description": "Biblio not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      },
++      "x-koha-authorization": {
++        "permissions": {
++          "editcatalogue": "1"
++        }
++      }
++    },
++    "delete": {
++      "operationId": "deleteBiblio",
++      "tags": ["biblios"],
++      "parameters": [
++        { "$ref": "../parameters.json#/biblionumberPathParam" }
++      ],
++      "produces": ["application/json"],
++      "responses": {
++        "200": {
++          "description": "Biblio record deleted successfully",
++          "schema": {
++            "type": "object"
++          }
++        },
++        "400": {
++          "description": "Biblio deletion failed",
++          "schema": { "$ref": "../definitions.json#/error" }
++        },
++        "404": {
++          "description": "Biblio not found",
++          "schema": { "$ref": "../definitions.json#/error" }
++        }
++      },
++      "x-koha-authorization": {
++        "permissions": {
++          "editcatalogue": "1"
++        }
++      }
++    }
++  },
++  "/biblios/{biblionumber}/items": {
++    "get": {
++      "operationId": "getitemsByBiblio",
++      "tags": ["biblios", "items"],
++      "parameters": [
++        { "$ref": "../parameters.json#/biblionumberPathParam" }
++      ],
++      "produces": [
++        "application/json"
++      ],
++      "responses": {
++        "200": {
++          "description": "A biblio record with items"
++        },
++        "404": {
++          "description": "Biblio not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  },
++  "/biblios/{biblionumber}/expanded": {
++    "get": {
++      "operationId": "getexpandedByBiblio",
++      "tags": ["biblios", "items", "item status"],
++      "parameters": [
++        { "$ref": "../parameters.json#/biblionumberPathParam" }
++      ],
++      "produces": [
++        "application/json"
++      ],
++      "responses": {
++        "200": {
++          "description": "A biblio record with items and item statuses"
++        },
++        "404": {
++          "description": "Biblio not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      }
++    }
++  },
++  "/biblios": {
++    "post": {
++      "operationId": "addBiblio",
++      "tags": ["biblios"],
++      "produces": ["application/json"],
++      "responses": {
++        "201": {
++          "description": "A new biblio record"
++        },
++        "400": {
++          "description": "Unable to create biblio record",
++          "schema": { "$ref": "../definitions.json#/error" }
++        }
++      }
++    },
++    "x-koha-authorization": {
++      "permissions": {
++        "editcatalogue": "1"
++      }
 +    }
 +  }
 +}

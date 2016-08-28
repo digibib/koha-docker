@@ -70,10 +70,6 @@ envsubst < /templates/instance/zebra.passwd.tmpl > /etc/koha/sites/$KOHA_INSTANC
 envsubst < /templates/instance/apache.tmpl > /etc/apache2/sites-available/$KOHA_INSTANCE.conf
 envsubst < /templates/instance/SIPconfig.xml.tmpl > /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml
 
-echo "Symlinking Koha REST API folder ... TODO: Fix this"
-rm -rf /usr/share/koha/api/v1/
-ln -s /usr/share/koha/api/api/v1 /usr/share/koha/api/v1
-
 echo "Configuring languages ..."
 # Install languages in Koha
 for language in $INSTALL_LANGUAGES
