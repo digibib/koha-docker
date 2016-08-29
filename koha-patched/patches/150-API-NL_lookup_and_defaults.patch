@@ -5,10 +5,10 @@ Also route to set patron sync defaults and extended patron attribute
 
 diff --git a/Koha/REST/V1/NorwegianPatronDB.pm b/Koha/REST/V1/NorwegianPatronDB.pm
 new file mode 100644
-index 0000000..d6cef38
+index 0000000..cf8a60b
 --- /dev/null
 +++ b/Koha/REST/V1/NorwegianPatronDB.pm
-@@ -0,0 +1,101 @@
+@@ -0,0 +1,90 @@
 +package Koha::REST::V1::NorwegianPatronDB;
 +
 +# This file is part of Koha.
@@ -30,7 +30,6 @@ index 0000000..d6cef38
 +
 +use Mojo::Base 'Mojolicious::Controller';
 +
-+use C4::Auth qw( haspermission );
 +use Koha::AuthUtils qw(hash_password);
 +use Koha::NorwegianPatronDB qw( NLSearch NLEncryptPIN );
 +use Koha::Patrons;
@@ -44,10 +43,6 @@ index 0000000..d6cef38
 +sub existingusers {
 +    my ($c, $args, $cb) = @_;
 +
-+    my $user = $c->stash('koha.user');
-+    unless ($user && haspermission($user->userid, {borrowers => 1})) {
-+       return $c->$cb({error => "You don't have the required permission"}, 403);
-+    }
 +    my $response = {
 +        count => 0,
 +        localdb => 0,
@@ -89,12 +84,6 @@ index 0000000..d6cef38
 +sub setpatrondefaults {
 +    my ($c, $args, $cb) = @_;
 +
-+    my $user = $c->stash('koha.user');
-+    unless ($user && ( $user->borrowernumber == $args->{borrowernumber}
-+        || haspermission($user->userid, {borrowers => 1}) ) )
-+    {
-+        return $c->$cb({error => "You don't have the required permission"}, 403);
-+    }
 +    my $sync = Koha::Patron::Syncs->find_or_create({
 +      borrowernumber => $args->{borrowernumber},
 +      synctype       => 'norwegianpatrondb',
@@ -236,10 +225,10 @@ index 413db59..274ea3d 100644
  }
 diff --git a/api/v1/swagger/paths/norwegianpatrondb.json b/api/v1/swagger/paths/norwegianpatrondb.json
 new file mode 100644
-index 0000000..2d1bb8a
+index 0000000..65ea983
 --- /dev/null
 +++ b/api/v1/swagger/paths/norwegianpatrondb.json
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,103 @@
 +{
 +  "/checkexistinguser": {
 +    "get": {
@@ -250,25 +239,29 @@ index 0000000..2d1bb8a
 +          "name": "surname",
 +          "in": "query",
 +          "description": "Last name of patron",
-+          "type": "string"
++          "type": "string",
++          "required": true
 +        },
 +        {
 +          "name": "firstname",
 +          "in": "query",
 +          "description": "First name of patron",
-+          "type": "string"
++          "type": "string",
++          "required": true
 +        },
 +        {
 +          "name": "dateofbirth",
 +          "in": "query",
 +          "description": "Birth date of patron",
-+          "type": "string"
++          "type": "string",
++          "required": true
 +        },
 +        {
 +          "name": "ssn",
 +          "in": "query",
 +          "description": "Social security number",
-+          "type": "string"
++          "type": "string",
++          "required": true
 +        }
 +      ],
 +      "responses": {
@@ -280,6 +273,11 @@ index 0000000..2d1bb8a
 +          "schema": {
 +            "$ref": "../definitions.json#/error"
 +          }
++        }
++      },
++      "x-koha-authorization": {
++        "permissions": {
++          "borrowers": "1"
 +        }
 +      }
 +    }
@@ -296,13 +294,15 @@ index 0000000..2d1bb8a
 +          "name": "ssn",
 +          "in": "query",
 +          "description": "Social security number",
-+          "type": "string"
++          "type": "string",
++          "required": true
 +        },
 +        {
 +          "name": "password",
 +          "in": "query",
 +          "description": "Personal password",
-+          "type": "string"
++          "type": "string",
++          "required": true
 +        }
 +      ],
 +      "consumes": ["application/json"],
@@ -322,6 +322,11 @@ index 0000000..2d1bb8a
 +          "schema": {
 +            "$ref": "../definitions.json#/error"
 +          }
++        }
++      },
++      "x-koha-authorization": {
++        "permissions": {
++          "borrowers": "1"
 +        }
 +      }
 +    }
