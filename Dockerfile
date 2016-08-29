@@ -8,6 +8,7 @@ MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
 ENV REFRESHED_AT 2016-07-29
 
+RUN echo "APT::Acquire::Retries \"3\";" > /etc/apt/apt.conf.d/80-retries
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get upgrade --yes && \
     apt-get install -y wget less curl git nmap socat netcat tree htop \ 
