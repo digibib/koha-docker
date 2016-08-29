@@ -46,9 +46,9 @@ ADD ./koha-patched/debian /tmp/debian
 RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
-    dpkg -i --force-depends /tmp/debian/koha-perldeps_${KOHA_BUILD}_all.deb || true && \
-    dpkg -i --force-depends /tmp/debian/koha-deps_${KOHA_BUILD}_all.deb || true && \
-    dpkg -i --force-depends /tmp/debian/koha-common_${KOHA_BUILD}_all.deb || apt-get install -y -f
+    dpkg -i /tmp/debian/koha-perldeps_${KOHA_BUILD}_all.deb || apt-get install -y -f && \
+    dpkg -i /tmp/debian/koha-deps_${KOHA_BUILD}_all.deb || apt-get install -y -f && \
+    dpkg -i /tmp/debian/koha-common_${KOHA_BUILD}_all.deb || apt-get install -y -f
 
 # Installer files
 COPY ./files/installer /installer
@@ -57,8 +57,6 @@ COPY ./files/installer /installer
 ADD ./files/templates /templates
 
 # Apache settings
-COPY ./files/apache-shared-intranet-plack.conf /etc/koha/apache-shared-intranet-plack.conf
-COPY ./files/plack.psgi /etc/koha/plack.psgi
 RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
     a2dissite 000-default && \
     a2enmod rewrite headers proxy_http cgi
