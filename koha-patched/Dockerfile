@@ -74,7 +74,8 @@ ENV DEBFULLNAME  Oslo Public Library
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # LOCAL    Bug 16497 - REST API: add routes to list libraries
 # LOCAL    Bug 13895 - Add API routes for checkouts retrieval and renewal
-ENV KOHABUGS     "16694 17004 14868 16330"
+# QA    Bug 16942 - Confirm hold results in ugly error
+ENV KOHABUGS     "16694 17004 14868 16330 16942"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
