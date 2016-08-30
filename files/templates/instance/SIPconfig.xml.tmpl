@@ -54,8 +54,12 @@
         <screen_msg_regex find="Greetings from Koha." replace="Welcome to your library!" />
     </login>
     -->
-    <login encoding="utf8" id="$SIP_AUTOUSER1" password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled"
-      institution="hutl" checked_in_ok="1" validate_patron_attribute="dooraccess">
+    <!-- DOOR ACCESS ACOUNTS START -->
+    <login encoding="utf8" id="$SIP_DOORUSER1" password="$SIP_DOORPASS1" delimiter="|" error-detect="enabled" institution="hutl" validate_patron_attribute="dooraccess" />
+    <!-- DOOR ACCESS ACOUNTS END -->
+
+    <!-- AUTOMAT ACOUNTS START -->
+    <login encoding="utf8" id="$SIP_AUTOUSER1" password="$SIP_AUTOPASS1" delimiter="|" error-detect="enabled" institution="hutl" checked_in_ok="1">
        <!-- General messages -->
         <screen_msg_regex find="^.*Invalid password.*$" replace="Feil passord" />
 
@@ -93,6 +97,7 @@
         <!-- Last resort -->
         <screen_msg_regex find="Greetings from Koha." replace="Melding fra biblioteket:" />
     </login>
+    <!-- AUTOMAT ACOUNTS END -->
   </accounts>
 
 <!--
