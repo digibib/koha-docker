@@ -1,0 +1,115 @@
+Patch for using LinkMobility SMS HTTP service
+Run patch from kohasrc root
+
+(created with git diff --no-index /dev/null <newfile>)
+
+diff --git a/sms/LinkMobilityHTTP.pm b/sms/LinkMobilityHTTP.pm
+new file mode 100644
+index 0000000..9a79999
+--- /dev/null
++++ b/sms/LinkMobilityHTTP.pm
+@@ -0,0 +1,104 @@
++package SMS::Send::NO::LinkMobilityHTTP;
++
++use warnings;
++use strict;
++use Carp;
++use version;
++
++use LWP::UserAgent;
++use URI::Escape;
++use HTTP::Request::Common qw(POST);
++use base 'SMS::Send::Driver';
++use Data::Dumper;
++use Encode qw(encode);
++
++# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=13029
++# TODO: Need to replace URL manually before above mentioned bug is in master
++
++our $VERSION = qv('0.0.5');
++our $URL      = $SMS_SERVER_HOST | "http://simple.pswin.com";
++our $SENDER   = "$SMS_SENDER";
++our $AGENT    = "SMS-Send-NO-LinkMobilityHTTP/" . $VERSION;
++our $METHOD   = "POST";
++our $TIMEOUT  = 3;
++
++#####################################################################
++# Constructor
++
++sub new {
++  my $class = shift;
++  my %args = @_;
++
++  # Create the object
++  my $url   = $args{'_url'}     || $URL;
++  my $agent = $args{'_agent'}   || $AGENT;
++  my $timeout = $args{'_timeout'} || $TIMEOUT;
++  my $sender  = $args{'_sender'} || $SENDER;
++  my $user    = $args{'_login'};
++  my $pass    = $args{'_password'};
++  my $self = bless {
++    'url'      => $url,
++    'agent'    => $agent,
++    'timeout'  => $timeout,
++    'sender'   => $sender,
++    'user'     => $user,
++    'pass'     => $pass
++  }, $class;
++
++  return $self;
++}
++
++sub send_sms {
++    my $self   = shift;
++    my %params = @_;
++  # cleanup cell number
++  $params{to} =~ s/[^0-9]//g; # remove non-digits
++  # TODO: fix in db instead? prepend 47 unless already there
++  if (index($params{to}, "47") != 0) {
++      $params{to} = "47" . $params{to}; # Prepend norwegian country code
++  }
++
++  # convert utf8 to iso-8859-1
++  my $txt = decodeUnicodeMessage($params{text});
++  $txt = encode('ISO-8859-1', $txt, Encode::FB_CROAK);
++
++  # validate
++  croak q{'to' must contain between 8 and 14 digits}
++      if length $params{to} < 8 or length $params{to} > 14;
++  croak q{'_from' and 'text' combined must not be more than 159 characters}
++      if length( $params{text} ) > 159;
++
++  # Send
++  my $ua = new LWP::UserAgent;
++
++  my $req = (
++     POST $self->{url},
++     Content_Type  => 'application/x-www-form-urlencoded',
++     Content       => [ 'RCV' => $params{to},
++                        'SND' => $self->{sender},
++                        'TXT' => $txt,
++                        'USER' => $self->{user},
++                        'PW' => $self->{pass}
++                      ]
++  );
++  my $res = $ua->request($req);
++
++  if (defined $res and $res->is_success) {
++    return {
++      res => $res->content
++    };
++  } else {
++    warn Dumper($res);
++    return { error => $res->as_string };
++  }
++}
++
++sub decodeUnicodeMessage {
++    use URI::Escape qw( uri_unescape );
++    use utf8;
++    my $x = my $y = uri_unescape($_[0]);
++    return $x if utf8::decode($x);
++    return $y;
++}
++
++1;
