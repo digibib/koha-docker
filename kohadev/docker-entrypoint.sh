@@ -41,19 +41,22 @@ echo "Koha Sites global config ..."
 envsubst < /templates/global/koha-sites.conf.tmpl > /etc/koha/koha-sites.conf
 envsubst < /templates/global/passwd.tmpl > /etc/koha/passwd
 
+echo "Setting up supervisord ..."
+envsubst < /templates/global/supervisord.conf.tmpl > /etc/supervisor/conf.d/supervisord.conf
+
 echo "Mysql server setup ..."
 if ping -c 1 -W 1 $KOHA_DBHOST ; then
   printf "Using linked mysql container $KOHA_DBHOST\n"
 else
   printf "Unable to connect to linked mysql container $KOHA_DBHOST\n-- initializing local mysql ...\n"
   /etc/init.d/mysql start
-  sleep 3 # waiting for mysql to spin up
+  sleep 1 # waiting for mysql to spin up on slow computers
   echo "127.0.0.1  $KOHA_DBHOST" >> /etc/hosts
   echo "CREATE USER '$KOHA_ADMINUSER'@'%' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
-        CREATE USER '$KOHA_ADMINUSER'@'localhost' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
+        CREATE USER '$KOHA_ADMINUSER'@'koha_mysql' IDENTIFIED BY '$KOHA_ADMINPASS' ; \
         CREATE DATABASE IF NOT EXISTS koha_$KOHA_INSTANCE ; \
         GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'%' WITH GRANT OPTION ; \
-        GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'localhost' WITH GRANT OPTION ; \
+        GRANT ALL ON koha_$KOHA_INSTANCE.* TO '$KOHA_ADMINUSER'@'koha_mysql' WITH GRANT OPTION ; \
         FLUSH PRIVILEGES ;" | mysql -u root -p$KOHA_ADMINPASS
 fi
 
@@ -78,7 +81,7 @@ do
 done
 
 echo "Running webinstaller - please be patient ..."
-service apache2 restart
+service apache2 reload
 sleep 5 # waiting for apache to respond
 cd /kohadev/kohaclone && /installer/updatekohadbversion.sh
 
@@ -114,9 +117,14 @@ if [ -n "$EMAIL_ENABLED" ]; then
       'debug'   => 0,
     );"
     sendmail=/usr/share/perl5/Mail/Sendmail.pm
-    awk -v sb="$sub" '/^%mailcfg/,/;/ { if ( $0 ~ /\);/ ) print sb; next } 1' $sendmail > tmp && \
-      mv tmp $sendmail
+    awk -v sb="$sub" '/^%mailcfg/,/;/ { if ( $0 ~ /\);/ ) print sb; next } 1' $sendmail > sendmailtmp && \
+      mv sendmailtmp $sendmail
   fi
+  # setup default debian exim4 to use smtp relay (used by sendmail and MIME::Lite)
+  sed -i "s/dc_smarthost.*/dc_smarthost='mailrelay::2525'/" /etc/exim4/update-exim4.conf.conf
+  sed -i "s/dc_eximconfig_configtype.*/dc_eximconfig_configtype='smarthost'/" /etc/exim4/update-exim4.conf.conf
+  update-exim4.conf -v
+
   koha-email-enable $KOHA_INSTANCE
 fi
 
@@ -124,42 +132,35 @@ echo "Configuring SMS settings ..."
 if [ -n "$SMS_SERVER_HOST" ]; then
   # SMS modules need to be in shared perl libs
   mkdir -p /usr/share/perl5/SMS/Send/NO
-  sed -e "s|__REPLACE_WITH_SMS_URL__|${SMS_SERVER_HOST}|g" /usr/share/koha/lib/Koha/SMS_HTTP.pm > /usr/share/perl5/SMS/Send/NO/HTTP.pm
-  echo -n "UPDATE systempreferences SET value = 'NO::HTTP' WHERE variable = 'SMSSendDriver';" | \
-      koha-mysql $KOHA_INSTANCE
+  envsubst < /usr/share/koha/intranet/cgi-bin/sms/LinkMobilityHTTP.pm > /usr/share/perl5/SMS/Send/NO/LinkMobilityHTTP.pm
+  echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
+  echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = ' SMSSendUsername ';" | koha-mysql $KOHA_INSTANCE
+  echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = ' SMSSendPassword ';" | koha-mysql $KOHA_INSTANCE
 fi
 
 echo "Configuring National Library Card settings ..."
 if [ -n "$NLVENDORURL" ]; then
+  echo -n "UPDATE systempreferences SET value = \"1\" WHERE variable = 'NorwegianPatronDBEnable';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
+  # Patron attribute for NL sync
+  echo "INSERT IGNORE INTO borrower_attribute_types (code, description, unique_id, staff_searchable) \
+  VALUES ('fnr', 'Fødselsnummer', 1, 1);" | koha-mysql $KOHA_INSTANCE
 fi
 
-echo "Starting SIP2 Server in DEV mode..."
+#echo "Starting SIP2 Server in DEV mode..."
 #screen -dmS kohadev-sip sh -c "cd /kohadev/kohaclone ; \
 #  KOHA_CONF=/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml perl -IC4/SIP -MILS C4/SIP/SIPServer.pm \
 #  /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml ; exec bash"
 
-echo "Starting plack ..."
-sed -i 's_#[\s]*ProxyPass /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
-sed -i 's_#[\s]*ProxyPassReverse /cgi-bin/koha_ProxyPass /cgi-bin/koha_g' /etc/koha/apache-shared-intranet-plack.conf
+echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
-koha-plack --start "$KOHA_INSTANCE"
 
-echo "Restarting apache ..."
-service apache2 restart
+echo "Installation finished - Stopping all services and giving supervisord control ..."
+service apache2 stop
+sleep 3 && ps aux | grep apache
+koha-indexer --stop "$KOHA_INSTANCE" || true
+koha-stop-zebra "$KOHA_INSTANCE" || true
 
-# Make sure log files exist before tailing them
-touch /var/log/koha/${KOHA_INSTANCE}/intranet-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
-touch /var/log/koha/${KOHA_INSTANCE}/sip-error.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-error.log
-touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/sip-output.log
-touch /var/log/koha/${KOHA_INSTANCE}/sip-output.log; chmod ugo+rw /var/log/koha/${KOHA_INSTANCE}/plack-error.log
-
-/usr/bin/tail -f /var/log/apache2/access.log \
-  /var/log/koha/${KOHA_INSTANCE}/intranet*.log \
-  /var/log/koha/${KOHA_INSTANCE}/opac*.log \
-  /var/log/koha/${KOHA_INSTANCE}/zebra*.log \
-  /var/log/apache2/other_vhosts_access.log \
-  /var/log/koha/${KOHA_INSTANCE}/sip*.log \
-  /var/log/koha/${KOHA_INSTANCE}/plack*.log
+supervisord -c /etc/supervisor/conf.d/supervisord.conf

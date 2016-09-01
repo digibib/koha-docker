@@ -4,7 +4,7 @@
 # USES a docker image built from GITREF from koha-salt-docker 
 #######
 
-FROM digibib/koha:67c38f6aa0d05980c20dc09199df18eef9e317c9
+FROM digibib/koha:97f079218c72b6a3bafa81f1c64516e325975861
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
@@ -58,6 +58,7 @@ ADD koha-common.tmpl /etc/default/koha-common
 ADD plack.psgi /etc/koha/plack.psgi
 
 # Override with kohadev templates
+ADD supervisord.conf.tmpl /templates/global/supervisord.conf.tmpl
 ADD koha-conf.xml.tmpl /templates/instance/koha-conf.xml.tmpl
 ADD apache.tmpl /templates/instance/apache.tmpl
 

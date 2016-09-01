@@ -50,22 +50,83 @@
   <IfVersion >= 2.4>
     Define instance "${KOHA_INSTANCE}"
   </IfVersion>
-#  Include /etc/koha/apache-shared.conf
-#  Include /etc/koha/apache-shared-disable.conf
 #  Include /etc/koha/apache-shared-intranet-plack.conf
-#  Include /etc/koha/apache-shared-intranet-git.conf
 
   ServerName ${KOHA_INSTANCE}
   DocumentRoot /kohadev/kohaclone/koha-tmpl
   
-  <Directory "/kohadev/kohaclone">
+  <Directory "/kohadev/kohaclone/koha-tmpl">
   Options All
   AllowOverride All
   Require all granted
   Order deny,allow
   Allow from All
   </Directory>
-  
+
+  <IfModule mod_gzip.c>
+      mod_gzip_on yes
+      mod_gzip_dechunk yes
+      mod_gzip_keep_workfiles No
+      mod_gzip_can_negotiate yes
+      mod_gzip_update_static No
+      mod_gzip_temp_dir /tmp
+      mod_gzip_minimum_file_size 512
+      mod_gzip_maximum_file_size 1000000
+      mod_gzip_maximum_inmem_size 1000000
+      mod_gzip_handle_methods GET POST
+      mod_gzip_item_exclude reqheader "User-Agent: .*Mozilla/4\..*\["
+      mod_gzip_item_exclude mime ^image/.*
+      mod_gzip_item_exclude rspheader Content-Type:image/*
+      mod_gzip_item_include file \.js$
+      mod_gzip_item_include mime ^application/x-javascript$
+      mod_gzip_item_include file \.php$
+      mod_gzip_item_include mime ^text/html$
+      mod_gzip_item_include file \.css$
+      mod_gzip_item_include mime ^text/css$
+  </IfModule>
+
+
+  <IfModule mod_deflate.c>
+      # Compress content with type html, text, and css, ...
+      AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css
+      AddOutputFilterByType DEFLATE application/xml application/xhtml+xml application/rss+xml application/javascript application/x-javascript
+
+      DeflateCompressionLevel 9
+
+      # Properly handle old browsers that do not support compression
+      BrowserMatch ^Mozilla/4 gzip-only-text/html
+      BrowserMatch ^Mozilla/4\.0[678] no-gzip
+      BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+
+      DeflateFilterNote Input instream
+      DeflateFilterNote Output outstream
+      DeflateFilterNote Ratio ratio
+
+      LogFormat '"%r" %{outstream}n/%{instream}n (%{ratio}n%%)' deflate
+      <IfModule mod_headers.c>
+         #properly handle requests coming from behind proxies
+         Header append Vary User-Agent
+      </IfModule>
+  </IfModule>
+
+  <IfModule mod_expires.c>
+      ExpiresActive on
+      ExpiresByType text/css "access plus 12 hours"
+      ExpiresByType application/javascript "access plus 12 hours"
+      ExpiresByType image/png "access plus 12 hours"
+      ExpiresByType image/gif "access plus 12 hours"
+  </IfModule>
+
+  Options +FollowSymLinks -Indexes
+
+
+  ErrorDocument 400 /cgi-bin/koha/errors/400.pl
+  ErrorDocument 401 /cgi-bin/koha/errors/401.pl
+  ErrorDocument 403 /cgi-bin/koha/errors/403.pl
+  ErrorDocument 404 /cgi-bin/koha/errors/404.pl
+  ErrorDocument 500 /cgi-bin/koha/errors/500.pl
+
+  RewriteEngine On
   SetEnv KOHA_CONF "/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml"
   SetEnv PERL5LIB "/kohadev/kohaclone"
   
@@ -82,20 +143,6 @@
   RewriteRule ^/bib/([^\/]*)/?$ /cgi-bin/koha/detail\.pl?bib=$1 [PT]
   RewriteRule ^/isbn/([^\/]*)/?$ /search?q=isbn:$1 [PT]
   RewriteRule ^/issn/([^\/]*)/?$ /search?q=issn:$1 [PT]
-
-  # REST API configuration
-#  Alias "/api" "/kohadev/kohaclone/api/v1/app.pl/api"
-#  <Directory /kohadev/kohaclone/api>
-#    Options +ExecCGI +FollowSymlinks
-#    AddHandler cgi-script .pl
-#    #SetEnv MOJO_MODE "production"
-#    RewriteEngine On
-#    RewriteBase /api/
-#    RewriteCond %{REQUEST_FILENAME} !-f
-#    RewriteCond %{REQUEST_FILENAME} !-d
-#    RewriteCond %{DOCUMENT_ROOT}/../api/$1/app.pl -f
-#    RewriteRule ^(.*?)/.* $1/app.pl/api/$0 [L]
-#  </Directory>
 
    ErrorLog    /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
 #  TransferLog /var/log/koha/${KOHA_INSTANCE}/intranet-access.log

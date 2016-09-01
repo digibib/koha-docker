@@ -1,0 +1,83 @@
+[supervisord]
+nodaemon=true
+loglevel=info ; info, debug, warn, trace
+
+[unix_http_server]
+file = /var/run/supervisor.sock
+chmod = 0777
+chown= nobody:nogroup
+username = ${KOHA_ADMINUSER}
+password = ${KOHA_ADMINPASS}
+
+[supervisorctl]
+serverurl=unix:///var/run/supervisor.sock
+username = ${KOHA_ADMINUSER}
+password = ${KOHA_ADMINPASS}
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[program:syslog]
+command=syslogd -n
+priority=10
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:cron]
+command=/usr/sbin/cron -f -L 5 ; log started and failed cron jobs
+priority=100
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:apache2]
+command=/bin/bash -c 'source /etc/apache2/envvars && exec apachectl -D "FOREGROUND" -k start'
+priority=300
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:apache_vhost]
+command=tail -f /var/log/apache2/other_vhosts_access.log
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:sip]
+command=perl /kohadev/kohaclone/C4/SIP/SIPServer.pm /etc/koha/sites/${KOHA_INSTANCE}/SIPconfig.xml
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/kohadev/kohaclone"
+user=${KOHA_INSTANCE}-koha
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:plack]
+command=/usr/bin/starman -M FindBin --max-requests 50 --workers 2 -E deployment --user=${KOHA_INSTANCE}-koha --group=${KOHA_INSTANCE}-koha --socket /var/run/koha/${KOHA_INSTANCE}/plack.sock --access-log /dev/stdout --error-log /dev/stdout "/etc/koha/plack.psgi"
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/kohadev/kohaclone"
+priority=200
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:zebra_server]
+command=/usr/bin/zebrasrv -v 1 -f /etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/kohadev/kohaclone"
+user=${KOHA_INSTANCE}-koha
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
+[program:zebra_indexer]
+command=/usr/bin/perl /kohadev/kohaclone/misc/migration_tools/rebuild_zebra.pl -daemon -sleep 5
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/kohadev/kohaclone"
+user=${KOHA_INSTANCE}-koha
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
