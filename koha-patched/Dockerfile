@@ -27,7 +27,7 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF 53631f9ffdc86c1afbcc3108ac3ddf1f73fef40e
+ENV GITREF 49df1cc10f45c1e7d9b15808a302df2a67dbb876
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -74,8 +74,7 @@ ENV DEBFULLNAME  Oslo Public Library
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # LOCAL    Bug 16497 - REST API: add routes to list libraries
 # LOCAL    Bug 13895 - Add API routes for checkouts retrieval and renewal
-# QA    Bug 16942 - Confirm hold results in ugly error
-ENV KOHABUGS     "16694 17004 14868 16330 16942"
+ENV KOHABUGS     "16694 17004 14868 16330"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
