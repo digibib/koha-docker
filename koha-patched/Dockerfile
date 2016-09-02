@@ -27,14 +27,17 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF 49df1cc10f45c1e7d9b15808a302df2a67dbb876
+ENV GITREF 8a7a953e5b6c03da01963b47eb963bab73643245
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
 RUN /root/pull.sh
 
 # Install Koha deps
-RUN apt-get update && \
+
+RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/demo/debian/ | \
+	awk '/^Link:/ { print $2 }' | sed -e 's@<http://\(.*\)/debian/>;@\1@g'`/" /etc/apt/sources.list && \
+    apt-get update && \
     apt-get install -y koha-perldeps koha-deps make build-essential && \
     apt-get clean
 
@@ -47,8 +50,8 @@ RUN apt-get update && \
 RUN rm /koha/t/Logger.t
 
 # Missing perl dependencies
-RUN apt-get update && apt-get install -y \
-    libwww-csrf-perl && \
+
+RUN apt-get update && apt-get install -y libwww-csrf-perl && \
     apt-get clean
 
 ##########
@@ -67,14 +70,14 @@ ENV BUGZ_PASS    bugspass
 
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
-# MASTER  Bug 16699 - Swagger: Split parameters and paths, and specify required permissions for resource
+
+# OK    Bug 17243 - git ignore swagger.min.json
 # OK    Bug 16694 - Limit SIP2 auth by patron attribute
 # OK    Bug 17004 - REST API: add route to authenticate patron (Single Sign On - SSO)
-# OK    Bug 14868 - REST API: Swagger2-driven permission checking
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # LOCAL    Bug 16497 - REST API: add routes to list libraries
 # LOCAL    Bug 13895 - Add API routes for checkouts retrieval and renewal
-ENV KOHABUGS     "16694 17004 14868 16330"
+ENV KOHABUGS     "17243 16694 17004 16330"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
