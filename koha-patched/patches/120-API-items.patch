@@ -1,12 +1,11 @@
 120 - Koha API Items Patch
-Patch against Koha GITREF 53631f9ffdc86c1afbcc3108ac3ddf1f73fef40e
-curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/53631f9ffdc86c1afbcc3108ac3ddf1f73fef40e
+Patch against Koha GITREF 3a2048eeff57548a7d9b557b0e94d36d1c58e6ef
+curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/3a2048eeff57548a7d9b557b0e94d36d1c58e6ef
 or https://github.com/Koha-Community/Koha/archive/v16.05.02.tar.gz
 
 prerequisites:
 # OK    Bug 16694 - Limit SIP2 auth by patron attribute
 # OK    Bug 17004 - REST API: add route to authenticate patron (Single Sign On - SSO)
-# OK    Bug 14868 - REST API: Swagger2-driven permission checking
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # LOCAL Bug 16497 - REST API: add routes to list libraries
 # LOCAL Bug 13895 - Add API routes for checkouts retrieval and renewal

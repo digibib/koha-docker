@@ -1,4 +1,4 @@
-050-API_NL_lookup_and_defaults
+150-API_NL_lookup_and_defaults
 
 Patch to extend API to check if existing user locally and in the Norwegian Patron DB. 
 Also route to set patron sync defaults and extended patron attribute

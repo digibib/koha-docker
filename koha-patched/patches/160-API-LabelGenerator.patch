@@ -1,4 +1,4 @@
-060-API-LabelGenerator
+160-API-LabelGenerator
 
 Patch to extend API to allow item lookup by barcode and return 
 information needed for label generation.

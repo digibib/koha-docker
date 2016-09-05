@@ -4,7 +4,7 @@ curl -s -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.ta
 or https://github.com/Koha-Community/Koha/archive/v16.05.00-beta.tar.gz
 
 prerequisites:
-# LOCAL 015 - Koha API Items Patch
+# LOCAL 120 - Koha API Items Patch
 
 diff --git a/Koha/REST/V1/Messagepreference.pm b/Koha/REST/V1/Messagepreference.pm
 new file mode 100644
