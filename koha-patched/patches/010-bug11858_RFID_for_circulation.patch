@@ -282,7 +282,11 @@ new file mode 100644
 +  if(msg.Item.Transfer) {
 +    window.open('transfer-slip.pl?barcode='+msg.Item.Barcode+'&amp;branchcode='+msg.Item.Transfer+'&amp;op=slip', 'popup', 'width=600,height=400,resizable=1,toolbar=0,scrollbars=1,top');
 +  }
-+  
++
++  // popup print dialog for hold to wait on current branch
++  if (msg.Item.Hold) {
++    window.open('hold-transfer-slip.pl?borrowernumber=' + msg.Item.Borrowernr + '&amp;biblionumber=' + msg.Item.Biblionr,  'popup', 'width=600,height=400,resizable=1,toolbar=0,scrollbars=1,top');
++  }
 +}
 +
 +function retryAlarm() {
