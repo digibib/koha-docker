@@ -1,13 +1,13 @@
-007-SIP-hold_pickup.patch
+007-SIP2-hold_pickup.patch
 
 This patch modifies the SIP return message on item information request for holds.
 
 It generates a pickup number based on reserve_id and waitingdate, and prepends to title
 
-diff --git a/MsgType.pm b/lib/C4/SIP/Sip/MsgType.pm
+diff --git a/C4/SIP/Sip/MsgType.pm.pm b/C4/SIP/Sip/MsgType.pm
 index a95facc..af9cb06 100644
---- a/MsgType.pm
-+++ b/lib/C4/SIP/Sip/MsgType.pm
+--- a/C4/SIP/Sip/MsgType.pm
++++ b/C4/SIP/Sip/MsgType.pm
 @@ -1171,6 +1171,17 @@ sub handle_item_information {
              $resp .= add_field( FID_HOLD_PICKUP_DATE, timestamp($i) );
          }
@@ -18,8 +18,8 @@ index a95facc..af9cb06 100644
 +            use C4::Reserves qw( GetReservesFromItemnumber );
 +            my ( undef, undef, undef, $reserve_id, $waitingdate ) = GetReservesFromItemnumber($item->{'itemnumber'});
 +            # Format dd/mm/yy
-+            my ($y, $m, $d) = "2015-10-01" =~ /(\d{4})-(\d{2})-(\d{2})/;
-+            my $title = "($d/$m/$y/$reserve_id) - " . $item->title_id; 
++            my ($y, $m, $d) = $waitingdate =~ /(\d{4})-(\d{2})-(\d{2})/;
++            my $title = "($d.$m.$y/$reserve_id) - " . $item->title_id;
 +            $resp .= add_field( FID_TITLE_ID, $title );
 +        }
 +
