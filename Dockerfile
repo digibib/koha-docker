@@ -57,7 +57,7 @@ COPY docker-wait_until_ready.py /root/wait_until_ready.py
 RUN apt-get install -y python-requests && apt-get clean
 # Missing perl dependencies
 RUN apt-get update && apt-get install -y \
-    libwww-csrf-perl && \
+    libwww-csrf-perl libpath-tiny-perl && \
     apt-get clean
 
 # Installer files
