@@ -63,9 +63,10 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
      <table id="checkedintable">
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
 new file mode 100644
+index 0000000..460d552
 --- /dev/null
 +++ b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
-@@ -0,0 +1,321 @@
+@@ -0,0 +1,324 @@
 +[% USE Koha %]
 +<style type="text/css">
 +/*
@@ -390,7 +391,6 @@ new file mode 100644
 +}
 +
 +</script>
-+
 diff --git a/installer/data/mysql/atomicupdate/bug_11858-add_rfidhub_syspref.sql b/installer/data/mysql/atomicupdate/bug_11858-add_rfidhub_syspref.sql
 new file mode 100644
 index 0000000..98aee33
