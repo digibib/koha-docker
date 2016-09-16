@@ -97,11 +97,16 @@ WORKDIR /root
 COPY ./files/logrotate.config /etc/logrotate.d/syslog.conf
 COPY ./files/syslog.config /etc/syslog.conf
 
-# Setup cron job to sync holdingbranches to services
+# Cron job to sync holdingbranches to services
 COPY ./files/cronjobs/holdingbranches.sh /root/holdingbranches.sh
 COPY ./files/cronjobs/update_holdingbranches.sh /root/update_holdingbranches.sh
 COPY ./files/cronjobs/branch-sync /etc/cron.d/branch-sync
 RUN chmod 0644 /etc/cron.d/branch-sync
+
+# Cronjob for updating replacementprice
+COPY ./files/cronjobs/update_items_replacementprice.sh /root/update_items_replacementprice.sh
+COPY ./files/cronjobs/items-replacementprice /etc/cron.d/items-replacementprice
+RUN chmod 0644 /etc/cron.d/items-replacementprice
 
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]

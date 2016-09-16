@@ -1,0 +1,6 @@
+# /etc/cron.d/items-replacementprice
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+10 23 * * * root /root/update_items_replacementprice.sh
