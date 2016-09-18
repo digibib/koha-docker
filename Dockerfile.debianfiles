@@ -44,12 +44,16 @@ COPY ./files/local-apt-repo /etc/apt/preferences.d/local-apt-repo
 
 # Install Koha Common
 ADD ./koha-patched/debian /tmp/debian
-RUN echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
+RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/demo/debian/ | \
+    awk '/^Link:/ { print $2 }' | sed -e 's@<http://\(.*\)/debian/>;@\1@g'`/" /etc/apt/sources.list && \
+    echo "search deich.folkebibl.no guest.oslo.kommune.no\nnameserver 10.172.2.1\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf && \
+    echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
-    dpkg -i /tmp/debian/koha-perldeps_${KOHA_BUILD}_all.deb || apt-get install -y -f && \
-    dpkg -i /tmp/debian/koha-deps_${KOHA_BUILD}_all.deb || apt-get install -y -f && \
-    dpkg -i /tmp/debian/koha-common_${KOHA_BUILD}_all.deb || apt-get install -y -f
+    dpkg -i /tmp/debian/koha_${KOHA_BUILD}_all.deb || apt-get --fix-broken -y install && \
+    dpkg -i /tmp/debian/koha-perldeps_${KOHA_BUILD}_all.deb || apt-get --fix-broken -y install && \
+    dpkg -i /tmp/debian/koha-deps_${KOHA_BUILD}_all.deb || apt-get --fix-broken -y install && \
+    dpkg -i /tmp/debian/koha-common_${KOHA_BUILD}_all.deb || apt-get --fix-broken -y install
 
 # Installer files
 COPY ./files/installer /installer
@@ -102,7 +106,3 @@ COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
 EXPOSE 6001 8080 8081
-
-# Script and deps for checking if koha is up & ready (to be executed using docker exec)
-RUN apt-get install -y python-requests && apt-get clean
-COPY docker-wait_until_ready.py /root/wait_until_ready.py
