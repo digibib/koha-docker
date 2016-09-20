@@ -1,0 +1,22 @@
+Patch for C4::Letters - adding a <<pickupday>> tag for use in Notices and Slips
+Use case: a printable pickup number with reserve_id can then be used as such
+
+<<pickupday>>/<<reserves.reserve_id>>
+
+
+diff --git a/Letters.pm b/lib/C4/Letters.pm
+index 26f3e46..40fccf0 100644
+--- a/Letters.pm
++++ b/lib/C4/Letters.pm
+@@ -807,6 +807,11 @@ sub _parseletter {
+     if ( $table eq 'reserves' && $values->{'waitingdate'} ) {
+         my @waitingdate = split /-/, $values->{'waitingdate'};
+ 
++        # Deichman mod: add a custom tag '<<pickupday>>' for hold pickup day to use in slips
++        if ($letter->{content} && $letter->{content} =~ /<<pickupday>>/) {
++            $letter->{content} =~ s/<<pickupday>>/$waitingdate[-1]/go;
++        }
++
+         $values->{'expirationdate'} = '';
+         if ( C4::Context->preference('ReservesMaxPickUpDelay') ) {
+             my $dt = dt_from_string();
