@@ -66,6 +66,10 @@ RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
     a2dissite 000-default && \
     a2enmod rewrite headers proxy_http cgi
 
+# LinkMobiblity SMS Driver - SMS modules need to be in shared perl libs
+RUN mkdir -p /usr/share/perl5/SMS/Send/NO && \
+  cp /usr/share/koha/intranet/cgi-bin/sms/LinkMobilityHTTP.pm /usr/share/perl5/SMS/Send/NO/LinkMobilityHTTP.pm
+
 # Koha SIP2 server
 ENV SIP_PORT      6001
 ENV SIP_WORKERS   3

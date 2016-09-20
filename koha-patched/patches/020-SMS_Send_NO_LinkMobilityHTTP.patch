@@ -5,7 +5,7 @@ Run patch from kohasrc root
 
 diff --git a/sms/LinkMobilityHTTP.pm b/sms/LinkMobilityHTTP.pm
 new file mode 100644
-index 0000000..9a79999
+index 0000000..e99930b
 --- /dev/null
 +++ b/sms/LinkMobilityHTTP.pm
 @@ -0,0 +1,104 @@
@@ -23,14 +23,14 @@ index 0000000..9a79999
 +use Data::Dumper;
 +use Encode qw(encode);
 +
++# More SMS params:
 +# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=13029
-+# TODO: Need to replace URL manually before above mentioned bug is in master
 +
-+our $VERSION = qv('0.0.5');
-+our $URL      = $SMS_SERVER_HOST | "http://simple.pswin.com";
-+our $SENDER   = "$SMS_SENDER";
-+our $AGENT    = "SMS-Send-NO-LinkMobilityHTTP/" . $VERSION;
-+our $METHOD   = "POST";
++our $VERSION  = qv('0.0.6');
++our $URL      = $ENV{'SMS_SERVER_HOST'} || 'http://simple.pswin.com';
++our $SENDER   = $ENV{'SMS_SENDER'} || '';
++our $AGENT    = 'SMS-Send-NO-LinkMobilityHTTP/' . $VERSION;
++our $METHOD   = 'POST';
 +our $TIMEOUT  = 3;
 +
 +#####################################################################

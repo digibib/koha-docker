@@ -102,9 +102,6 @@ fi
 
 echo "Configuring SMS settings ..."
 if [ -n "$SMS_SERVER_HOST" ]; then
-  # SMS modules need to be in shared perl libs
-  mkdir -p /usr/share/perl5/SMS/Send/NO
-  envsubst < /usr/share/koha/intranet/cgi-bin/sms/LinkMobilityHTTP.pm > /usr/share/perl5/SMS/Send/NO/LinkMobilityHTTP.pm
   echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = ' SMSSendUsername ';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = ' SMSSendPassword ';" | koha-mysql $KOHA_INSTANCE
