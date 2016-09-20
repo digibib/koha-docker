@@ -4,10 +4,10 @@ Use case: a printable pickup number with reserve_id can then be used as such
 <<pickupday>>/<<reserves.reserve_id>>
 
 
-diff --git a/Letters.pm b/lib/C4/Letters.pm
+diff --git a/C4/Letters.pm b/C4/Letters.pm
 index 26f3e46..40fccf0 100644
---- a/Letters.pm
-+++ b/lib/C4/Letters.pm
+--- a/C4/Letters.pm
++++ b/C4/Letters.pm
 @@ -807,6 +807,11 @@ sub _parseletter {
      if ( $table eq 'reserves' && $values->{'waitingdate'} ) {
          my @waitingdate = split /-/, $values->{'waitingdate'};
