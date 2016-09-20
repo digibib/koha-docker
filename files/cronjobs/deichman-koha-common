@@ -1,0 +1,28 @@
+# /etc/cron.d/deichman-koha-common
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+##############
+# Long overdue - 02:00 every night
+# Settings for long overdue are in sysprefs
+##############
+2 0 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --confirm
+
+##############
+# Anonymize patron history 02:10 every night
+# takes params --days for how long history should be kept
+# moves history to syspref AnonymousPatron or NULL if not set 
+##############
+2 10 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 1 -v
+
+##############
+# Gather and send print notices to users without SMS or EMAIL
+# Uses CSS loaded from syspref URL set in NoticeCSS
+##############
+# 2 20 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/gather_print_notices.pl /var/lib/state/ --html --email=report@someone.com
+
+##############
+# Run report overdue = 35 days report and send generated CSV by mail attachement
+##############
+# 2 25 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl -v --to=purrealist@one.no -a --format=csv 4
