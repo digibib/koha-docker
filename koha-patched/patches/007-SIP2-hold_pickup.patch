@@ -18,8 +18,8 @@ index a95facc..af9cb06 100644
 +            use C4::Reserves qw( GetReservesFromItemnumber );
 +            my ( undef, undef, undef, $reserve_id, $waitingdate ) = GetReservesFromItemnumber($item->{'itemnumber'});
 +            # Format dd/mm/yy
-+            my ($y, $m, $d) = $waitingdate =~ /(\d{4})-(\d{2})-(\d{2})/;
-+            my $title = "($d.$m.$y/$reserve_id) - " . $item->title_id;
++            my $d = $waitingdate =~ /\d{4}-\d{2}-(\d{2})/;
++            my $title = "$d/$reserve_id - " . $item->title_id;
 +            $resp .= add_field( FID_TITLE_ID, $title );
 +        }
 +
