@@ -79,6 +79,9 @@ RUN mkdir -p /usr/share/perl5/SMS/Send/NO && \
 ENV SIP_PORT      6001
 ENV SIP_WORKERS   3
 
+# Set local timezone
+RUN echo "Europe/Oslo" > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata
+
 #############
 # WORKAROUNDS
 #############
@@ -113,8 +116,8 @@ COPY ./files/cronjobs/update_items_replacementprice.sh /root/update_items_replac
 COPY ./files/cronjobs/items-replacementprice /etc/cron.d/items-replacementprice
 RUN chmod 0644 /etc/cron.d/items-replacementprice
 
-# Set local timezone
-RUN echo "Europe/Oslo" > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata
+# Cronjob for sending print notices to print service
+COPY ./files/cronjobs/brevdue.pl /usr/share/koha/bin/cronjobs/brevdue.pl
 
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
