@@ -73,9 +73,6 @@ RUN mkdir -p /usr/share/perl5/SMS/Send/NO && \
 # Koha SIP2 server
 ENV SIP_PORT      6001
 ENV SIP_WORKERS   3
-ENV SIP_AUTOUSER1 autouser
-ENV SIP_AUTOPASS1 autopass
-
 
 #############
 # WORKAROUNDS

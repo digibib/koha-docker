@@ -1,1 +1,6 @@
-dooraccess,$SIP_DOORPASS1,hutl
+dooraccess,$SIP_AUTOPASS,hutl
+doormajor,$SIP_AUTOPASS,fmaj
+doorfuru,$SIP_AUTOPASS,doorfuru
+doortoy,$SIP_AUTOPASS,fgam
+doorboler,$SIP_AUTOPASS,fbol
+doorlamb,$SIP_AUTOPASS,flam
