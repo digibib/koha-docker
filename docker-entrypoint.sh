@@ -113,9 +113,6 @@ if [ -n "$NLVENDORURL" ]; then
   echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
   echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
-  # Patron attribute for NL sync
-  echo "INSERT IGNORE INTO borrower_attribute_types (code, description, unique_id, staff_searchable) \
-  VALUES ('fnr', 'Fødselsnummer', 1, 1);" | koha-mysql $KOHA_INSTANCE
 fi
 
 echo "Enabling plack ..."
