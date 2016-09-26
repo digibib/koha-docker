@@ -1,4 +1,5 @@
 # /etc/cron.d/deichman-koha-common
+# m h dom mon dow user command
 
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
@@ -6,23 +7,34 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ##############
 # Long overdue - 02:00 every night
 # Settings for long overdue are in sysprefs
+# 	--confirm		actually handle overdues
 ##############
-2 0 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --confirm
+0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --confirm
 
 ##############
 # Anonymize patron history 02:10 every night
-# takes params --days for how long history should be kept
 # moves history to syspref AnonymousPatron or NULL if not set 
+#   --days	days to keep history
 ##############
-2 10 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 1 -v
+10 2 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 1 -v
 
 ##############
-# Gather and send print notices to users without SMS or EMAIL
-# Uses CSS loaded from syspref URL set in NoticeCSS
+# Process notice with transport type 'print' to print service
+#   --update_status  	set status to sent or failed
+#   --print				send to print service
+#   --save				save as pdf and html
+#   --email				send attachments to this email
+#   --url				url of print service 			$ENV{'PIDGEON_URL'}
+#   --user				username of print service 		$ENV{'PIDGEON_USER'}
+#   --pass				password of print service		$ENV{'PIDGEON_PASS'}
 ##############
-# 2 20 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/gather_print_notices.pl /var/lib/state/ --html --email=report@someone.com
+20 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/brevdue.pl --update_status --print
 
 ##############
 # Run report overdue = 35 days report and send generated CSV by mail attachement
+#   --to      email to receive report
+#   -a        include as attachment
+#   --format  format of report (csv,ods,html)
+#   [id]      number of report
 ##############
-# 2 25 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl -v --to=purrealist@one.no -a --format=csv 4
+# 30 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl -v --to=purrealist@one.no -a --format=csv 4

@@ -46,6 +46,9 @@ services:
       AUTHOR_EMAIL: "${AUTHOR_EMAIL}"
       BUGZ_USER: "${BUGZ_USER}"
       BUGZ_PASS: "${BUGZ_PASS}"
+      PIDGEON_URL: "${PIDGEON_URL}"
+      PIDGEON_USER: "${PIDGEON_USER}"
+      PIDGEON_PASS: "${PIDGEON_PASS}"
     ports:
       - "6001:6001"
       - "8080:8080"

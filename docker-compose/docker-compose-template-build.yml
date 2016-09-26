@@ -44,6 +44,9 @@ services:
       NLVENDORUSER: "${NLVENDORUSER}"
       NLVENDORPASS: "${NLVENDORPASS}"
       NLVENDORKEY: "${NLVENDORKEY}"
+      PIDGEON_URL: "${PIDGEON_URL}"
+      PIDGEON_USER: "${PIDGEON_USER}"
+      PIDGEON_PASS: "${PIDGEON_PASS}"
     ports:
       - "6001:6001"
       - "8081:8081"
