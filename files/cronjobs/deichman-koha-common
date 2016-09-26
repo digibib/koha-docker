@@ -5,6 +5,16 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 ##############
+# NL - sync TO Koha
+##############
+10 23 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-to-koha.pl -v -r
+
+##############
+# NL - sync FROM Koha
+##############
+*/5 * * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-from-koha.pl -v -r
+
+##############
 # Long overdue - 02:00 every night
 # Settings for long overdue are in sysprefs
 # 	--confirm		actually handle overdues
