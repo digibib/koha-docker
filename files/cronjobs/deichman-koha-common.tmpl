@@ -1,13 +1,25 @@
 # /etc/cron.d/deichman-koha-common
+# local cron jobs
 # m h dom mon dow user command
 
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 ##############
+# Branch sync - trigger reindex of modified holding branches in RDF
+##############
+00 23 * * * root /cronjobs/update_holdingbranches.sh
+
+##############
+# Update item.replacementprice from marcxml
+##############
+10 23 * * * root /cronjobs/update_items_replacementprice.sh
+
+
+##############
 # NL - sync TO Koha
 ##############
-10 23 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-to-koha.pl -v -r
+20 23 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-to-koha.pl -v -r
 
 ##############
 # NL - sync FROM Koha

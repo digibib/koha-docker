@@ -64,7 +64,10 @@ RUN apt-get update && apt-get install -y \
 COPY ./files/installer /installer
 
 # Templates
-ADD ./files/templates /templates
+COPY ./files/templates /templates
+
+# Cronjobs
+COPY ./files/cronjobs /cronjobs
 
 # Apache settings
 RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
@@ -100,17 +103,6 @@ WORKDIR /root
 
 COPY ./files/logrotate.config /etc/logrotate.d/syslog.conf
 COPY ./files/syslog.config /etc/syslog.conf
-
-# Cron job to sync holdingbranches to services
-COPY ./files/cronjobs/holdingbranches.sh /root/holdingbranches.sh
-COPY ./files/cronjobs/update_holdingbranches.sh /root/update_holdingbranches.sh
-COPY ./files/cronjobs/branch-sync /etc/cron.d/branch-sync
-RUN chmod 0644 /etc/cron.d/branch-sync
-
-# Cronjob for updating replacementprice
-COPY ./files/cronjobs/update_items_replacementprice.sh /root/update_items_replacementprice.sh
-COPY ./files/cronjobs/items-replacementprice /etc/cron.d/items-replacementprice
-RUN chmod 0644 /etc/cron.d/items-replacementprice
 
 # Cronjob for sending print notices to print service
 COPY ./files/cronjobs/brevdue.pl /usr/share/koha/bin/cronjobs/brevdue.pl

@@ -11,7 +11,7 @@ use warnings;
 BEGIN {
     # find Koha's Perl modules
     use FindBin;
-    eval { require "$FindBin::Bin/../kohalib.pl" };
+    eval { require "$FindBin::Bin/usr/share/koha/bin/kohalib.pl" };
 }
 
 use CGI qw( utf8 ); # NOT a CGI script, this is just to keep C4::Templates::gettemplate happy
@@ -31,7 +31,7 @@ use MIME::Lite;
 use MIME::Entity;
 use MIME::Base64 qw( encode_base64 );
 
-my ( $update_status, $print, $save, $email, $user, $pass );
+my ( $update_status, $print, $save, $url, $email, $user, $pass );
 
 GetOptions(
     'update_status' => \$update_status,                 # set status to sent or failed
@@ -49,7 +49,7 @@ my $today_iso     = output_pref( { dt => dt_from_string, dateonly => 1, dateform
 my $today_syspref = output_pref( { dt => dt_from_string, dateonly => 1 } );
 my @all_messages = @{ &GetPrintMessages() };
 my $sorted = group_messages_by_patrons(\@all_messages);
-my $client = init_client();
+my $client = init_client() if $print;
 assemble_birds($sorted);
 
 sub init_client {
@@ -60,6 +60,44 @@ sub init_client {
         ->proxy( $url );
     $client->transport->http_request->header('Authorization' => $auth);
     return $client;
+}
+
+sub assemble_birds {
+    my $patrons = shift;
+    # run messages for each patron
+    while ( my ($patron, $messages) = each %{ $patrons } )
+    {
+        my $docs = generate_html_from_patron_messages({messages => $messages});
+        my ($html, $pdf)  = generate_pdf($docs);
+        if ($email) {
+            send_to_mail({
+                to   => $email,
+                from => C4::Context->preference('KohaAdminEmailAddress'),
+                pdf  => $pdf,
+                html => $html
+            });
+        }
+        if ($print) {
+            my $receiver = Koha::Patrons->find($patron);
+            if (validate_destination($receiver)) {
+                my $pidgeon  = feed_pidgeon($pdf, $receiver);
+                warn Dumper(SOAP::Serializer->envelope(freeform => $pidgeon));
+                my $res = send_pidgeon($pidgeon);
+                warn Dumper($res->body);
+                if ($res->fault) {
+                    update_status($messages, 'failed');
+                    warn $res->fault->faultstring
+                } else {
+                    update_status($messages, 'sent');
+                }
+            } else {
+                warn "Invalid receiver address! Borrowernumber: " . $receiver->borrowernumber;
+                $receiver->set({gonenoaddress => 1});
+                $receiver->store;
+                update_status($messages, 'failed');
+            }
+        }
+    }
 }
 
 sub feed_pidgeon {
@@ -106,44 +144,6 @@ sub send_pidgeon {
     my $message = shift;
     my $res = $client->sendForsendelse( $message );
     return $res;
-}
-
-sub assemble_birds {
-    my $patrons = shift;
-    # run messages for each patron
-    while ( my ($patron, $messages) = each %{ $patrons } )
-    {
-        my $docs = generate_html_from_patron_messages({messages => $messages});
-        my ($html, $pdf)  = generate_pdf($docs);
-        if ($email) {
-            send_to_mail({
-                to   => $email,
-                from => C4::Context->preference('KohaAdminEmailAddress'),
-                pdf  => $pdf,
-                html => $html
-            });
-        }
-        if ($print) {
-            my $receiver = Koha::Patrons->find($patron);
-            if (validate_destination($receiver)) {
-                my $pidgeon  = feed_pidgeon($pdf, $receiver);
-                warn Dumper(SOAP::Serializer->envelope(freeform => $pidgeon));
-                my $res = send_pidgeon($pidgeon);
-                warn Dumper($res->body);
-                if ($res->fault) {
-                    update_status($messages, 'failed');
-                    warn $res->fault->faultstring
-                } else {
-                    update_status($messages, 'sent');
-                }
-            } else {
-                warn "Invalid receiver address! Borrowernumber: " . $receiver->borrowernumber;
-                $receiver->set({gonenoaddress => 1});
-                $receiver->store;
-                update_status($messages, 'failed');
-            }
-        }
-    }
 }
 
 sub validate_destination {

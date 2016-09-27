@@ -1,10 +1,10 @@
 #!/bin/bash
 
 if [ ! -f /var/lib/state/old.tsv ]; then
-	/root/holdingbranches.sh > /var/lib/state/old.tsv
+	/cronjobs/holdingbranches.sh > /var/lib/state/old.tsv
 fi
 
-/root/holdingbranches.sh > /var/lib/state/new.tsv
+/cronjobs/holdingbranches.sh > /var/lib/state/new.tsv
 
 diff --changed-group-format='%<' --unchanged-group-format='' /var/lib/state/new.tsv /var/lib/state/old.tsv > /var/lib/state/diff.tsv
 
