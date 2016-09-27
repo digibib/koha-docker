@@ -26,20 +26,20 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt b/koha-
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
 +++ b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
 @@ -122,6 +122,7 @@ $(document).ready(function() {
- 
+
  //]]>
  </script>
 +[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %][% INCLUDE 'rfidhub.inc' %][% END %]
  </head>
  <body id="circ_circulation" class="circ">
- 
+
 @@ -868,7 +869,7 @@ No patron matched <span class="ex">[% message %]</span>
  </div>
  </div>
- 
+
 -<div class="yui-g"><div id="patronlists" class="toptabs">
 +<div class="yui-g">[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %]<div id="rfidlist"></div>[% END %]<div id="patronlists" class="toptabs">
- 
+
  <ul>
      <li>
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
@@ -56,7 +56,7 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
 @@ -587,6 +588,7 @@ $(document).ready(function () {
      </form>
  </div>
- 
+
 +[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %]<div id="rfidlist"></div>[% END %]
  [% IF ( riloop ) %]
      <h2>Checked-in items</h2>
@@ -232,7 +232,7 @@ index 0000000..460d552
 +}
 +
 +function handleItem(msg) {
-+  
++
 +  var rfiddiv = getRfidDiv();
 +
 +  // create table, headers and tbody if not exists
@@ -255,12 +255,12 @@ index 0000000..460d552
 +  // create row
 +  var row = $('<tr>').attr('id', msg.Item.Barcode)
 +    .append('<td><span title="dato">'+msg.Item.Date+'</span></td>')
-+    .append('<td><strong>'+msg.Item.Label+'</strong></a></td>') 
++    .append('<td><strong>'+msg.Item.Label+'</strong></a></td>')
 +    .append($('<td>'))
 +    .append($('<td>'))
 +    .append($('<td>'))
-+    .append('<td><a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber='+
-+        msg.Item.Barcode+'&amp;type=intra">'+msg.Item.Barcode+'</a></td>')
++    .append('<td><a href="/cgi-bin/koha/catalogue/search.pl?q='+
++        msg.Item.Barcode+'">'+msg.Item.Barcode+'</a></td>')
 +    .append('<td>'+msg.Item.Status);
 +
 +  // if row with id already exists: update - else prepend
@@ -299,7 +299,7 @@ index 0000000..460d552
 +}
 +
 +/*
-+ * WRITE RFID 
++ * WRITE RFID
 + */
 +function activateWrite() {
 +  // End Scan session first and activate Write Modal Dialog
