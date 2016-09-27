@@ -5,6 +5,10 @@ echo "Global config ..."
 envsubst < /templates/global/koha-sites.conf.tmpl > /etc/koha/koha-sites.conf
 envsubst < /templates/global/passwd.tmpl > /etc/koha/passwd
 
+echo "Cronjobs from templates ..."
+envsubst < /templates/cronjobs/deichman-koha-common.tmpl > /etc/cron.d/deichman-koha-common
+chmod 644 /etc/cron.d/deichman-koha-common
+
 echo "Setting up supervisord ..."
 envsubst < /templates/global/supervisord.conf.tmpl > /etc/supervisor/conf.d/supervisord.conf
 

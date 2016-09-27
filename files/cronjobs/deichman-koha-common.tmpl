@@ -38,7 +38,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #   --user				username of print service 		$ENV{'PIDGEON_USER'}
 #   --pass				password of print service		$ENV{'PIDGEON_PASS'}
 ##############
-20 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/brevdue.pl --update_status --print
+20 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/brevdue.pl --update_status --print --url $PIDGEON_URL --user $PIDGEON_USER --pass $PIDGEON_PASS
 
 ##############
 # Run report overdue = 35 days report and send generated CSV by mail attachement

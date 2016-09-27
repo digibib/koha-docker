@@ -101,10 +101,6 @@ WORKDIR /root
 COPY ./files/logrotate.config /etc/logrotate.d/syslog.conf
 COPY ./files/syslog.config /etc/syslog.conf
 
-# Deichman enabled koha cronjobs
-COPY ./files/cronjobs/deichman-koha-common /etc/cron.d/deichman-koha-common
-RUN chmod 0644 /etc/cron.d/deichman-koha-common
-
 # Cron job to sync holdingbranches to services
 COPY ./files/cronjobs/holdingbranches.sh /root/holdingbranches.sh
 COPY ./files/cronjobs/update_holdingbranches.sh /root/update_holdingbranches.sh
