@@ -118,6 +118,7 @@ RUN chmod 0644 /etc/cron.d/items-replacementprice
 
 # Cronjob for sending print notices to print service
 COPY ./files/cronjobs/brevdue.pl /usr/share/koha/bin/cronjobs/brevdue.pl
+RUN chmod 0755 /usr/share/koha/bin/cronjobs/brevdue.pl
 
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
