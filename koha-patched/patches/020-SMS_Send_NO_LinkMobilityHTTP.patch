@@ -5,10 +5,10 @@ Run patch from kohasrc root
 
 diff --git a/sms/LinkMobilityHTTP.pm b/sms/LinkMobilityHTTP.pm
 new file mode 100644
-index 0000000..e99930b
+index 0000000..0062bd7
 --- /dev/null
 +++ b/sms/LinkMobilityHTTP.pm
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,102 @@
 +package SMS::Send::NO::LinkMobilityHTTP;
 +
 +use warnings;
@@ -76,8 +76,6 @@ index 0000000..e99930b
 +  # validate
 +  croak q{'to' must contain between 8 and 14 digits}
 +      if length $params{to} < 8 or length $params{to} > 14;
-+  croak q{'_from' and 'text' combined must not be more than 159 characters}
-+      if length( $params{text} ) > 159;
 +
 +  # Send
 +  my $ua = new LWP::UserAgent;
