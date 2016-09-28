@@ -132,27 +132,3 @@ index b251d9b..ff90995 100644
                          <a class="icon_general icon_circulation" href="/cgi-bin/koha/circ/circulation-home.pl">Circulation</a>
                      </li>
                      [% END %]
-diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/members/member.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/members/member.tt
-index b149654..24639fb 100644
---- a/koha-tmpl/intranet-tmpl/prog/en/modules/members/member.tt
-+++ b/koha-tmpl/intranet-tmpl/prog/en/modules/members/member.tt
-@@ -252,6 +252,10 @@ $(document).ready(function() {
-         "bProcessing": true,
-     }, columns_settings);
-     update_searched();
-+
-+    // Deichman modifications:
-+    $("#searchfieldstype_filter").val("dateofbirth");
-+
- });
-
- // Update the string "Results found ..."
-@@ -416,7 +420,7 @@ function filterByFirstLetterSurname(letter) {
-           <ol>
-             <li>
-               <label for="searchmember_filter">Search:</label>
--              <input type="text" id="searchmember_filter" value="[% searchmember %]"/>
-+              <input type="text" autofocus id="searchmember_filter" value="[% searchmember %]"/>
-             </li>
-             <li>
-               <label for="searchfieldstype_filter">Search fields:</label>
