@@ -13,8 +13,6 @@
    ServerName $KOHA_INSTANCE
    SetEnv KOHA_CONF "/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml"
    SetEnv PERL5LIB "/usr/share/koha/lib"
-   SetEnv MEMCACHED_SERVERS ""
-   SetEnv MEMCACHED_NAMESPACE ""
    AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
 
    ErrorLog    /var/log/koha/$KOHA_INSTANCE/opac-error.log
@@ -35,8 +33,6 @@
    ServerName $KOHA_INSTANCE
    SetEnv KOHA_CONF "/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml"
    SetEnv PERL5LIB "/usr/share/koha/lib"
-   SetEnv MEMCACHED_SERVERS ""
-   SetEnv MEMCACHED_NAMESPACE ""
 
    AssignUserID $KOHA_INSTANCE-koha $KOHA_INSTANCE-koha
 

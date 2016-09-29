@@ -23,8 +23,6 @@
   SetEnv KOHA_CONF "/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml"
   SetEnv PERL5LIB "/kohadev/kohaclone"
   
-  SetEnv MEMCACHED_SERVERS ""
-  SetEnv MEMCACHED_NAMESPACE ""
   AssignUserID ${KOHA_INSTANCE}-koha ${KOHA_INSTANCE}-koha
 
 
@@ -130,8 +128,6 @@
   SetEnv KOHA_CONF "/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml"
   SetEnv PERL5LIB "/kohadev/kohaclone"
   
-  SetEnv MEMCACHED_SERVERS ""
-  SetEnv MEMCACHED_NAMESPACE ""
   AssignUserID ${KOHA_INSTANCE}-koha ${KOHA_INSTANCE}-koha
 
   ScriptAlias /cgi-bin/koha/ "/kohadev/kohaclone/"
