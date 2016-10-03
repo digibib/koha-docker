@@ -1,12 +1,9 @@
 Patch for Koha to use RFIDhub
-Run patch from kohasrc root
-
-(created with git diff --no-index <origfile> <newfile>)
 
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref b/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref
 +++ b/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulation.pref
-@@ -704,6 +704,15 @@ Circulation:
+@@ -751,6 +751,15 @@ Circulation:
                    yes: Show
                    no: "Don't show"
              - "the print receipt popup dialog when self checkout is finished"
@@ -25,7 +22,7 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/admin/preferences/circulati
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
 +++ b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt
-@@ -122,6 +122,7 @@ $(document).ready(function() {
+@@ -121,6 +121,7 @@ $(document).ready(function() {
 
  //]]>
  </script>
@@ -42,10 +39,21 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation.tt b/koha-
 
  <ul>
      <li>
+diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation-home.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation-home.tt
+--- a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation-home.tt
++++ b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/circulation-home.tt
+@@ -2,6 +2,7 @@
+ [% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha &rsaquo; Circulation</title>
+ [% INCLUDE 'doc-head-close.inc' %]
++[% IF Koha.Preference( 'UseRFIDHub' ) == '1' %][% INCLUDE 'rfidhub.inc' %][% END %]
+ </head>
+ <body id="circ_circulation-home" class="circ">
+ [% INCLUDE 'header.inc' %]
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
 +++ b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
-@@ -104,6 +104,7 @@ $(document).ready(function () {
+@@ -146,6 +146,7 @@ $(document).ready(function () {
  });
  //]]>
  </script>
@@ -383,7 +391,7 @@ index 0000000..460d552
 +    var writeRFIDModal = $('<div/>', {
 +      id: 'writeRFIDModal',
 +      class: 'overlay'
-+    }).prependTo('#rfidlist');
++    }).prependTo('#bd');
 +  } else {
 +    var writeRFIDModal = $('#writeRFIDModal');
 +  }
