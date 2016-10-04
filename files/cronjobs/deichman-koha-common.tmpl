@@ -28,14 +28,16 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 ##############
 # Long overdue - 02:00 every night
-# Settings for long overdue are in sysprefs
+# Settings for long overdue are in sysprefs, but does not seem to be working (as of 04.10.2016),
+# therfore setting specifically here.
 # 	--confirm		actually handle overdues
+#   --lost 35=12    set item status to "Forlengst forfalt" (code: 12) after 35 days.
 ##############
-0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --confirm
+0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --lost 35=12 --confirm
 
 ##############
 # Anonymize patron history 02:10 every night
-# moves history to syspref AnonymousPatron or NULL if not set 
+# moves history to syspref AnonymousPatron or NULL if not set
 #   --days	days to keep history
 ##############
 10 2 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 1 -v
