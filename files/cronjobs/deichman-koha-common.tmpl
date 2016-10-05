@@ -32,8 +32,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # therfore setting specifically here.
 # 	--confirm		actually handle overdues
 #   --lost 35=12    set item status to "Forlengst forfalt" (code: 12) after 35 days.
+#   --charge 12		charge patron for items set to Forlengst forfalt (code: 12)
 ##############
-0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --lost 35=12 --confirm
+0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --lost 35=12 --charge 12 --confirm
 
 ##############
 # Anonymize patron history 02:10 every night
