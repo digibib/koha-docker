@@ -27,6 +27,15 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-from-koha.pl -v -r
 
 ##############
+# Anonymize patron history
+# First creates stats and populates anonymous_stats table
+# then moves history in old_issues to syspref AnonymousPatron or NULL if not set
+#   --days	days to keep history
+##############
+40 23 * * *   root koha-foreach --enabled /cronjobs/anonymous_stats.sh --days 3
+55 23 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 3 -v
+
+##############
 # Long overdue - 02:00 every night
 # Settings for long overdue are in sysprefs, but does not seem to be working (as of 04.10.2016),
 # therfore setting specifically here.
@@ -35,13 +44,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #   --charge 12		charge patron for items set to Forlengst forfalt (code: 12)
 ##############
 0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --lost 35=12 --charge 12 --confirm
-
-##############
-# Anonymize patron history 02:10 every night
-# moves history to syspref AnonymousPatron or NULL if not set
-#   --days	days to keep history
-##############
-10 2 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 1 -v
 
 ##############
 # Process notice with transport type 'print' to print service
