@@ -80,7 +80,7 @@ index 0000000..8db7361
 +            $item->{status} = "Utlånt"
 +        }
 +
-+        if ($item->{restricted}) {
++        if ($item->{notforloan}) {
 +            $item->{status} = "Ikke til utlån";
 +        }
 +
