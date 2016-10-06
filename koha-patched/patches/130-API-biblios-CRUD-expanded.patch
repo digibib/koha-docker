@@ -85,7 +85,7 @@ index 0000000..8db7361
 +        }
 +
 +        # mark as unavailable if notforloan, damaged, lost, or withdrawn
-+        if ($item->{damaged} || $item->{itemlost} || $item->{withdrawn} || $item->{notforloan}) {
++        if ($item->{damaged} || $item->{itemlost} || $item->{withdrawn} || $item->{restricted}) {
 +            $item->{status} = "Utilgjengelig";
 +        }
 +
