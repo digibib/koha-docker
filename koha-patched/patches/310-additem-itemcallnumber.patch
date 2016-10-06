@@ -18,7 +18,7 @@ diff --git a/cataloguing/additem.pl b/cataloguing/additem.pl
              my $temp2 = $temp->field($CNtag);
              if ($temp2) {
 -                $value = ($temp2->subfield($CNsubfield)).' '.($temp2->subfield($CNsubfield2));
-+                $value = ($temp2->subfield($CNsubfield)).' '.($temp2->subfield($CNsubfield2).' '.($temp2->subfield($CNsubfield3));
++                $value = ($temp2->subfield($CNsubfield)).' '.($temp2->subfield($CNsubfield2)).' '.($temp2->subfield($CNsubfield3));
                  #remove any trailing space incase one subfield is used
                  $value =~ s/^\s+|\s+$//g;
              }
