@@ -107,8 +107,8 @@ fi
 echo "Configuring SMS settings ..."
 if [ -n "$SMS_SERVER_HOST" ]; then
   echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = ' SMSSendUsername ';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = ' SMSSendPassword ';" | koha-mysql $KOHA_INSTANCE
+  echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = 'SMSSendUsername';" | koha-mysql $KOHA_INSTANCE
+  echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = 'SMSSendPassword';" | koha-mysql $KOHA_INSTANCE
 fi
 
 echo "Configuring National Library Card settings ..."
