@@ -1,0 +1,24 @@
+From 751827f0981accecb1a24ce074f69d87b4a92de3 Mon Sep 17 00:00:00 2001
+From: Benjamin Rokseth <benjamin.rokseth@kul.oslo.kommune.no>
+Date: Fri, 2 Sep 2016 21:46:30 +0000
+Subject: [PATCH] Bug 17243 - git ignore swagger.min.json
+
+This patch adds *.min.json to .gitignore in swagger dir.
+To remove tracking of swagger.min.json run
+  git update-index --assume-unchanged swagger.min.json
+
+Or just ignore uncommitted changes
+---
+ api/v1/swagger/.gitignore | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 api/v1/swagger/.gitignore
+
+diff --git a/api/v1/swagger/.gitignore b/api/v1/swagger/.gitignore
+new file mode 100644
+index 0000000..5757960
+--- /dev/null
++++ b/api/v1/swagger/.gitignore
+@@ -0,0 +1 @@
++*.min.json
+-- 
+2.1.4
