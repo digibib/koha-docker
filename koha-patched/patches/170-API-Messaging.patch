@@ -6,10 +6,10 @@ Available routes:
 
 diff --git a/Koha/REST/V1/Messaging.pm b/Koha/REST/V1/Messaging.pm
 new file mode 100644
-index 0000000..f4d616c
+index 0000000..513a059
 --- /dev/null
 +++ b/Koha/REST/V1/Messaging.pm
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,93 @@
 +package Koha::REST::V1::Messaging;
 +
 +# This file is part of Koha.
@@ -35,6 +35,7 @@ index 0000000..f4d616c
 +use Mail::Sendmail;
 +use Koha::Libraries;
 +use Koha::Patrons;
++use Koha::Email;
 +
 +use Data::Dumper;
 +
@@ -85,15 +86,13 @@ index 0000000..f4d616c
 +            sender  => $library->branchreturnpath,
 +            subject => Encode::encode( "UTF-8", "" . $letter->{'title'} ),
 +            message => $letter->{'is_html'}
-+                        ? _wrap_html( Encode::encode( "UTF-8", $letter->{'content'} ),
-+                                      Encode::encode( "UTF-8", "" . $letter->{'title'}  ) )
++                        ? "<html><body>"  . Encode::encode( "UTF-8", $letter->{'content'} ) . "</body></html>"
 +                        : Encode::encode( "UTF-8", "" . $letter->{'content'} ),
 +            contenttype => $letter->{'is_html'}
 +                            ? 'text/html; charset="utf-8"'
 +                            : 'text/plain; charset="utf-8"',
 +        }
 +    );
-+
 +	my $res = sendmail(%dispatcher);
 +    if ($res) {
 +		return 1;
