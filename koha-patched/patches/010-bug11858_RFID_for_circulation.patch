@@ -71,10 +71,10 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
      <table id="checkedintable">
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
 new file mode 100644
-index 0000000..460d552
+index 0000000..ff48de6
 --- /dev/null
 +++ b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,318 @@
 +[% USE Koha %]
 +<style type="text/css">
 +/*
@@ -374,12 +374,6 @@ index 0000000..460d552
 +    }).prependTo('#patronlists');
 +  } else {
 +    var rfiddiv = $('#rfidlist');
-+  }
-+  // Also add button to print entire list
-+  if ($('#printSlipButton').length == 0) {
-+    var printBtnDiv = $('<div/>', {id: 'printSlipButton'});
-+    printBtnDiv.append('<a href="#" class="btn btn-small" onclick="return window.print();">print</a>');
-+    rfiddiv.prepend(printBtnDiv);
 +  }
 +
 +  return rfiddiv;
