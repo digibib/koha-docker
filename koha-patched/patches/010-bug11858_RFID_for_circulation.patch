@@ -71,10 +71,10 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
      <table id="checkedintable">
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
 new file mode 100644
-index 0000000..ff48de6
+index 0000000..246bdba
 --- /dev/null
 +++ b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
-@@ -0,0 +1,318 @@
+@@ -0,0 +1,290 @@
 +[% USE Koha %]
 +<style type="text/css">
 +/*
@@ -115,34 +115,6 @@ index 0000000..ff48de6
 +#writeRFIDDialog input:-moz-placeholder {
 +      color: #a1b2c3; text-shadow: 0px -1px 0px #38506b;
 +}
-+</style>
-+<style type="text/css" media="print">
-+  body {
-+    visibility: hidden;
-+  }
-+  table {
-+    visibility: visible;
-+    position: absolute;
-+    left: 0;
-+    top: 0;
-+  }
-+  /* reset table for slip printing */
-+  table, tbody, tfoot, thead, tr, th, td {
-+    margin: 0;
-+    border: 0 !important;
-+    font-size: 8px !important;
-+    width: auto;
-+  }
-+  /* display only columns 1-6 and 10 */
-+  th, td {
-+    display: none;
-+  }
-+  th:nth-of-type(n+1):nth-of-type(-n+2),th:nth-of-type(n+6) {
-+      display: table-cell;
-+  }
-+  td:nth-of-type(n+1):nth-of-type(-n+2),td:nth-of-type(n+6) {
-+      display: table-cell;
-+  }
 +</style>
 +<script type="text/javascript">
 +var rfidhuburl = "[% Koha.Preference( 'RFIDHubURL' ) %]";
