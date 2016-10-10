@@ -46,7 +46,7 @@ auto=`awk -f /templates/instance/SIPconfig.template_automats.awk /templates/inst
 rfid=`awk -f /templates/instance/SIPconfig.template_rfid.awk /templates/instance/SIPconfig.rfid.csv` ; \
 inst=`awk -f /templates/instance/SIPconfig.template_institutions.awk /templates/instance/SIPconfig.automats.csv` ; \
 awk -v door="$door" -v auto="$auto" -v inst="$inst" \
-  '{gsub(/__TEMPLATE_DOOR_ACCOUNTS__/, door); gsub(/__TEMPLATE_AUTOMAT_ACCOUNTS__/, auto); gsub(/__TEMPLATE_RFID_ACCOUNTS__/, auto); gsub(/__TEMPLATE_INSTITUTIONS__/, inst) };1' \
+  '{gsub(/__TEMPLATE_DOOR_ACCOUNTS__/, door); gsub(/__TEMPLATE_AUTOMAT_ACCOUNTS__/, auto); gsub(/__TEMPLATE_RFID_ACCOUNTS__/, rfid); gsub(/__TEMPLATE_INSTITUTIONS__/, inst) };1' \
   /templates/instance/SIPconfig.xml.tmpl | envsubst > /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml
 
 echo "Configuring languages ..."
