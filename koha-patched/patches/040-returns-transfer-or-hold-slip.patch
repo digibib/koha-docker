@@ -1,0 +1,41 @@
+040-returns-transfer-or-hold-slip.patch
+DEICH-314: This patch is for returns to provide right slip on returning item with hold.
+ different branch -> tranfer slip
+ same branch      -> hold slip
+
+diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
+index 2d72326..c30a6b8 100644
+--- a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
++++ b/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt
+@@ -548,8 +548,9 @@ $(document).ready(function () {
+                         <button type="submit" class="btn approve">
+                             <i class="fa fa-check"></i> Confirm hold and transfer
+                         </button>
+-                        <button type="submit" class="btn print" onclick="this.form.print_slip.value = 1; this.form.submit()">
+-                            <i class="fa fa-print"></i> Print slip, transfer, and confirm
++                        <!-- DEICH-314: use transfer slip on transfer, not hold slip -->
++                        <button type="button" class="openWin btn print" onclick="this.form.submit()" data-url="transfer-slip.pl?transferitem=[% itemnumber %]&amp;branchcode=[% destbranch %]&amp;op=slip">
++                        <i class="fa fa-print"></i> Print slip, transfer, and confirm
+                         </button>
+                     [% ELSE %]
+                         <button type="submit" class="btn approve">
+diff --git a/circ/returns.pl b/circ/returns.pl
+old mode 100755
+new mode 100644
+index e849a46..0e86d89
+--- a/circ/returns.pl
++++ b/circ/returns.pl
+@@ -430,8 +430,13 @@ if ( $messages->{'ResFound'}) {
+     my $holdmsgpreferences =  C4::Members::Messaging::GetMessagingPreferences( { borrowernumber => $reserve->{'borrowernumber'}, message_name   => 'Hold_Filled' } );
+     if ( $reserve->{'ResFound'} eq "Waiting" or $reserve->{'ResFound'} eq "Reserved" ) {
+         if ( $reserve->{'ResFound'} eq "Waiting" ) {
++            # DEICH-314: $messages->{'ResFound'} actually returns "Waiting" for any reserve, even in transfer
+             $template->param(
+                 waiting      => ($userenv_branch eq $reserve->{'branchcode'} ? 1 : 0 ),
++                intransit    => ($userenv_branch eq $reserve->{'branchcode'} ? 0 : 1 ),
++                transfertodo => ($userenv_branch eq $reserve->{'branchcode'} ? 0 : 1 ),
++                reserve_id   => $reserve->{reserve_id},
++                reserved     => 1,
+             );
+         } elsif ( $reserve->{'ResFound'} eq "Reserved" ) {
+             $template->param(
