@@ -39,10 +39,10 @@ To test:
  2 files changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/C4/SIP/Sip/MsgType.pm b/C4/SIP/Sip/MsgType.pm
-index 4e406e2..e266b4c 100644
+index 4e406e2..7ca1565 100644
 --- a/C4/SIP/Sip/MsgType.pm
 +++ b/C4/SIP/Sip/MsgType.pm
-@@ -940,6 +940,17 @@ sub handle_patron_info {
+@@ -940,6 +940,20 @@ sub handle_patron_info {
  
      $resp = (PATRON_INFO_RESP);
      if ($patron) {
@@ -51,9 +51,12 @@ index 4e406e2..e266b4c 100644
 +        # If set to 1 or authorized value mapped to 1, allow access (charge and renewal privileges ok)
 +        if ($server->{account}->{validate_patron_attribute}) {
 +            my $attr = C4::Members::Attributes::GetBorrowerAttributeValue($patron->{borrowernumber}, $server->{account}->{validate_patron_attribute});
-+            if ($attr || $attr == "1") {
++            if ($attr && $attr == "1") {
 +                $patron->{charge_ok} = "1";
 +                $patron->{renew_ok} = "1";
++            } else {
++                $patron->{charge_ok} = "0";
++                $patron->{renew_ok} = "0";
 +            }
 +        }
 +
