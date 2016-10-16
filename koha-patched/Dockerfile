@@ -27,7 +27,7 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF 56da7be50ada38bab6ec866f5915d55507c7d821
+ENV GITREF f75afef59175933f7e93b04bdcbdcf5180b0b024
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -71,13 +71,12 @@ ENV BUGZ_PASS    bugspass
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
 
-# OK    Bug 17243 - git ignore swagger.min.json
 # OK    Bug 16694 - Limit SIP2 auth by patron attribute
 # OK    Bug 17004 - REST API: add route to authenticate patron (Single Sign On - SSO)
 # OK    Bug 16330 - REST API: add routes to add, update and delete patrons
 # LOCAL    Bug 16497 - REST API: add routes to list libraries
 # LOCAL    Bug 13895 - Add API routes for checkouts retrieval and renewal
-#ENV KOHABUGS     "17243 16694 17004 16330"
+#ENV KOHABUGS     "16694 17004 16330"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian

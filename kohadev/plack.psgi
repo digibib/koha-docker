@@ -24,6 +24,7 @@ use Plack::Builder;
 use Plack::App::CGIBin;
 use Plack::App::Directory;
 use Plack::App::URLMap;
+use Plack::Request;
 
 use Mojo::Server::PSGI;
 
@@ -78,6 +79,7 @@ builder {
     enable 'Debug';
     enable "ReverseProxy";
     enable "Plack::Middleware::Static";
+    enable "+Koha::Middleware::SetEnv";
 
     mount '/opac'          => $opac;
     mount '/intranet'      => $intranet;

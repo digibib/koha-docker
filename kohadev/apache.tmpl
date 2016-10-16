@@ -25,7 +25,6 @@
   
   AssignUserID ${KOHA_INSTANCE}-koha ${KOHA_INSTANCE}-koha
 
-
   ScriptAlias /cgi-bin/koha/ "/kohadev/kohaclone/opac/"
   ScriptAlias /index.html "/kohadev/kohaclone/opac/opac-main.pl"
   ScriptAlias /search "/kohadev/kohaclone/opac/opac-search.pl"
@@ -83,7 +82,6 @@
       mod_gzip_item_include mime ^text/css$
   </IfModule>
 
-
   <IfModule mod_deflate.c>
       # Compress content with type html, text, and css, ...
       AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css
@@ -113,6 +111,11 @@
       ExpiresByType application/javascript "access plus 12 hours"
       ExpiresByType image/png "access plus 12 hours"
       ExpiresByType image/gif "access plus 12 hours"
+  </IfModule>
+
+  <IfModule mod_headers.c>
+    # Erase any X-Koha-SetEnv headers from the client
+    RequestHeader unset X-Koha-SetEnv
   </IfModule>
 
   Options +FollowSymLinks -Indexes
