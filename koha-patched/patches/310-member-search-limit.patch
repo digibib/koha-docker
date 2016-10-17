@@ -1,0 +1,17 @@
+Add a limit to number of returned results in member search.
+
+Without this, searches with few characters and/or wildcards, might
+generate enourmous queries which chockes MySQL.
+
+diff --git a/C4/Members/Attributes.pm b/C4/Members/Attributes.pm
+--- a/C4/Members/Attributes.pm
++++ b/C4/Members/Attributes.pm
+@@ -151,7 +151,7 @@ SELECT DISTINCT borrowernumber
+ FROM borrower_attributes
+ JOIN borrower_attribute_types USING (code)
+ WHERE staff_searchable = 1
+-AND (} . join (" OR ", map "attribute like ?", @$filter) .qq{)};
++AND (} . join (" OR ", map "attribute like ?", @$filter) .qq{) LIMIT 10};
+     my $sth = $dbh->prepare_cached($query);
+     $sth->execute(map "%$_%", @$filter);
+     return [map $_->[0], @{ $sth->fetchall_arrayref }];

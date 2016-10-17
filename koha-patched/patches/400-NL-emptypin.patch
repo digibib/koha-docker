@@ -4,7 +4,6 @@ Do a check if the patron has a PIN-code, before attempting
 to decrypt it.
 
 diff --git a/members/nl-search.pl b/members/nl-search.pl
-index 29ec13e..19d4f3e 100755
 --- a/members/nl-search.pl
 +++ b/members/nl-search.pl
 @@ -124,7 +124,6 @@ if ( $op && $op eq 'search' ) {
@@ -37,4 +36,3 @@ index 29ec13e..19d4f3e 100755
          # Try to sync in real time. If this fails it will be picked up by the cronjob
          NLSync({ 'borrowernumber' => $borrowernumber });
          # Redirect to the edit screen
-
