@@ -12,16 +12,16 @@ index a95facc..af9cb06 100644
              $resp .= add_field( FID_HOLD_PICKUP_DATE, timestamp($i) );
          }
  
-+        # Deichman mod: prepend title with pickup id if it is marked hold_shelf
-+        if ( scalar @{ $item->hold_shelf } > 0 ) {
-+            # Need waitingdate and reserve_id for pickup id
-+            use C4::Reserves qw( GetReservesFromItemnumber );
-+            my ( undef, undef, undef, $reserve_id, $waitingdate ) = GetReservesFromItemnumber($item->{'itemnumber'});
-+            # Format dd/mm/yy
-+            my ( $d ) = $waitingdate =~ /\d{4}-\d{2}-(\d{2})/;
-+            my $title = "hentenr.: $d/$reserve_id - " . $item->title_id;
-+            $resp .= add_field( FID_TITLE_ID, $title );
-+        }
++        # Deichman mod (DISABLED): prepend title with pickup id if it is marked hold_shelf
++        #if ( scalar @{ $item->hold_shelf } > 0 ) {
++        #    # Need waitingdate and reserve_id for pickup id
++        #    use C4::Reserves qw( GetReservesFromItemnumber );
++        #    my ( undef, undef, undef, $reserve_id, $waitingdate ) = GetReservesFromItemnumber($item->{'itemnumber'});
++        #    # Format dd/mm/yy
++        #    my ( $d ) = $waitingdate =~ /\d{4}-\d{2}-(\d{2})/;
++        #    my $title = "hentenr.: $d/$reserve_id - " . $item->title_id;
++        #    $resp .= add_field( FID_TITLE_ID, $title );
++        #}
 +
          $resp .= maybe_add( FID_SCREEN_MSG, $item->screen_msg, $server );
          $resp .= maybe_add( FID_PRINT_LINE, $item->print_line );
