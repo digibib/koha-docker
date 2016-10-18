@@ -5,10 +5,10 @@ Run patch from kohasrc root
 
 diff --git a/sms/LinkMobilityHTTP.pm b/sms/LinkMobilityHTTP.pm
 new file mode 100644
-index 0000000..0062bd7
+index 0000000..d74df6c
 --- /dev/null
 +++ b/sms/LinkMobilityHTTP.pm
-@@ -0,0 +1,102 @@
+@@ -0,0 +1,101 @@
 +package SMS::Send::NO::LinkMobilityHTTP;
 +
 +use warnings;
@@ -64,14 +64,13 @@ index 0000000..0062bd7
 +    my %params = @_;
 +  # cleanup cell number
 +  $params{to} =~ s/[^0-9]//g; # remove non-digits
-+  # TODO: fix in db instead? prepend 47 unless already there
-+  if (index($params{to}, "47") != 0) {
-+      $params{to} = "47" . $params{to}; # Prepend norwegian country code
++  if (length $params{to} != 10) {
++      $params{to} = "47" . $params{to}; # Prepend norwegian country code unless 10 digits
 +  }
 +
 +  # convert utf8 to iso-8859-1
 +  my $txt = decodeUnicodeMessage($params{text});
-+  $txt = encode('ISO-8859-1', $txt, Encode::FB_CROAK);
++  $txt = encode('ISO-8859-1', $txt);
 +
 +  # validate
 +  croak q{'to' must contain between 8 and 14 digits}
