@@ -27,6 +27,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-from-koha.pl -v -r
 
 ##############
+# Build Holds Queue
+##############
+*/15 * * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/build_holds_queue.pl
+
+##############
 # Anonymize patron history
 # First creates stats and populates anonymous_stats table
 # then moves history in old_issues to syspref AnonymousPatron or NULL if not set
