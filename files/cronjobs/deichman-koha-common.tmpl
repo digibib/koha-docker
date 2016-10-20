@@ -58,6 +58,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 20 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/brevdue.pl --update_status --print --url $PIDGEON_URL --user $PIDGEON_USER --pass $PIDGEON_PASS
 
 ##############
+# Cancel expired holds waiting and unsuspend
+##############
+15 3 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/cancel_expired_holds.pl
+45 3 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/auto_unsuspend_holds.pl
+
+##############
 # Run report overdue = 35 days report and send generated CSV by mail attachement
 #   --to      email to receive report
 #   -a        include as attachment
