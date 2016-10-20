@@ -108,9 +108,9 @@ COPY ./files/syslog.config /etc/syslog.conf
 COPY ./files/cronjobs/brevdue.pl /usr/share/koha/bin/cronjobs/brevdue.pl
 RUN chmod 0755 /usr/share/koha/bin/cronjobs/brevdue.pl
 
-# Override nightly run koha cron jobs
+# Override nightly and hourly run koha cron jobs
 COPY ./files/cronjobs/daily-koha-common /etc/cron.daily/koha-common
-RUN chmod 0755 /etc/cron.daily/koha-common
+RUN chmod 0755 /etc/cron.daily/koha-common && rm -rf /etc/cron.hourly/koha-common
 
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
