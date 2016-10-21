@@ -5,10 +5,10 @@ information needed for label generation.
 
 diff --git a/Koha/REST/V1/LabelGenerator.pm b/Koha/REST/V1/LabelGenerator.pm
 new file mode 100644
-index 0000000..8c41dc0
+index 0000000..943f738
 --- /dev/null
 +++ b/Koha/REST/V1/LabelGenerator.pm
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,54 @@
 +package Koha::REST::V1::LabelGenerator;
 +# This file is part of Koha.
 +#
@@ -55,6 +55,7 @@ index 0000000..8c41dc0
 +        holdingBranch => $item->{holdingbranch},
 +        callNumber => $item->{itemcallnumber},
 +        shelvingLocation => $item->{location},
++        codedLocationQualifier => $item->{coded_location_qualifier},
 +        copyNumber => $item->{copynumber}
 +    };
 +
