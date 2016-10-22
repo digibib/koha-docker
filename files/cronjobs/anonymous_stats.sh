@@ -32,12 +32,7 @@ create_anonymous_stats() {
           KEY stats_zipidx (zipcode),
           KEY stats_returnbranchidx (returnbranch),
           KEY stats_homebranchidx (homebranch),
-          KEY stats_catidx (categorycode),
-          CONSTRAINT stats_ibfk_1 FOREIGN KEY (old_issue_id) REFERENCES old_issues (issue_id),
-          CONSTRAINT stats_ibfk_2 FOREIGN KEY (returnbranch) REFERENCES branches (branchcode),
-          CONSTRAINT stats_ibfk_3 FOREIGN KEY (itemnumber) REFERENCES items (itemnumber) ON DELETE SET NULL ON UPDATE SET NULL,
-          CONSTRAINT stats_ibfk_4 FOREIGN KEY (homebranch) REFERENCES branches (branchcode),
-          CONSTRAINT stats_ibfk_5 FOREIGN KEY (categorycode) REFERENCES categories (categorycode)
+          KEY stats_catidx (categorycode)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 EOF
     echo "creating anonymous stats for issues $DAYS days old ..."
