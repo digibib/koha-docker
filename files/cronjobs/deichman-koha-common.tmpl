@@ -24,7 +24,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ##############
 # NL - sync FROM Koha
 ##############
-*/5 * * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-from-koha.pl -v -r
+0 * * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-from-koha.pl -v -r
 
 ##############
 # Build Holds Queue
