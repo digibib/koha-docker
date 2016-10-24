@@ -76,7 +76,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #   [id]      number of report
 ##############
 
-35 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=benjamin.rokseth@kul.oslo.kommune.no --subject="`date +%F -d 'yesterday'`_rapport_over_innleverte_medier_med_purring" -a --format=csv --store-results 25
-36 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=benjamin.rokseth@kul.oslo.kommune.no --subject="`date +%F -d 'yesterday'`_sammendrag_innleverte_medier_med_purring" -a --format=csv --store-results 26
-37 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=raakel.rosenborg@kul.oslo.kommune.no --subject="`date +%F -d 'yesterday'`_rapport_over_innleverte_medier_med_purring" -a --format=csv 25
-38 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=raakel.rosenborg@kul.oslo.kommune.no --subject="`date +%F -d 'yesterday'`_sammendrag_innleverte_medier_med_purring" -a --format=csv 26
+35 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=benjamin.rokseth@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_rapport_over_innleverte_medier_med_purring" -a --format=csv --store-results 25
+#36 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=benjamin.rokseth@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_sammendrag_innleverte_medier_med_purring" -a --format=csv --store-results 26
+37 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=raakel.rosenborg@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_rapport_over_innleverte_medier_med_purring" -a --format=csv 25
+#38 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=raakel.rosenborg@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_sammendrag_innleverte_medier_med_purring" -a --format=csv 26
