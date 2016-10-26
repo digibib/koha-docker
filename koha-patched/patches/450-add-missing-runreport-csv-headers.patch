@@ -1,0 +1,14 @@
+450-add-missing-runreport-csv-headers.patch
+
+diff --git a/misc/cronjons/runreport.pl b/misc/cronjons/runreport.pl
+index 370c479..3042eec 100755
+--- a/misc/cronjons/runreport.pl
++++ b/misc/cronjons/runreport.pl
+@@ -274,6 +274,7 @@ foreach my $report_id (@ARGV) {
+             quote_char  => $quote,
+             sep_char    => $separator,
+             });
++        $message .= join(',', @{ $sth->{NAME_lc} }) . "\n";
+         while (my $line = $sth->fetchrow_arrayref) {
+             $csv->combine(@$line);
+             $message .= $csv->string() . "\n";
