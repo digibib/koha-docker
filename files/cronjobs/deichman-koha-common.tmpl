@@ -69,14 +69,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 45 3 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/auto_unsuspend_holds.pl
 
 ##############
-# Run report overdue = 35 days report and send generated CSV by mail attachement
-#   --to      email to receive report
-#   -a        include as attachment
-#   --format  format of report (csv,ods,html)
-#   [id]      number of report
+# Run sql reports to email
+#   -e   email to receive report (can be multiple)
+#   -s   store results in koha
 ##############
 
-35 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=benjamin.rokseth@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_rapport_over_innleverte_medier_med_purring" -a --format=csv --store-results 25
-#36 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=benjamin.rokseth@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_sammendrag_innleverte_medier_med_purring" -a --format=csv --store-results 26
-37 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=raakel.rosenborg@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_rapport_over_innleverte_medier_med_purring" -a --format=csv 25
-#38 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl --to=raakel.rosenborg@kul.oslo.kommune.no --subject="`date +\%F -d 'yesterday'`_sammendrag_innleverte_medier_med_purring" -a --format=csv 26
+45 07 * * *   root koha-foreach --enabled /cronjobs/send_reports.sh -s -e benjamin.rokseth@kul.oslo.kommune.no \
+	-e raakel.rosenborg@kul.oslo.kommune.no -e cecilie.bergh@kul.oslo.kommune.no
