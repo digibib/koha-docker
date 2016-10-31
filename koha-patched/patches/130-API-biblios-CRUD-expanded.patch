@@ -6,7 +6,7 @@ Also enables expanded item with status
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..d3977c2
+index 0000000..8db7361
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
 @@ -0,0 +1,175 @@
@@ -115,7 +115,7 @@ index 0000000..d3977c2
 +    if ($@) {
 +        return $c->$cb({error => $@}, 400);
 +    } else {
-+        ( $biblionumber, $biblioitemnumber ) = &AddBiblio($record, $args->{framework} || '');
++        ( $biblionumber, $biblioitemnumber ) = &AddBiblio($record, '');
 +    }
 +    if ($biblionumber) {
 +        $c->res->headers->location($c->url_for('/api/v1/biblios/')->to_abs . $biblionumber);
@@ -189,24 +189,21 @@ diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
 index 11278e2..77063c7 100644
 --- a/api/v1/swagger/parameters.json
 +++ b/api/v1/swagger/parameters.json
-@@ -31,5 +31,11 @@
+@@ -19,5 +19,8 @@
    },
    "barcodePathParam": {
      "$ref": "parameters/item.json#/barcodePathParam"
 +  },
 +  "biblionumberPathParam": {
 +    "$ref": "parameters/biblio.json#/biblionumberPathParam"
-+  },
-+  "frameworkQueryParam": {
-+    "$ref": "parameters/biblio.json#/frameworkQueryParam"
    }
  }
 diff --git a/api/v1/swagger/parameters/biblio.json b/api/v1/swagger/parameters/biblio.json
 new file mode 100644
-index 0000000..541bdc7
+index 0000000..1d1316a
 --- /dev/null
 +++ b/api/v1/swagger/parameters/biblio.json
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,9 @@
 +{
 +   "biblionumberPathParam": {
 +     "name": "biblionumber",
@@ -214,12 +211,6 @@ index 0000000..541bdc7
 +     "description": "Internal biblio identifier",
 +     "required": true,
 +     "type": "integer"
-+  },
-+    "frameworkQueryParam": {
-+    "name": "framework",
-+    "in": "query",
-+    "description": "Biblio framework identifier",
-+    "type": ["string", "null"]
 +  }
 +}
 diff --git a/api/v1/swagger/definitions.json b/api/v1/swagger/definitions.json
