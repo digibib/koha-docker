@@ -71,10 +71,10 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
      <table id="checkedintable">
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
 new file mode 100644
-index 0000000..246bdba
+index 0000000..cfe5fea
 --- /dev/null
 +++ b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
-@@ -0,0 +1,290 @@
+@@ -0,0 +1,288 @@
 +[% USE Koha %]
 +<style type="text/css">
 +/*
@@ -129,8 +129,7 @@ index 0000000..246bdba
 +  branch = document.getElementById("logged-in-branch-code") ? document.getElementById("logged-in-branch-code").innerHTML : "ukjent";
 +  state = $("body").attr("id");
 +  // activate RFID Modal
-+  $("#menu ul").append('<li><a href="#" onclick="activateWrite();">Preg RFID</a></li>');
-+  $("div.gradient").append('<div id="RFIDStatus"><a href="#" class="btn btn-small" onclick="reconnectHUB();">RFID</a><span id="RFIDStatusMessage"></span></div>');
++  $("div.gradient").append('<div id="RFIDStatus"><a href="#" class="btn btn-small" onclick="reconnectHUB();">RFID</a><span id="RFIDStatusMessage"></span><button id="RFIDPreg" onclick="activateWrite();">Preg brikker</button></div>');
 +  ws.onopen = function() {
 +    console.log("connected");
 +
@@ -289,8 +288,7 @@ index 0000000..246bdba
 +}
 +
 +function deactivateWrite() {
-+  // End Scan session first and activate Write Modal Dialog
-+  ws.send(JSON.stringify({Action: "CHECKOUT", Patron: "[% borrower.cardnumber %]" }));
++  // End write session and activate Write Modal Dialog
 +  $("#writeRFIDModal").toggleClass('hidden', true);
 +  return true;
 +}
