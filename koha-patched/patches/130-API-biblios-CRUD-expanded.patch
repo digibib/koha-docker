@@ -9,7 +9,7 @@ new file mode 100644
 index 0000000..8db7361
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,176 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -115,7 +115,8 @@ index 0000000..8db7361
 +    if ($@) {
 +        return $c->$cb({error => $@}, 400);
 +    } else {
-+        ( $biblionumber, $biblioitemnumber ) = &AddBiblio($record, '');
++        my $framework = $c->req->headers->header('framework');
++        ( $biblionumber, $biblioitemnumber ) = &AddBiblio($record, $framework || '');
 +    }
 +    if ($biblionumber) {
 +        $c->res->headers->location($c->url_for('/api/v1/biblios/')->to_abs . $biblionumber);
