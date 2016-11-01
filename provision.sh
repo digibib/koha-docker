@@ -7,7 +7,7 @@ export KOHAENV=$1
 export KOHAPATH=$2
 echo -e "\n Provisioning for $KOHAENV env, KOHAENV=$KOHAENV, KOHAPATH=$KOHAPATH\n"
 echo -e "\n1) Installing Docker\n"
-VERSION="1.12.2-0~$(lsb_release -c -s)"
+VERSION="1.12.3-0~$(lsb_release -c -s)"
 INSTALLED=`dpkg -l | grep docker-engine | awk '{print $3}'`
 if [ $VERSION = "$INSTALLED" ] ; then
   echo "docker version $VERSION already installed";
