@@ -208,10 +208,30 @@ index b97a154..1e2f4f8 100644
 +
  1;
 diff --git a/api/v1/swagger/paths/patrons.json b/api/v1/swagger/paths/patrons.json
-index 67632e1..39f340a 100644
+index 67632e1..ece3d81 100644
 --- a/api/v1/swagger/paths/patrons.json
 +++ b/api/v1/swagger/paths/patrons.json
-@@ -28,6 +28,60 @@
+@@ -3,6 +3,19 @@
+     "get": {
+       "operationId": "listPatrons",
+       "tags": ["patrons"],
++      "parameters": [{
++        "name": "userid",
++        "in": "query",
++        "description": "Search on unique patron userid",
++        "required": false,
++        "type": "string"
++      }, {
++        "name": "email",
++        "in": "query",
++        "description": "Search on patron email",
++        "required": false,
++        "type": "string"
++      }],
+       "produces": [
+           "application/json"
+       ],
+@@ -28,6 +41,60 @@
            "borrowers": "1"
          }
        }
@@ -272,7 +292,7 @@ index 67632e1..39f340a 100644
      }
    },
    "/patrons/{borrowernumber}": {
-@@ -35,11 +89,10 @@
+@@ -35,11 +102,10 @@
        "operationId": "getPatron",
        "tags": ["patrons"],
        "parameters": [{
@@ -287,7 +307,7 @@ index 67632e1..39f340a 100644
        ],
        "responses": {
          "200": {
-@@ -68,6 +121,114 @@
+@@ -68,6 +134,114 @@
            "borrowers": "1"
          }
        }
