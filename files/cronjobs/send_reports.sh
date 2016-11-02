@@ -1,44 +1,69 @@
-#!/bin/sh
-# /cronjobs/send_reports.sh [-e email] [-e email]
+#!/bin/bash
+# /cronjobs/send_reports.sh [email] [email]
 #
-# This cronjob runs saved reports and sends result to emails
+# This cronjob runs saved reports, store them and sends result to emails
 
 ### Cronjobber til kemner
+WHEN=`date +%F -d 'yesterday'`
+REPORTS=(
+    "${WHEN}_rapport_over_innleverte_medier_med_purring.csv"
+    "${WHEN}_rapport_medier_35_dager_over_forfall.csv"
+    )
 
 usage() {
-  echo "\nUsage:\n$0 [-e email] [-e email] [-s]\n"
+  echo -e "\nUsage:\n$0 [-e|--email] \n"
   exit 1
 }
 
 send_reports() {
-    local OPT="$1"
-    local WHEN=`date +%F -d 'yesterday'`
-    local CMD="koha-foreach --enabled /usr/share/koha/bin/cronjobs/runreport.pl ${OPT} -a --format=csv"
-    # 25 - Rapport over innleverte medier som hadde status Regning
-    $CMD --subject="${WHEN}_rapport_over_innleverte_medier_med_purring" 25
-    # 26 - Sammendrag over innleverte medier med status Regning
-    $CMD --subject "${WHEN}_sammendrag_innleverte_medier_med_purring" 26
-    # 28 - Erstatninger - Kategorier B,V,I som hadde 35 dager over forfall
-    $CMD --subject "${WHEN}_rapport_medier_35_dager_over_forfall" 28
-    # 29 - Purregebyrer - Kategorier B,V,I som hadde 35 dager over forfall
-    $CMD --subject "${WHEN}_rapport_purregebyrer_35_dager_over_forfall" 29
-    # 30 - Innleverte medier for 2 dager siden som hadde status Forlengst forfalt
-    $CMD --subject "${WHEN}_rapport_innleverte_medier_forlengst_forfalt" 30
+    local EMAIL="$1"
+    local BOUNDARY="T/asfAY23523.34"
+    { printf "%s\n" \
+        "Subject: Kemnerrapporter ${WHEN}" \
+        "From: no-reply@deichman.no" \
+        "To: ${EMAIL}" \
+        "Mime-Version: 1.0" \
+        "Content-Type: multipart/mixed; boundary=\"$BOUNDARY\"" \
+        \
+        "--${BOUNDARY}" \
+        "Content-Type: text/plain" \
+        "Content-Disposition: inline" \
+        "" \
+        "Vedlagt ligger rapporter for ${WHEN}";
+
+    for REPORT in "${REPORTS[@]}"; do
+        printf "%s\n" "--${BOUNDARY}" \
+        "Content-Type: text/csv" \
+        "Content-Transfer-Encoding: base64" \
+        "Content-Disposition: attachment; filename=\"${REPORT}\""\
+        "";
+        base64 /var/lib/state/${REPORT}
+        echo
+    done
+    printf '%s\n' "--${BOUNDARY}--"
+    } | sendmail "${EMAIL}" -t -oi
 }
 
-while getopts ":e:s" opt; do
-  case ${opt} in
+save_reports() {
+    # 28 - Erstatninger - Kategorier B,V,I som hadde 35 dager over forfall
+    koha-shell -c '/usr/share/koha/bin/cronjobs/runreport.pl --format=csv --store-results 28' $KOHA_INSTANCE > /var/lib/state/${WHEN}_rapport_medier_35_dager_over_forfall.csv
+    # 29 - Purregebyrer - Kategorier B,V,I som hadde 35 dager over forfall - append to previos report
+    koha-shell -c '/usr/share/koha/bin/cronjobs/runreport.pl --format=csv --store-results 29' $KOHA_INSTANCE | tail -n+2 >> /var/lib/state/${WHEN}_rapport_medier_35_dager_over_forfall.csv
+    # 45 - Rapport over innleverte medier som hadde status Regning eller Forlengst forfalt
+    koha-shell -c '/usr/share/koha/bin/cronjobs/runreport.pl --format=csv --store-results 45' $KOHA_INSTANCE > /var/lib/state/${WHEN}_rapport_over_innleverte_medier_med_purring.csv
+}
+
+save_reports
+case "$1" in
     "")
     usage
     ;;
-  e)
-    send_reports --to=${OPTARG}
+  --email|-e)
+    shift
+    send_reports $1
+    shift
     ;;
-  s)
-    send_reports --store-results
-    ;;
-  \?)
+  --help|-h)
     usage
     ;;
-  esac
-done
+esac
