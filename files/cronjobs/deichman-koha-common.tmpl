@@ -45,10 +45,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Settings for long overdue are in sysprefs, but does not seem to be working (as of 04.10.2016),
 # therfore setting specifically here.
 # 	--confirm		actually handle overdues
-#   --lost 35=12    set item status to "Forlengst forfalt" (code: 12) after 35 days.
+#   --lost 35=12    set item status to "Forlengst forfalt" (code: 12) for 35 days overdue exactly.
 #   --charge 12		charge patron for items set to Forlengst forfalt (code: 12)
 ##############
-0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --lost 35=12 --charge 12 --confirm
+0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --lost 35=12 --charge 12 --maxdays=36 --confirm
 
 ##############
 # Process notice with transport type 'print' to print service
