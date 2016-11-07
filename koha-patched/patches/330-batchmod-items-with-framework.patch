@@ -1,0 +1,51 @@
+330-batchmod-items-with-framework.patch
+
+diff --git a/tools/batchMod.pl b/tools/batchMod.pl
+old mode 100644
+new mode 100755
+index 2920da9..a2d3823
+--- a/tools/batchMod.pl
++++ b/tools/batchMod.pl
+@@ -48,6 +48,7 @@ my $completedJobID = $input->param('completedJobID');
+ my $runinbackground = $input->param('runinbackground');
+ my $src          = $input->param('src');
+ my $use_default_values = $input->param('use_default_values');
++my $framework = $input->param('framework');
+ 
+ my $template_name;
+ my $template_flag;
+@@ -81,7 +82,7 @@ my $itemrecord;
+ my $nextop="";
+ my @errors; # store errors found while checking data BEFORE saving item.
+ my $items_display_hashref;
+-our $tagslib = &GetMarcStructure(1);
++our $tagslib = &GetMarcStructure(1, $framework);
+ 
+ my $deleted_items = 0;     # Number of deleted items
+ my $deleted_records = 0;   # Number of deleted records ( with no items attached )
+@@ -703,5 +704,3 @@ sub put_in_background {
+     return $job;
+ }
+ 
+-
+-
+diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/catalogue/detail.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/catalogue/detail.tt
+index 2b6583b..bc60c78 100644
+--- a/koha-tmpl/intranet-tmpl/prog/en/modules/catalogue/detail.tt
++++ b/koha-tmpl/intranet-tmpl/prog/en/modules/catalogue/detail.tt
+@@ -110,6 +110,7 @@ function verify_images() {
+                   var url = '/cgi-bin/koha/tools/batchMod.pl?op=show&del=1';
+                   url += '&itemnumber=' + itemnumbers.join('&itemnumber=');
+                   url += '&src=' + '[% "/cgi-bin/koha/catalogue/detail.pl?biblionumber=$biblionumber" |uri %]';
++                  url += '&framework=DCHM';
+                   $('a.itemselection_action_delete').attr('href', url);
+             } else {
+                 return false;
+@@ -126,6 +127,7 @@ function verify_images() {
+                   var url = '/cgi-bin/koha/tools/batchMod.pl?op=show';
+                   url += '&itemnumber=' + itemnumbers.join('&itemnumber=');
+                   url += '&src=' + '[% "/cgi-bin/koha/catalogue/detail.pl?biblionumber=$biblionumber" |uri %]';
++                  url += '&framework=DCHM';
+                   $('a.itemselection_action_modify').attr('href', url);
+             } else {
+                 return false;
