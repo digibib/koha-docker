@@ -265,7 +265,7 @@ index 0000000..cfe5fea
 +
 +  // popup print dialog for hold to wait on current branch
 +  if (msg.Item.Hold) {
-+    window.open('hold-transfer-slip.pl?borrowernumber=' + msg.Item.Borrowernr + '&amp;biblionumber=' + msg.Item.Biblionr,  'popup', 'width=600,height=400,resizable=1,toolbar=0,scrollbars=1,top');
++    window.open('hold-transfer-slip.pl?borrowernumber=' + msg.Item.Borrowernr + '&amp;biblionumber=' + msg.Item.Biblionr + '&amp;barcode=' + msg.Item.Barcode,  'popup', 'width=600,height=400,resizable=1,toolbar=0,scrollbars=1,top');
 +  }
 +}
 +
