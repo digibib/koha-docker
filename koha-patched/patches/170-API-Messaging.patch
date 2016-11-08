@@ -104,18 +104,17 @@ index 0000000..513a059
 +
 +1;
 diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
-index 9efdebc..f0189bf 100644
+index 3d72b54..e81c59f 100644
 --- a/api/v1/swagger/paths.json
 +++ b/api/v1/swagger/paths.json
-@@ -55,5 +55,8 @@
-   },
-   "/labelgenerator/{barcode}": {
-     "$ref": "paths/labelgenerator.json#/~1labelgenerator~1{barcode}"
-+  },
+@@ -1,4 +1,7 @@
+ {
 +  "/messaging/patrons/{borrowernumber}/accountdetails": {
 +    "$ref": "paths/messaging.json#/~1messaging~1patrons~1{borrowernumber}~1accountdetails"
-   }
- }
++  },
+   "/labelgenerator/{barcode}": {
+     "$ref": "paths/labelgenerator.json#/~1labelgenerator~1{barcode}"
+   },
 diff --git a/api/v1/swagger/paths/messaging.json b/api/v1/swagger/paths/messaging.json
 new file mode 100644
 index 0000000..9e059eb

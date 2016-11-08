@@ -186,51 +186,21 @@ index 0000000..8db7361
 +}
 +
 +1;
-diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
-index 11278e2..77063c7 100644
---- a/api/v1/swagger/parameters.json
-+++ b/api/v1/swagger/parameters.json
-@@ -19,5 +19,8 @@
-   },
-   "barcodePathParam": {
-     "$ref": "parameters/item.json#/barcodePathParam"
-+  },
-+  "biblionumberPathParam": {
-+    "$ref": "parameters/biblio.json#/biblionumberPathParam"
-   }
- }
-diff --git a/api/v1/swagger/parameters/biblio.json b/api/v1/swagger/parameters/biblio.json
-new file mode 100644
-index 0000000..1d1316a
---- /dev/null
-+++ b/api/v1/swagger/parameters/biblio.json
-@@ -0,0 +1,9 @@
-+{
-+   "biblionumberPathParam": {
-+     "name": "biblionumber",
-+     "in": "path",
-+     "description": "Internal biblio identifier",
-+     "required": true,
-+     "type": "integer"
-+  }
-+}
 diff --git a/api/v1/swagger/definitions.json b/api/v1/swagger/definitions.json
-index 0c37e8c..52a9c84 100644
+index 0a00e97..d1cd3eb 100644
 --- a/api/v1/swagger/definitions.json
 +++ b/api/v1/swagger/definitions.json
-@@ -26,6 +26,12 @@
-   "item": {
-     "$ref": "definitions/item.json"
-   },
+@@ -1,4 +1,10 @@
+ {
 +  "biblios": {
 +    "$ref": "definitions/biblios.json"
 +  },
 +  "biblio": {
 +    "$ref": "definitions/biblio.json"
 +  },
-   "error": {
-     "$ref": "definitions/error.json"
-   }
+   "items": {
+     "$ref": "definitions/items.json"
+   },
 diff --git a/api/v1/swagger/definitions/biblios.json b/api/v1/swagger/definitions/biblios.json
 new file mode 100644
 index 0000000..b0600e8
@@ -295,15 +265,39 @@ index 0000000..bde3f8f
 +    }
 +  }
 +}
+diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
+index ce79d4c..4ed7de0 100644
+--- a/api/v1/swagger/parameters.json
++++ b/api/v1/swagger/parameters.json
+@@ -1,4 +1,7 @@
+ {
++  "biblionumberPathParam": {
++    "$ref": "parameters/biblio.json#/biblionumberPathParam"
++   }
+   "itemnumberPathParam": {
+     "$ref": "parameters/item.json#/itemnumberPathParam"
+   },
+diff --git a/api/v1/swagger/parameters/biblio.json b/api/v1/swagger/parameters/biblio.json
+new file mode 100644
+index 0000000..1d1316a
+--- /dev/null
++++ b/api/v1/swagger/parameters/biblio.json
+@@ -0,0 +1,9 @@
++{
++   "biblionumberPathParam": {
++     "name": "biblionumber",
++     "in": "path",
++     "description": "Internal biblio identifier",
++     "required": true,
++     "type": "integer"
++  }
++}
 diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
-index 4ac9786..0c01289 100644
+index 532eb0d..d768999 100644
 --- a/api/v1/swagger/paths.json
 +++ b/api/v1/swagger/paths.json
-@@ -28,5 +28,17 @@
-   },
-   "/items/{itemnumber}/biblio": {
-     "$ref": "paths/items.json#/~1items~1{itemnumber}~1biblio"
-+  },
+@@ -1,4 +1,16 @@
+ {
 +  "/biblios": {
 +    "$ref": "paths/biblios.json#/~1biblios"
 +  },
@@ -315,8 +309,10 @@ index 4ac9786..0c01289 100644
 +  },
 +  "/biblios/{biblionumber}/expanded": {
 +    "$ref": "paths/biblios.json#/~1biblios~1{biblionumber}~1expanded"
-   }
- }
++  },
+   "/items/{itemnumber}": {
+     "$ref": "paths/items.json#/~1items~1{itemnumber}"
+   },
 diff --git a/api/v1/swagger/paths/biblios.json b/api/v1/swagger/paths/biblios.json
 new file mode 100644
 index 0000000..d58f205

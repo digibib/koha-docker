@@ -67,22 +67,20 @@ index 0000000..ee7eb73
 +
 +1;
 diff --git a/api/v1/swagger/definitions.json b/api/v1/swagger/definitions.json
-index cdc4c44..0c37e8c 100644
+index bdbb0d2..0a00e97 100644
 --- a/api/v1/swagger/definitions.json
 +++ b/api/v1/swagger/definitions.json
-@@ -20,6 +20,12 @@
-   "library": {
-     "$ref": "definitions/library.json"
-   },
+@@ -1,4 +1,10 @@
+ {
 +  "items": {
 +    "$ref": "definitions/items.json"
 +  },
 +  "item": {
 +    "$ref": "definitions/item.json"
 +  },
-   "error": {
-     "$ref": "definitions/error.json"
-   }
+   "checkouts": {
+     "$ref": "definitions/checkouts.json"
+   },
 diff --git a/api/v1/swagger/definitions/item.json b/api/v1/swagger/definitions/item.json
 new file mode 100644
 index 0000000..beab11a
@@ -282,21 +280,20 @@ index 0000000..8d7ccaa
 +}
 +
 diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
-index f11987b..11278e2 100644
+index 3ae0958..ce79d4c 100644
 --- a/api/v1/swagger/parameters.json
 +++ b/api/v1/swagger/parameters.json
-@@ -13,5 +13,11 @@
-   },
-   "checkoutIdPathParam": {
-     "$ref": "parameters/checkout.json#/checkoutIdPathParam"
-+  },
+@@ -1,4 +1,10 @@
+ {
 +  "itemnumberPathParam": {
 +    "$ref": "parameters/item.json#/itemnumberPathParam"
 +  },
 +  "barcodePathParam": {
 +    "$ref": "parameters/item.json#/barcodePathParam"
-   }
- }
++  },
+   "checkoutIdPathParam": {
+     "$ref": "parameters/checkout.json#/checkoutIdPathParam"
+   },
 diff --git a/api/v1/swagger/parameters/item.json b/api/v1/swagger/parameters/item.json
 new file mode 100644
 index 0000000..6678df8
@@ -320,21 +317,20 @@ index 0000000..6678df8
 +  }
 +}
 diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
-index 3328166..4ac9786 100644
+index f5f58d7..532eb0d 100644
 --- a/api/v1/swagger/paths.json
 +++ b/api/v1/swagger/paths.json
-@@ -22,5 +22,11 @@
-   },
-   "/libraries/{branchcode}": {
-     "$ref": "paths/libraries.json#/~1libraries~1{branchcode}"
-+  },
+@@ -1,4 +1,10 @@
+ {
 +  "/items/{itemnumber}": {
 +    "$ref": "paths/items.json#/~1items~1{itemnumber}"
 +  },
 +  "/items/{itemnumber}/biblio": {
 +    "$ref": "paths/items.json#/~1items~1{itemnumber}~1biblio"
-   }
- }
++  },
+   "/checkouts": {
+     "$ref": "paths/checkouts.json#/~1checkouts"
+   },
 diff --git a/api/v1/swagger/paths/items.json b/api/v1/swagger/paths/items.json
 new file mode 100644
 index 0000000..3622497

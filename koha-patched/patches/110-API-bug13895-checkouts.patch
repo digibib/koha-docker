@@ -141,21 +141,19 @@ index 0000000..ac5dea5
 +
 +1;
 diff --git a/api/v1/swagger/definitions.json b/api/v1/swagger/definitions.json
-index e4d7427..4136043 100644
+index 18824b3..bdbb0d2 100644
 --- a/api/v1/swagger/definitions.json
 +++ b/api/v1/swagger/definitions.json
-@@ -2,6 +2,12 @@
-   "patron": {
-     "$ref": "definitions/patron.json"
-   },
+@@ -1,4 +1,10 @@
+ {
 +  "checkouts": {
 +    "$ref": "definitions/checkouts.json"
 +  },
 +  "checkout": {
 +    "$ref": "definitions/checkout.json"
 +  },
-   "holds": {
-     "$ref": "definitions/holds.json"
+   "libraries": {
+     "$ref": "definitions/libraries.json"
    },
 diff --git a/api/v1/swagger/definitions/checkout.json b/api/v1/swagger/definitions/checkout.json
 new file mode 100644
@@ -224,18 +222,17 @@ index 0000000..b6562f9
 +  }
 +}
 diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
-index 29efa5a..f11987b 100644
+index 448a184..3ae0958 100644
 --- a/api/v1/swagger/parameters.json
 +++ b/api/v1/swagger/parameters.json
-@@ -10,5 +10,8 @@
-   },
-   "branchcodePathParam": {
-     "$ref": "parameters/library.json#/branchcodePathParam"
-+  },
+@@ -1,4 +1,7 @@
+ {
 +  "checkoutIdPathParam": {
 +    "$ref": "parameters/checkout.json#/checkoutIdPathParam"
-   }
- }
++  },
+   "branchcodePathParam": {
+     "$ref": "parameters/library.json#/branchcodePathParam"
+   },
 diff --git a/api/v1/swagger/parameters/checkout.json b/api/v1/swagger/parameters/checkout.json
 new file mode 100644
 index 0000000..8dfa3d2
@@ -252,21 +249,19 @@ index 0000000..8dfa3d2
 +  }
 +}
 diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
-index f00b1b4..05c29aa 100644
+index d3546e2..f5f58d7 100644
 --- a/api/v1/swagger/paths.json
 +++ b/api/v1/swagger/paths.json
-@@ -5,6 +5,12 @@
-   "/holds/{reserve_id}": {
-     "$ref": "paths/holds.json#/~1holds~1{reserve_id}"
-   },
+@@ -1,4 +1,10 @@
+ {
 +  "/checkouts": {
 +    "$ref": "paths/checkouts.json#/~1checkouts"
 +  },
 +  "/checkouts/{checkout_id}": {
 +    "$ref": "paths/checkouts.json#/~1checkouts~1{checkout_id}"
 +  },
-   "/patrons": {
-     "$ref": "paths/patrons.json#/~1patrons"
+   "/libraries": {
+     "$ref": "paths/libraries.json#/~1libraries"
    },
 diff --git a/api/v1/swagger/paths/checkouts.json b/api/v1/swagger/paths/checkouts.json
 new file mode 100644

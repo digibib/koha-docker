@@ -88,22 +88,20 @@ index 0000000..900a04c
 +
 +1;
 diff --git a/api/v1/swagger/definitions.json b/api/v1/swagger/definitions.json
-index e4d7427..1775e91 100644
+index efb0af6..18824b3 100644
 --- a/api/v1/swagger/definitions.json
 +++ b/api/v1/swagger/definitions.json
-@@ -8,6 +8,12 @@
-   "hold": {
-     "$ref": "definitions/hold.json"
-   },
+@@ -1,4 +1,10 @@
+ {
 +  "libraries": {
 +    "$ref": "definitions/libraries.json"
 +  },
 +  "library": {
 +    "$ref": "definitions/library.json"
 +  },
-   "error": {
-     "$ref": "definitions/error.json"
-   }
+   "session": {
+     "$ref": "definitions/session.json"
+   },
 diff --git a/api/v1/swagger/definitions/libraries.json b/api/v1/swagger/definitions/libraries.json
 new file mode 100644
 index 0000000..a7195d0
@@ -199,18 +197,17 @@ index 0000000..3fd747f
 +  }
 +}
 diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
-index 87380a8..5260044 100644
+index 4fb4f68..448a184 100644
 --- a/api/v1/swagger/parameters.json
 +++ b/api/v1/swagger/parameters.json
-@@ -19,5 +19,8 @@
-   },
-   "sessionidBodyParam": {
-    "$ref": "parameters/auth.json#/sessionidBodyParam"
-+  },
+@@ -1,4 +1,7 @@
+ {
 +  "branchcodePathParam": {
 +    "$ref": "parameters/library.json#/branchcodePathParam"
-   }
- }
++  },
+   "borrowernumberPathParam": {
+     "$ref": "parameters/patron.json#/borrowernumberPathParam"
+   },
 diff --git a/api/v1/swagger/parameters/library.json b/api/v1/swagger/parameters/library.json
 new file mode 100644
 index 0000000..366581e
@@ -227,21 +224,20 @@ index 0000000..366581e
 +  }
 +}
 diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
-index f00b1b4..d31fe65 100644
+index e8d9f63..d3546e2 100644
 --- a/api/v1/swagger/paths.json
 +++ b/api/v1/swagger/paths.json
-@@ -10,5 +10,11 @@
-   },
-   "/patrons/{borrowernumber}": {
-     "$ref": "paths/patrons.json#/~1patrons~1{borrowernumber}"
-+  },
+@@ -1,4 +1,10 @@
+ {
 +  "/libraries": {
 +    "$ref": "paths/libraries.json#/~1libraries"
 +  },
 +  "/libraries/{branchcode}": {
 +    "$ref": "paths/libraries.json#/~1libraries~1{branchcode}"
-   }
- }
++  },
+   "/auth/session": {
+     "$ref": "paths/auth.json#/~1auth~1session"
+   },
 diff --git a/api/v1/swagger/paths/libraries.json b/api/v1/swagger/paths/libraries.json
 new file mode 100644
 index 0000000..61b728f

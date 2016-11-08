@@ -60,18 +60,17 @@ index 0000000..6ca1d9c
 +
 +1;
 diff --git a/api/v1/swagger/paths.json b/api/v1/swagger/paths.json
-index f0189bf..72cd92c 100644
+index e81c59f..27de867 100644
 --- a/api/v1/swagger/paths.json
 +++ b/api/v1/swagger/paths.json
-@@ -58,5 +58,8 @@
-   },
-   "/messaging/patrons/{borrowernumber}/accountdetails": {
-     "$ref": "paths/messaging.json#/~1messaging~1patrons~1{borrowernumber}~1accountdetails"
-+  },
+@@ -1,4 +1,7 @@
+ {
 +  "/biblios/items": {
 +    "$ref": "paths/multipleitems.json#/~1biblios~1items"
-   }
- }
++  },
+   "/messaging/patrons/{borrowernumber}/accountdetails": {
+     "$ref": "paths/messaging.json#/~1messaging~1patrons~1{borrowernumber}~1accountdetails"
+   },
 diff --git a/api/v1/swagger/paths/multipleitems.json b/api/v1/swagger/paths/multipleitems.json
 new file mode 100644
 index 0000000..b931be0
