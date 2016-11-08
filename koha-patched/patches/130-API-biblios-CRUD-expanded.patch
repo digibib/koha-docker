@@ -273,7 +273,7 @@ index ce79d4c..4ed7de0 100644
  {
 +  "biblionumberPathParam": {
 +    "$ref": "parameters/biblio.json#/biblionumberPathParam"
-+   }
++   },
    "itemnumberPathParam": {
      "$ref": "parameters/item.json#/itemnumberPathParam"
    },

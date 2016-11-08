@@ -231,7 +231,7 @@ diff --git a/api/v1/swagger/parameters.json b/api/v1/swagger/parameters.json
 index eeb156a..4fb4f68 100644
 --- a/api/v1/swagger/parameters.json
 +++ b/api/v1/swagger/parameters.json
-@@ -10,5 +10,16 @@
+@@ -10,5 +10,17 @@
    },
    "holdIdPathParam": {
      "$ref": "parameters/hold.json#/holdIdPathParam"
@@ -248,6 +248,7 @@ index eeb156a..4fb4f68 100644
 +  },
 +  "sessionidBodyParam": {
 +   "$ref": "parameters/auth.json#/sessionidBodyParam"
++  }
  }
 diff --git a/api/v1/swagger/parameters/auth.json b/api/v1/swagger/parameters/auth.json
 new file mode 100644
