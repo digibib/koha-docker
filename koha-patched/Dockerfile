@@ -27,7 +27,7 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV GITREF 81eec722da04a0071a5680439a81472ea796c3fc
+ENV GITREF 674d3875c81af122eb7f925845fe73cc4d817db4
 #ENV OLD_GITREF 239b81c1dd0cfa2e5e1f720ba9b8554536a9bc44
 
 # Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
