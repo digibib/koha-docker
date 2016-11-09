@@ -1,7 +1,7 @@
 # Koha instance kohadev Apache config.
 
 # Overide default settings from main config file
-Timeout 30
+Timeout ${APACHE_TIMEOUT}
 KeepAlive On
 MaxKeepAliveRequests 1000
 KeepAliveTimeout 3

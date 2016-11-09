@@ -93,7 +93,6 @@ RUN echo "Europe/Oslo" > /etc/timezone && dpkg-reconfigure -f noninteractive tzd
 ADD ./files/Authen_CAS_Client_Response_Failure.pm /usr/share/perl5/Authen/CAS/Client/Response/Failure.pm
 ADD ./files/Authen_CAS_Client_Response_Success.pm /usr/share/perl5/Authen/CAS/Client/Response/Success.pm
 
-
 ENV HOME /root
 WORKDIR /root
 
