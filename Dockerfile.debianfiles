@@ -67,7 +67,7 @@ COPY ./files/cronjobs /cronjobs
 # Apache settings
 RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
     a2dissite 000-default && \
-    a2enmod rewrite headers proxy_http cgi
+    a2enmod rewrite headers proxy_http cgi remoteip
 
 # LinkMobiblity SMS Driver - SMS modules need to be in shared perl libs
 RUN mkdir -p /usr/share/perl5/SMS/Send/NO && \
