@@ -34,6 +34,18 @@ index ae1c7b7..68c608d 100644
      }) or return;
      my $reserve = GetReserveInfo($reserve_id) or return;
  
+diff --git a/circ/returns.pl b/circ/returns.pl
+index d8efcc3..c9911dc 100644
+--- a/circ/returns.pl
++++ b/circ/returns.pl
+@@ -78,6 +78,7 @@ if ( $query->param('print_slip') ) {
+         print_slip     => 1,
+         borrowernumber => scalar $query->param('borrowernumber'),
+         biblionumber   => scalar $query->param('biblionumber'),
++        itemnumber     => scalar $query->param('itemnumber'),
+     );
+ }
+
 diff --git a/circ/hold-transfer-slip.pl b/circ/hold-transfer-slip.pl
 index bd09e21..70feb06 100755
 --- a/circ/hold-transfer-slip.pl
