@@ -105,7 +105,7 @@ sub feed_pidgeon {
 
     my $pidgeon = SOAP::Data->name(
         'forsendelse' => \SOAP::Data->value(
-            SOAP::Data->name( 'tittel'          => 'Test av brevdue' )->type( 'string' ),
+            SOAP::Data->name( 'tittel'          => 'Melding fra Deichmanske bibliotek' )->type( 'string' ),
             SOAP::Data->name( 'avgivendeSystem' => 'ITAS' )->type( 'string' ),
             SOAP::Data->name( 'konteringskode'  => 'deichman001' )->type( 'string' ),
             SOAP::Data->name( 'krevNiva4Innlogging'  => 0 )->type( 'xsd:boolean' ),
