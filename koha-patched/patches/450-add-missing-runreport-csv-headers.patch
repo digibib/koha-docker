@@ -1,10 +1,29 @@
 450-add-missing-runreport-csv-headers.patch
+Also adds CSV separator as param
 
 diff --git a/misc/cronjobs/runreport.pl b/misc/cronjobs/runreport.pl
-index 370c479..3042eec 100755
+old mode 100644
+new mode 100755
+index 370c479..c13150a
 --- a/misc/cronjobs/runreport.pl
 +++ b/misc/cronjobs/runreport.pl
-@@ -274,6 +274,7 @@ foreach my $report_id (@ARGV) {
+@@ -62,6 +62,7 @@ runreport.pl [ -h | -m ] [ -v ] reportID [ reportID ... ]
+    --username      username to pass to the SMTP server for authentication
+    --password      password to pass to the SMTP server for authentication
+    --method        method is the type of authentication. Ie. LOGIN, DIGEST-MD5, etc.
++   --separator     csv separator to use
+    --to=s          e-mail address to send report to
+    --from=s        e-mail address to send report from
+    --subject=s     subject for the e-mail
+@@ -185,6 +186,7 @@ GetOptions(
+     'man'               => \$man,
+     'verbose'           => \$verbose,
+     'format=s'          => \$format,
++    'separator=s'       => \$separator,
+     'to=s'              => \$to,
+     'from=s'            => \$from,
+     'subject=s'         => \$subject,
+@@ -274,6 +276,7 @@ foreach my $report_id (@ARGV) {
              quote_char  => $quote,
              sep_char    => $separator,
              });

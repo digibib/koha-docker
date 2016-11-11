@@ -53,11 +53,11 @@ save_reports() {
     mkdir -p $REPORTDIR
     echo "saving reports to $REPORTDIR"
     # 28 - Erstatninger - Kategorier B,V,I som hadde 35 dager over forfall
-    /usr/share/koha/bin/cronjobs/runreport.pl --format=csv $STORE 28 > $REPORTDIR/${WHEN}_rapport_medier_35_dager_over_forfall.csv
+    /usr/share/koha/bin/cronjobs/runreport.pl --separator=";" --format=csv $STORE 28 > $REPORTDIR/${WHEN}_rapport_medier_35_dager_over_forfall.csv
     # 29 - Purregebyrer - Kategorier B,V,I som hadde 35 dager over forfall - append to previos report
-    /usr/share/koha/bin/cronjobs/runreport.pl --format=csv $STORE 29 | tail -n+2 >> $REPORTDIR/${WHEN}_rapport_medier_35_dager_over_forfall.csv
+    /usr/share/koha/bin/cronjobs/runreport.pl --separator=";" --format=csv $STORE 29 | tail -n+2 >> $REPORTDIR/${WHEN}_rapport_medier_35_dager_over_forfall.csv
     # 45 - Rapport over innleverte medier som hadde status Regning eller Forlengst forfalt
-    /usr/share/koha/bin/cronjobs/runreport.pl --format=csv $STORE 45 > $REPORTDIR/${WHEN}_rapport_over_innleverte_medier_med_purring.csv
+    /usr/share/koha/bin/cronjobs/runreport.pl --separator=";" --format=csv $STORE 45 > $REPORTDIR/${WHEN}_rapport_over_innleverte_medier_med_purring.csv
 }
 
 while [ "$1" != "" ]; do
