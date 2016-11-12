@@ -73,6 +73,9 @@ RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
 RUN mkdir -p /usr/share/perl5/SMS/Send/NO && \
   cp /usr/share/koha/intranet/cgi-bin/sms/LinkMobilityHTTP.pm /usr/share/perl5/SMS/Send/NO/LinkMobilityHTTP.pm
 
+# Template for batch print notices
+RUN cp /templates/global/print-notices-deichman.tt /usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/modules/batch/
+
 # Koha SIP2 server
 ENV SIP_PORT      6001
 ENV SIP_WORKERS   3

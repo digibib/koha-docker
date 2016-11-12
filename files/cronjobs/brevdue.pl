@@ -23,7 +23,8 @@ use Getopt::Long;
 
 use File::Temp qw( tmpnam );
 use Clone qw( clone);
-use PDF::FromHTML;
+use IPC::Run3;
+use HTML::Strip;
 use Data::Dumper;
 use Koha::DateUtils;
 use SOAP::Lite;
@@ -67,14 +68,14 @@ sub assemble_birds {
     # run messages for each patron
     while ( my ($patron, $messages) = each %{ $patrons } )
     {
-        my $docs = generate_html_from_patron_messages({messages => $messages});
-        my ($html, $pdf)  = generate_pdf($docs);
+        my $docs = generate_letter_from_patron_messages({messages => $messages});
+        my ($txt, $pdf)  = generate_pdf($docs);
         if ($email) {
             send_to_mail({
                 to   => $email,
                 from => C4::Context->preference('KohaAdminEmailAddress'),
                 pdf  => $pdf,
-                html => $html
+                txt => $txt
             });
         }
         if ($print) {
@@ -179,53 +180,52 @@ sub group_messages_by_patrons {
 }
 
 # patron filtered messages
-sub generate_html_from_patron_messages {
+sub generate_letter_from_patron_messages {
     my ( $params ) = @_;
     my $messages = $params->{messages};
 
-    my $template = C4::Templates::gettemplate( 'batch/print-notices.tt', 'intranet', new CGI );
+    my $template = C4::Templates::gettemplate( 'batch/print-notices-deichman.tt', 'intranet', new CGI );
 
     $template->param(
-        stylesheet => C4::Context->preference("NoticeCSS"),
         today      => $today_syspref,
         messages   => $messages,
+        lang       => 'nb-NO',
     );
 
     return $template->output;
 }
 
 sub generate_pdf {
-    my $html = shift;
-    my $PDF = PDF::FromHTML->new( encoding => 'utf-8' );
-    
-    $PDF->load_file(\$html);
-    $PDF->convert;
+    my $txt = shift;
+    my ($ps, $pdf, $ps_err, $pdf_err);
+
+    run3('paps', \$txt, \$ps, \$ps_err);
+    run3('ps2pdf -', \$ps, \$pdf, \$pdf_err);
+
     if ($save) {
         # Need to clone PDF object so we don't empty it by saving
-        my $clone = clone($PDF);
-        save_html($html);
-        save_pdf($clone);
+        #my $clone = clone($PDF);
+        save_msg($txt);
+        save_pdf($pdf);
     }
 
-    # Convert to string scalar to use as attachment
-    my $pdf = '';
-    $PDF->write_file(\$pdf);
-
-    return ($html, $pdf);
+    return ($txt, $pdf);
 }
 
-sub save_html {
-    my $html = shift;
-    my $file = tmpnam() . '.html';
-    open my $html_fh, '>:encoding(utf8)', $file or die "Cannot save html file";
-    say $html_fh $html;
-    close $html_fh;
+sub save_msg {
+    my $txt = shift;
+    my $file = tmpnam() . '.txt';
+    open my $txt_fh, '>:encoding(utf8)', $file or die "Cannot save text file";
+    say $txt_fh $txt;
+    close $txt_fh;
 }
 
 sub save_pdf {
     my $pdf = shift;
     my $file = tmpnam() . '.pdf';
-    $pdf->write_file( $file );
+    open my $pdf_fh, '>:encoding(utf8)', $file or die "Cannot save pdf file";
+    say $pdf_fh $pdf;
+    close $pdf_fh;
 }
 
 
@@ -246,8 +246,8 @@ sub send_to_mail {
         Data => $params->{pdf}
     );
     $mail->attach(
-        Type => 'text/html',
-        Data => $params->{html}
+        Type => 'text/plain',
+        Data => $params->{txt}
     );
 
     $mail->send;

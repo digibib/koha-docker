@@ -1,0 +1,5 @@
+Melding fra Deichmanske bibliotek:
+
+[% FOREACH message IN messages %]
+  [% message.content %]
+[% END %]

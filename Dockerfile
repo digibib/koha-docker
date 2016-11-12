@@ -58,6 +58,7 @@ RUN apt-get install -y python-requests && apt-get clean
 # Missing perl dependencies
 RUN apt-get update && apt-get install -y \
     libwww-csrf-perl libpath-tiny-perl && \
+    libhtml-strip-perl libipc-run3-perl paps && \
     apt-get clean
 
 # Installer files
@@ -77,6 +78,9 @@ RUN echo "\nListen 8080\nListen 8081" | tee /etc/apache2/ports.conf && \
 # LinkMobiblity SMS Driver - SMS modules need to be in shared perl libs
 RUN mkdir -p /usr/share/perl5/SMS/Send/NO && \
   cp /usr/share/koha/intranet/cgi-bin/sms/LinkMobilityHTTP.pm /usr/share/perl5/SMS/Send/NO/LinkMobilityHTTP.pm
+
+# Template for batch print notices
+RUN cp /templates/global/print-notices-deichman.tt /usr/share/koha/intranet/htdocs/intranet-tmpl/prog/en/modules/batch/
 
 # Koha SIP2 server
 ENV SIP_PORT      6001
