@@ -55,6 +55,15 @@ RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/dem
     dpkg -i /tmp/debian/koha-deps_${KOHA_BUILD}_all.deb || apt-get --fix-broken -y install && \
     dpkg -i /tmp/debian/koha-common_${KOHA_BUILD}_all.deb || apt-get --fix-broken -y install
 
+# Script and deps for checking if koha is up & ready (to be executed using docker exec)
+COPY docker-wait_until_ready.py /root/wait_until_ready.py
+RUN apt-get install -y python-requests && apt-get clean
+# Missing perl dependencies
+RUN apt-get update && apt-get install -y \
+    libwww-csrf-perl libpath-tiny-perl \
+    libhtml-strip-perl libipc-run3-perl paps && \
+    apt-get clean
+
 # Installer files
 COPY ./files/installer /installer
 
