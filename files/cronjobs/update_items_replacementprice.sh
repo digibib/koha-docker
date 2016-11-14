@@ -18,6 +18,7 @@ cat <<-EOF | koha-mysql $(koha-list --enabled)
 	    WHEN 'Musikkopptak' THEN '300.00'
 	    WHEN 'Lydbok' THEN '450.00'
 	    WHEN 'Språkkurs' THEN '500.00'
+	    WHEN 'Spill' THEN '500.00'
 	    WHEN 'Dataspill' THEN '500.00'
 	    WHEN 'Periodika' THEN '100.00'
 	    WHEN 'Noter' THEN '250.00'
