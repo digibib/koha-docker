@@ -210,7 +210,7 @@ sub generate_pdf {
     open my $fh, '>:encoding(utf8)', $file or die "Cannot save tmp file";
     say $fh $txt;
     close $fh;
-    run3("paps $file | ps2pdf - > $file.pdf", undef, undef, \$err);
+    run3("/usr/bin/paps $file | /usr/bin/ps2pdf - > $file.pdf", undef, undef, \$err);
     warn Dumper("Error generating $file.pdf: $err") if $err;
     if ($save) {
         # Need to clone PDF object so we don't empty it by saving
