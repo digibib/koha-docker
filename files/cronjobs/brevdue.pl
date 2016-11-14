@@ -24,7 +24,6 @@ use Getopt::Long;
 use File::Temp qw( tmpnam );
 use Clone qw( clone);
 use IPC::Run3;
-use HTML::Strip;
 use Data::Dumper;
 use Koha::DateUtils;
 use SOAP::Lite;
@@ -69,7 +68,17 @@ sub assemble_birds {
     while ( my ($patron, $messages) = each %{ $patrons } )
     {
         my $docs = generate_letter_from_patron_messages({messages => $messages});
-        my ($txt, $pdf)  = generate_pdf($docs);
+        # strip html
+        $docs =~ s|<.+?>||g;
+        my ($txt, $file)  = generate_pdf($docs);
+        my $pdf;
+        {
+          local $/ = undef;
+          open FILE, "$file.pdf" or die "Couldn't open file $file.pdf: $!";
+          binmode FILE;
+          $pdf = <FILE>;
+          close FILE;
+        }
         if ($email) {
             send_to_mail({
                 to   => $email,
@@ -82,7 +91,6 @@ sub assemble_birds {
             my $receiver = Koha::Patrons->find($patron);
             if (validate_destination($receiver)) {
                 my $pidgeon  = feed_pidgeon($pdf, $receiver);
-                warn Dumper(SOAP::Serializer->envelope(freeform => $pidgeon));
                 my $res = send_pidgeon($pidgeon);
                 warn Dumper($res->body);
                 if ($res->fault) {
@@ -197,19 +205,20 @@ sub generate_letter_from_patron_messages {
 
 sub generate_pdf {
     my $txt = shift;
-    my ($ps, $pdf, $ps_err, $pdf_err);
-
-    run3('paps', \$txt, \$ps, \$ps_err);
-    run3('ps2pdf -', \$ps, \$pdf, \$pdf_err);
-
+    my ($err);
+    my $file = tmpnam() . '.tmp';
+    open my $fh, '>:encoding(utf8)', $file or die "Cannot save tmp file";
+    say $fh $txt;
+    close $fh;
+    run3("paps $file | ps2pdf - > $file.pdf", undef, undef, \$err);
+    warn Dumper("Error generating $file.pdf: $err") if $err;
     if ($save) {
         # Need to clone PDF object so we don't empty it by saving
         #my $clone = clone($PDF);
         save_msg($txt);
-        save_pdf($pdf);
     }
 
-    return ($txt, $pdf);
+    return ($txt, $file);
 }
 
 sub save_msg {
@@ -219,15 +228,6 @@ sub save_msg {
     say $txt_fh $txt;
     close $txt_fh;
 }
-
-sub save_pdf {
-    my $pdf = shift;
-    my $file = tmpnam() . '.pdf';
-    open my $pdf_fh, '>:encoding(utf8)', $file or die "Cannot save pdf file";
-    say $pdf_fh $pdf;
-    close $pdf_fh;
-}
-
 
 sub send_to_mail {
     my ( $params ) = @_;
