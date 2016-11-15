@@ -120,6 +120,12 @@ if [ -n "$NLVENDORURL" ]; then
   echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
 fi
 
+echo "Setting up MYSQL triggers ..."
+for trigger in /installer/triggers/*.sql
+do
+    koha-mysql $KOHA_INSTANCE < $trigger
+done
+
 echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
 
