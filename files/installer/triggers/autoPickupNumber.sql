@@ -33,6 +33,7 @@ DELIMITER ;
 
 -- legg til hentenummer på reserves --
 CALL AddCol('reserves', 'pickupnumber', 'VARCHAR(10)');
+CALL AddCol('old_reserves', 'pickupnumber', 'VARCHAR(10)');
 DROP PROCEDURE AddCol;
 
 -- trigger ved plukking --
@@ -43,10 +44,10 @@ DELIMITER //
 CREATE TRIGGER autoPickupNumber BEFORE UPDATE ON reserves
 FOR EACH ROW
 BEGIN
-  IF NEW.found = 'W' AND OLD.found != 'W' THEN
+  IF NEW.found = 'W' AND (OLD.found != 'W' OR OLD.found IS NULL) THEN
     -- We have picked a new reserve --
     INSERT INTO pickup_counter (counter) VALUES (NULL);
-    SET NEW.pickupnumber = CONCAT(DAYOFMONTH(NOW()), '/', (SELECT LAST_INSERT_ID() FROM pickup_counter));
+    SET NEW.pickupnumber = CONCAT(DAYOFMONTH(NOW()), '/', (SELECT MAX(counter) FROM pickup_counter));
   END IF;
 END //
 DELIMITER ;
