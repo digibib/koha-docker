@@ -126,6 +126,12 @@ do
     koha-mysql $KOHA_INSTANCE < $trigger
 done
 
+echo "Patching DBIx schema files ..."
+for schema in /installer/schema/*.patch
+do
+    patch -d / -p1 < $schema
+done
+
 echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
 
