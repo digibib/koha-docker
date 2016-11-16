@@ -12,7 +12,7 @@ MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBIAN_PRIORITY critical
 ENV DEBCONF_NOWARNINGS yes
-ENV REFRESHED_AT 2016-06-10
+ENV REFRESHED_AT 2016-11-16
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -q -y vim.tiny telnet screen htop curl git \
