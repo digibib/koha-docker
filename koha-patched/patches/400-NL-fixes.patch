@@ -1,0 +1,213 @@
+Various fixes to NL-synchronization
+
+* Check if the patron has a PIN-code, before attempting
+  to decrypt it. (Some libraries do not use PIN-codes.)
+
+* Force country in address to be 'no'
+
+* Derive sex from personal number.
+  Must be present, either 'M' or 'F'.
+
+* Don't sync patrons without cardnumber
+
+* Only sync patrons belonging to categories: 'B', 'V', 'ANS', 'ADMIN'
+
+* Change syncstatus 'edited' when new patron is trying to sync, but
+  NL reports that it allready exists.
+
+* Set syncstatus to 'new' when NL reports that patron does not exit.
+
+* Set correct syncstatus 'synced' when an edited patron was successfully synced.
+
+* Re-sync patrons which have been created as new, but allready exitsed with the same fnr in NL.
+
+
+diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
+index 237ddd7..65cd94c 100644
+--- a/Koha/NorwegianPatronDB.pm
++++ b/Koha/NorwegianPatronDB.pm
+@@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
+         NLGetFirstname
+         NLGetSurname
+         NLGetSyncDataFromBorrowernumber
++        NLFnrToSex
+ )] );
+ Exporter::export_ok_tags('all');
+
+@@ -261,6 +262,58 @@ sub NLSync {
+         $sync->update( { 'syncstatus' => 'synced' } );
+         # Update the 'synclast' attribute with the "server time" ("server_tid") returned by the method
+         $sync->update( { 'lastsync' => $response->{'server_tid'} } );
++    } else {
++        # Handle error special cases
++        my $cause = $response->result->{'melding'};
++        return $response unless $cause;
++        if ($cause =~ /lnr finnes allerede i registeret/) {
++            # Because of staff mistakes, patrons are sometimes registered with existing cardnumber
++            # without checking if they allready exist in NL.
++            # We set syncstatus to 'edited', so that it might be correctly synced next time.
++            # The lastsync value is arbritary, and will be corrected if NL complains
++            $sync->update( { 'syncstatus' => 'edited', 'lastsync' => `date +"%Y-%m-%dT%T"` } );
++        } elsif ($cause =~ /lnr finnes ikke i registeret/) {
++            # Make sure syncstatus is 'new'
++            $sync->update( { 'syncstatus' => 'new' } );
++        } elsif ($cause =~ /SIST_ENDRET/) {
++            # NL has different timestamp; returnin an error like this:
++            #  endre: Uoverensstemmelse med gjeldende data i basen:
++            #  SIST_ENDRET = 2016-11-12T14:05:22 != '2016-11-07T15:14:30'
++            # Save the timestamp as in NL, to be corrected in next sync
++            my $i = index($cause, 'SIST_ENDRET');
++            $sync->update( { 'lastsync' => substr($cause, $i + 14, 19) } );
++        } elsif ($cause =~ /Oppdaterte felt/) {
++            # The request was succesfull, even if not reported with status=1
++            $sync->update( { 'syncstatus' => 'synced' } );
++            $sync->update( { 'lastsync' => $response->{'server_tid'} } );
++        } elsif ($cause =~ /Person med gitt fnr finnes allerede i registeret med nummer/) {
++            # Patron was registered as new, withouth checking for existing patron in NL using the given fnr
++            # We attemt to sync the new cardnumber to NL.
++            # Reference error message:
++            #   Person med gitt fnr finnes allerede i registeret med nummer: N001981874
++            my $old_lnr = substr($cause, 69);
++            my $soap_patron = _koha_patron_to_soap($patron);
++            $cardnumber = SOAP::Data->name( 'lnr' => $old_lnr );
++
++            # We also need sist_endret value as found in NL:
++            my $old_res = NLSearch($old_lnr);;
++            my $old_patron = $old_res->result()->{'respons_poster'}[0];
++            my $sist_endret = $old_patron->{'sist_endret'};
++            $sync->update( { 'lastsync' => $sist_endret });
++
++            my $new_lnr = $patron->cardnumber;
++            say "attempting to update cardnumber from '$old_lnr' to '$new_lnr'";
++            $response = $client->endre( $cardnumber, $soap_patron );
++
++            $cause = $response->result->{'melding'};
++            if ( $response->{'status'} && $response->{'status'} == 1 || ($cause && $cause =~ /Oppdaterte felt/)) {
++                # Update the syncstatus to 'synced'
++                $sync->update( { 'syncstatus' => 'synced' } );
++                # Update the 'synclast' attribute with the "server time" ("server_tid") returned by the method
++                $sync->update( { 'lastsync' => $response->{'server_tid'} } );
++            }
++        }
++
+     }
+     return $response;
+
+@@ -564,6 +617,23 @@ sub _format_soap_error {
+
+ }
+
++sub NLFnrToSex {
++    my ( $fnr ) = @_;
++
++    # If fnr is missing or not a personal number, this function will fail,
++    # so we return early with arbritary values to avoid filling logs with noise.
++    # Sync will fail anyway.
++    return 'M' unless $fnr; # wild guess
++    return 'F' unless length($fnr) >= 11; # another wild guess
++
++    my $n = substr $fnr, 8, 1;
++    my $sex = 'F';
++    if ( ($n % 2) != 0) {
++        $sex = 'M';
++    }
++    return $sex;
++}
++
+ =head2 _soap_to_koha_patron
+
+ Convert a SOAP object of type "Laaner" into a hash that can be sent to AddMember or ModMember.
+@@ -635,13 +705,13 @@ sub _koha_patron_to_soap {
+             SOAP::Data->name( 'fnr_hash'    => $patron_attributes->{ 'fnr' } )->type( 'string' )->type( 'string' ),
+             SOAP::Data->name( 'navn'        => $patron->surname . ', ' . $patron->firstname    )->type( 'string' ),
+             SOAP::Data->name( 'sist_endret' => $sync->lastsync      )->type( 'string' ),
+-            SOAP::Data->name( 'kjonn'       => $patron->sex         )->type( 'string' ),
++            SOAP::Data->name( 'kjonn'       => NLFnrToSex( $patron_attributes->{ 'fnr' } ) )->type( 'string' ),
+             SOAP::Data->name( 'fdato'       => $patron->dateofbirth )->type( 'string' ),
+             SOAP::Data->name( 'p_adresse1'  => $patron->address     )->type( 'string' ),
+             SOAP::Data->name( 'p_adresse2'  => $patron->address2    )->type( 'string' ),
+             SOAP::Data->name( 'p_postnr'    => $patron->zipcode     )->type( 'string' ),
+             SOAP::Data->name( 'p_sted'      => $patron->city        )->type( 'string' ),
+-            SOAP::Data->name( 'p_land'      => $patron->country     )->type( 'string' ),
++            SOAP::Data->name( 'p_land'      => 'no'                 )->type( 'string'),
+             SOAP::Data->name( 'm_adresse1'  => $patron->b_address   )->type( 'string' ),
+             SOAP::Data->name( 'm_adresse2'  => $patron->b_address2  )->type( 'string' ),
+             SOAP::Data->name( 'm_postnr'    => $patron->b_zipcode   )->type( 'string' ),
+diff --git a/members/nl-search.pl b/members/nl-search.pl
+index 29ec13e..516f277 100755
+--- a/members/nl-search.pl
++++ b/members/nl-search.pl
+@@ -42,7 +42,7 @@ use C4::Output;
+ use C4::Members;
+ use C4::Members::Attributes qw( SetBorrowerAttributes );
+ use C4::Utils::DataTables::Members;
+-use Koha::NorwegianPatronDB qw( NLCheckSysprefs NLSearch NLDecodePin NLGetFirstname NLGetSurname NLSync );
++use Koha::NorwegianPatronDB qw( NLCheckSysprefs NLSearch NLDecodePin NLGetFirstname NLGetSurname NLSync NLFnrToSex );
+ use Koha::Database;
+ use Koha::DateUtils;
+ use Koha::Patron::Categories;
+@@ -110,7 +110,7 @@ if ( $op && $op eq 'search' ) {
+     my %borrower = (
+         'surname'      => NLGetSurname( $cgi->param('navn') ),
+         'firstname'    => NLGetFirstname( $cgi->param('navn') ),
+-        'sex'          => scalar $cgi->param('kjonn'),
++        'sex'          => NLFnrToSex( scalar $cgi->param('fnr_hash') ),
+         'dateofbirth'  => scalar $cgi->param('fdato'),
+         'cardnumber'   => scalar $cgi->param('lnr'),
+         'userid'       => scalar $cgi->param('lnr'),
+@@ -118,13 +118,12 @@ if ( $op && $op eq 'search' ) {
+         'address2'     => scalar $cgi->param('p_adresse2'),
+         'zipcode'      => scalar $cgi->param('p_postnr'),
+         'city'         => scalar $cgi->param('p_sted'),
+-        'country'      => scalar $cgi->param('p_land'),
++        'country'      => 'no', # Only Norwegian addresses are accepted anyway
+         'B_address'    => scalar $cgi->param('m_adresse1'),
+         'B_address2'   => scalar $cgi->param('m_adresse2'),
+         'B_zipcode'    => scalar $cgi->param('m_postnr'),
+         'B_city'       => scalar $cgi->param('m_sted'),
+         'B_country'    => scalar $cgi->param('m_land'),
+-        'password'     => NLDecodePin( $cgi->param('pin') ),
+         'dateexpiry'   => scalar $cgi->param('gyldig_til'),
+         'email'        => scalar $cgi->param('epost'),
+         'mobile'       => scalar $cgi->param('tlf_mobil'),
+@@ -133,6 +132,10 @@ if ( $op && $op eq 'search' ) {
+         'branchcode'   => $userenv->{'branch'},
+         'categorycode' => scalar $cgi->param('categorycode'),
+     );
++    # Some patrons do not have a PIN-code in NL
++    if ( $cgi->param('pin') ne "" ) {
++         $borrower{'password'} = NLDecodePin( $cgi->param('pin') );
++    }
+     # Add the new patron
+     my $borrowernumber = &AddMember(%borrower);
+     if ( $borrowernumber ) {
+@@ -147,7 +150,9 @@ if ( $op && $op eq 'search' ) {
+         });
+         $borrowersync->update({ 'syncstatus', 'synced' });
+         $borrowersync->update({ 'lastsync',   $cgi->param('sist_endret') });
+-        $borrowersync->update({ 'hashed_pin', $cgi->param('pin') });
++        if ( $cgi->param('pin') ne "" ) {
++            $borrowersync->update({ 'hashed_pin', $cgi->param('pin') });
++        }
+         # Try to sync in real time. If this fails it will be picked up by the cronjob
+         NLSync({ 'borrowernumber' => $borrowernumber });
+         # Redirect to the edit screen
+diff --git a/misc/cronjobs/nl-sync-from-koha.pl b/misc/cronjobs/nl-sync-from-koha.pl
+index 81e3218..96911a9 100755
+--- a/misc/cronjobs/nl-sync-from-koha.pl
++++ b/misc/cronjobs/nl-sync-from-koha.pl
+@@ -103,6 +103,14 @@ foreach my $borrower ( @needs_sync ) {
+     my $firstname  = $borrower->borrowernumber->firstname;
+     my $surname    = $borrower->borrowernumber->surname;
+     my $syncstatus = $borrower->syncstatus;
++    my $categorycode = $borrower->borrowernumber->categorycode;
++
++    # Don't try to sync patrons without cardnumber
++    next unless $cardnumber;
++
++    # Only sync patrons in theese categories
++    next unless (grep ($categorycode, ['B', 'V', 'ANS', 'ADMIN']));
++
+     say "*** Syncing patron: $cardnumber - $firstname $surname ($syncstatus)" if $verbose;
+     if ( $run ) {
+         my $response = NLSync({ 'patron' => $borrower->borrowernumber });
