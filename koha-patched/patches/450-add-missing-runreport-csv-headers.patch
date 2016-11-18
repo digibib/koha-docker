@@ -27,7 +27,7 @@ index 370c479..c13150a
              quote_char  => $quote,
              sep_char    => $separator,
              });
-+        $message .= join(',', @{ $sth->{NAME_lc} }) . "\n";
++        $message .= join($separator, @{ $sth->{NAME_lc} }) . "\n";
          while (my $line = $sth->fetchrow_arrayref) {
              $csv->combine(@$line);
              $message .= $csv->string() . "\n";
