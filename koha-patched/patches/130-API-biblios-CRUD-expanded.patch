@@ -6,10 +6,10 @@ Also enables expanded item with status
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..8db7361
+index 0000000..a70efda
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,201 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -70,23 +70,48 @@ index 0000000..8db7361
 +    unless ($biblio) {
 +        return $c->$cb({error => "Biblio not found"}, 404);
 +    }
++
 +    my $expanded = $biblio->items->unblessed;
 +    for my $item (@{$expanded}) {
 +
-+        # we assume item is available by default
++        # we assume item is available and reservable by default
 +        $item->{status} = "Ledig";
++        $item->{reservable} = 1;
++
++        if ($item->{holdingbranch} ne $item->{homebranch}) {
++            # This will match items in branchtransfers
++            $item->{status} = "Utlånt";
++        }
 +
 +        if ($item->{onloan}) {
-+            $item->{status} = "Utlånt"
++            $item->{status} = "Utlånt";
 +        }
 +
-+        if ($item->{notforloan}) {
-+            $item->{status} = "Ikke til utlån";
++        my $notloan = $item->{notforloan};
++        if ($notloan) {
++            # -2  Bestilt
++            #  5  Hurtiglån         (status=Utlånt/Ledig depending on item.onloan)
++            #  8  Ikke til hjemlån
++            #  1  Til internt bruk
++            # -1  Til klargjøring
++            #  2  Til reparasjon
++            #  4  Til retting
++            if ($notloan == -2 || $notloan == -1 || $notloan == 2 || $notloan == 4 ) {
++                $item->{status} = "Utlånt";
++            } elsif ($notloan == 1) {
++                $item->{status} = "Utilgjengelig";
++                $item->{reservable} = 0;
++            } elsif ($notloan == 8) {
++                $item->{status} = "Ikke til hjemlån";
++                $item->{reservable} = 0;
++            } elsif ($notloan == 5) {
++                $item->{reservable} = 0;
++            }
 +        }
 +
-+        # mark as unavailable if notforloan, damaged, lost, or withdrawn
-+        if ($item->{damaged} || $item->{itemlost} || $item->{withdrawn} || $item->{restricted}) {
++        if ($item->{itemlost}) {
 +            $item->{status} = "Utilgjengelig";
++            $item->{reservable} = 0;
 +        }
 +
 +        my $holds = Koha::Holds->search({itemnumber => $item->{itemnumber}})->unblessed;
