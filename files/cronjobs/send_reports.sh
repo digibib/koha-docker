@@ -19,7 +19,7 @@ usage() {
 
 send_reports() {
     local BOUNDARY="T/asfAY23523.34"
-    for email in "$EMAILS"
+    for email in "${EMAILS[@]}"
     do
         echo "sending report to: ${email}"
         { printf "%s\n" \
@@ -64,7 +64,7 @@ while [ "$1" != "" ]; do
     case "$1" in
       --email|-e)
         shift
-        EMAILS+=($1)
+        EMAILS+=("$1")
         ;;
       --store|-s)
         STORE="--store-results"
