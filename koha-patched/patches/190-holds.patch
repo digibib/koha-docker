@@ -1,0 +1,104 @@
+diff --git a/Koha/REST/V1/Hold.pm b/Koha/REST/V1/Hold.pm
+index 7f0b1ff..0bb2990 100644
+--- a/Koha/REST/V1/Hold.pm
++++ b/Koha/REST/V1/Hold.pm
+@@ -143,6 +143,31 @@ sub edit {
+     return $c->$cb($reserve, 200);
+ }
+
++sub patch {
++    my ($c, $args, $cb) = @_;
++
++    my $reserve_id = $args->{reserve_id};
++    my $reserve;
++
++    return try {
++        $reserve = Koha::Holds->find($reserve_id);
++        $reserve->set( $args->{body} );
++        $reserve->store();
++        return $c->$cb( $reserve->unblessed, 200 );
++    } catch {
++        if (not defined $reserve) {
++            return $c->$cb( { error => "Object not found" }, 404 );
++        }
++        elsif ($_->isa('Koha::Exceptions::Object')) {
++            return $c->$cb( { error => $_->message }, 500 );
++        }
++        else {
++            return $c->$cb(
++                { error => "Something went wrong, check the logs." }, 500 );
++        }
++    };
++}
++
+ sub delete {
+     my ($c, $args, $cb) = @_;
+
+diff --git a/api/v1/swagger/paths/holds.json b/api/v1/swagger/paths/holds.json
+index 7d67975..309d701 100644
+--- a/api/v1/swagger/paths/holds.json
++++ b/api/v1/swagger/paths/holds.json
+@@ -273,6 +273,63 @@
+         }
+       }
+     },
++    "patch": {
++      "x-mojo-controller": "Koha::REST::V1::Hold",
++      "operationId": "patch",
++      "tags": ["holds"],
++      "parameters": [{
++        "$ref": "../parameters.json#/holdIdPathParam"
++      }, {
++        "name": "body",
++        "in": "body",
++        "description": "A JSON object containing fields to modify",
++        "required": true,
++        "schema": {
++          "type": "object",
++          "properties": {
++            "branchcode": {
++              "description": "Pickup location",
++              "type": "string"
++            },
++            "suspend_until": {
++              "description": "Suspend until",
++              "type": "string",
++              "format": "date"
++            }
++          }
++        }
++      }
++      ],
++      "consumes": ["application/json"],
++      "produces": ["application/json"],
++      "responses": {
++        "200": {
++          "description": "Updated hold",
++          "schema": {
++            "$ref": "../definitions.json#/hold"
++          }
++        },
++        "400": {
++          "description": "Missing or wrong parameters",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        },
++        "404": {
++          "description": "Hold not found",
++          "schema": {
++            "$ref": "../definitions.json#/error"
++          }
++        }
++      },
++      "x-koha-authorization": {
++        "allow-owner": true,
++        "allow-guarantor": true,
++        "permissions": {
++          "reserveforothers": "1"
++        }
++      }
++    },
+     "delete": {
+       "operationId": "deleteHold",
+       "tags": ["holds"],
