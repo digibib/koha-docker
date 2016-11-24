@@ -161,7 +161,7 @@ sub validate_destination {
     return 0 if $receiver->surname eq '';
     return 0 if $receiver->address eq '';
     return 0 if $receiver->city eq '';
-    return 0 unless $receiver->zipcode =~ /^\d{4}$/;
+    return 0 if $receiver->zipcode eq '';
 
     return 1;
 }
