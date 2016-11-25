@@ -200,13 +200,13 @@ index 81e3218..96911a9 100755
      my $firstname  = $borrower->borrowernumber->firstname;
      my $surname    = $borrower->borrowernumber->surname;
      my $syncstatus = $borrower->syncstatus;
-+    my $categorycode = $borrower->borrowernumber->categorycode;
++    my $categorycode = $borrower->borrowernumber->categorycode->categorycode;
 +
 +    # Don't try to sync patrons without cardnumber
 +    next unless $cardnumber;
 +
 +    # Only sync patrons in theese categories
-+    next unless (grep ($categorycode, ['B', 'V', 'ANS', 'ADMIN']));
++    next unless grep(/\Q$categorycode/, ('B', 'V', 'ANS', 'ADMIN'));
 +
      say "*** Syncing patron: $cardnumber - $firstname $surname ($syncstatus)" if $verbose;
      if ( $run ) {
