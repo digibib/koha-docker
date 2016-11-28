@@ -9,7 +9,7 @@ new file mode 100644
 index 0000000..a70efda
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,201 @@
+@@ -0,0 +1,204 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -32,7 +32,7 @@ index 0000000..a70efda
 +use Mojo::Base 'Mojolicious::Controller';
 +
 +use Koha::AuthUtils qw(hash_password);
-+use C4::Biblio qw( GetBiblioData AddBiblio ModBiblio DelBiblio );
++use C4::Biblio qw( GetBiblioData AddBiblio ModBiblio DelBiblio ModZebra );
 +use C4::Items qw ( AddItemBatchFromMarc );
 +use Koha::Biblios;
 +use MARC::Record;
@@ -200,6 +200,9 @@ index 0000000..a70efda
 +            push @item_errors, $item->unblessed->{itemnumber};
 +        }
 +    }
++
++    ModZebra( $args->{biblionumber}, "recordDelete", "biblioserver" );
++
 +    my $res = $biblio->delete;
 +    if ($res eq '1') {
 +        return $c->$cb({}, 200);
