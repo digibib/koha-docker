@@ -2,7 +2,7 @@
 # /root/update_items_replacementprice.sh
 # updates replacementprice based on mediaType,audience and publicationYear -- 
 
-cat <<-EOF | koha-mysql $(koha-list --enabled) 
+cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8
 	UPDATE items i
 	LEFT JOIN biblioitems b ON (i.biblionumber=b.biblionumber)
 	SET i.replacementprice = (
