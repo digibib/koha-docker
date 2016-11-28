@@ -12,7 +12,8 @@ BEGIN
       WHERE borrowernumber=borrowernumber AND comment='Sendt til kemner'));
     -- Add the actuall debarrment on borrower
     UPDATE borrowers JOIN issues USING (borrowernumber)
-    SET debarred='2999-01-01';
+      SET debarred='2999-01-01'
+    WHERE issues.itemnumber=NEW.itemnumber;
   END IF;
 END;//
 delimiter ;
