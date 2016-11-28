@@ -58,79 +58,10 @@ done
 
 echo "Restarting apache to activate local changes..."
 service apache2 restart
-echo "Running webinstaller - please be patient ..."
-sleep 1 # waiting for apache to respond
-cd /usr/share/koha/lib && /installer/updatekohadbversion.sh
 
-echo "Installing the default language if not already installed ..."
-if [ -n "$DEFAULT_LANGUAGE" ]; then
-    if [ -z `koha-translate --list | grep -Fx $DEFAULT_LANGUAGE` ] ; then
-        koha-translate --install $DEFAULT_LANGUAGE
-    fi
-
-    echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
-        UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
-        koha-mysql $KOHA_INSTANCE
-fi
-
-echo "Configuring messaging settings ..."
-if [ -n "$MESSAGE_QUEUE_FREQUENCY" ]; then
-  sed -i "/process_message_queue/c\*/${MESSAGE_QUEUE_FREQUENCY} * * * * root koha-foreach --enabled --email \
-  /usr/share/koha/bin/cronjobs/process_message_queue.pl" /etc/cron.d/koha-common
-fi
-
-echo "Configuring email settings ..."
-if [ -n "$EMAIL_ENABLED" ]; then
-  # Koha uses perl5 Sendmail module defaulting to localhost, so need to override perl Sendmail config
-  if [ -n "$SMTP_SERVER_HOST" ]; then
-    sub="%mailcfg = (
-      'smtp'    => [ '$SMTP_SERVER_HOST' ],
-      'from'    => '', # default sender e-mail, used when no From header in mail
-      'mime'    => 1, # use MIME encoding by default
-      'retries' => 1, # number of retries on smtp connect failure
-      'delay'   => 1, # delay in seconds between retries
-      'tz'      => '', # only to override automatic detection
-      'port'    => $SMTP_SERVER_PORT,
-      'debug'   => 0,
-    );"
-    sendmail=/usr/share/perl5/Mail/Sendmail.pm
-    awk -v sb="$sub" '/^%mailcfg/,/;/ { if ( $0 ~ /\);/ ) print sb; next } 1' $sendmail > tmp && \
-      mv tmp $sendmail
-  fi
-  # setup default debian exim4 to use smtp relay (used by sendmail and MIME::Lite)
-  sed -i "s/dc_smarthost.*/dc_smarthost='mailrelay::2525'/" /etc/exim4/update-exim4.conf.conf
-  sed -i "s/dc_eximconfig_configtype.*/dc_eximconfig_configtype='smarthost'/" /etc/exim4/update-exim4.conf.conf
-  update-exim4.conf -v
-
-  koha-email-enable $KOHA_INSTANCE
-fi
-
-echo "Configuring SMS settings ..."
-if [ -n "$SMS_SERVER_HOST" ]; then
-  echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = 'SMSSendUsername';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = 'SMSSendPassword';" | koha-mysql $KOHA_INSTANCE
-fi
-
-echo "Configuring National Library Card settings ..."
-if [ -n "$NLVENDORURL" ]; then
-  echo -n "UPDATE systempreferences SET value = \"1\" WHERE variable = 'NorwegianPatronDBEnable';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
-fi
-
-echo "Setting up MYSQL triggers ..."
-for trigger in /installer/triggers/*.sql
-do
-    koha-mysql $KOHA_INSTANCE < $trigger
-done
-
-echo "Patching DBIx schema files ..."
-for schema in /installer/schema/*.patch
-do
-    patch -d / -p1 < $schema
-done
+sleep 1 # waiting for apache restart to finish
+echo "Running webinstaller and applying local deichman mods - please be patient ..."
+cd /usr/share/koha/lib && /installer/installer.sh
 
 echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
