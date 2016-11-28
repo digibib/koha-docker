@@ -127,6 +127,26 @@ apply_once() {
       echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
     fi
   fi
+
+  VERSION=16.0600047
+  if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
+    echo "Setting up kemnersaker table ..."
+    cat <<-EOF | koha-mysql $(koha-list --enabled)
+        /*
+         *   create table kemnersaker (unless exists)
+         */
+        CREATE TABLE IF NOT EXISTS kemnersaker (
+        issue_id int(11) NOT NULL,
+        borrowernumber int(11) NOT NULL,
+        itemnumber int(11) NOT NULL,
+        status varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+        timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (issue_id),
+        KEY kemner_issueidx (issue_id),
+        KEY kemner_borroweridx (borrowernumber)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+EOF
+  fi
 }
 
 run_webinstaller
