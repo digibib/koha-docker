@@ -99,19 +99,21 @@ services:
     volumes:
       - /var/lib/mysql
 
-  sip:
-    container_name: sip_proxy
-    image: "digibib/tcp-proxy:14dc5417bf211317351a0bae084db12c64a1dd45"
+  koha_sip_proxy:
+    container_name: koha_sip_proxy
+    image: "digibib/sip2proxy:a387e6d35e38c488b0f4ec7bc0c7292e19dd61df"
     networks:
       - backend
     ports:
       - "6002:9999"
     command:
-      - "/app/tcp-proxy"
-      - "-vv"
-      - "-r"
-      - "${HOST}:${SIP_PORT}"
-      - "-replace=(|AB)10([0-9]{14})~$$1$$2"
+      - "/sip2proxy"
+      - "-from=:9999"
+      - "-to=xkoha:${SIP_PORT}"
+      - "-log-messages=true"
+      - "-replace-10=true"
+      - "-log-metrics-every-s=300"
+      - "-ensure-branch=true"
     logging:
       driver: "json-file"
       options:
