@@ -27,7 +27,7 @@ index 0000000..d74df6c
 +# https://bugs.koha-community.org/bugzilla3/show_bug.cgi?id=13029
 +
 +our $VERSION  = qv('0.0.6');
-+our $URL      = $ENV{'SMS_SERVER_HOST'} || 'http://simple.pswin.com';
++our $URL      = $ENV{'SMS_SERVER_HOST'} || 'https://smsproxy:9999';
 +our $SENDER   = $ENV{'SMS_SENDER'} || 'Deichman';
 +our $AGENT    = 'SMS-Send-NO-LinkMobilityHTTP/' . $VERSION;
 +our $METHOD   = 'POST';

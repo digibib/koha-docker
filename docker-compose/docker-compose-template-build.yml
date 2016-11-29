@@ -34,7 +34,8 @@ services:
       SMTP_SERVER_HOST: mailrelay # access through network 'backend'
       SMTP_SERVER_PORT: 2525
       MESSAGE_QUEUE_FREQUENCY: 1
-      SMS_SERVER_HOST: "${SMS_SERVER_HOST}"
+      SMS_DRIVER: "${SMS_DRIVER}"
+      SMS_SENDER: "${SMS_SENDER}"
       SMS_USER: "${SMS_USER}"
       SMS_PASS: "${SMS_PASS}"
       API_PASSPHRASE: "${API_PASSPHRASE}"

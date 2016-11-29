@@ -110,11 +110,9 @@ apply_once() {
   local VERSION=16.0000000
   if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
     echo "Configuring SMS settings ..."
-    if [ -n "$SMS_SERVER_HOST" ]; then
-      echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
-      echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = 'SMSSendUsername';" | koha-mysql $KOHA_INSTANCE
-      echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = 'SMSSendPassword';" | koha-mysql $KOHA_INSTANCE
-    fi
+    echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
+    echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = 'SMSSendUsername';" | koha-mysql $KOHA_INSTANCE
+    echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = 'SMSSendPassword';" | koha-mysql $KOHA_INSTANCE
   fi
 
   VERSION=16.0600046
