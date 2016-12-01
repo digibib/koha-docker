@@ -23,7 +23,7 @@ Various fixes to NL-synchronization
 
 
 diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
-index 237ddd7..65cd94c 100644
+index 237ddd7..a56d65f 100644
 --- a/Koha/NorwegianPatronDB.pm
 +++ b/Koha/NorwegianPatronDB.pm
 @@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
@@ -34,10 +34,15 @@ index 237ddd7..65cd94c 100644
  )] );
  Exporter::export_ok_tags('all');
 
-@@ -261,6 +262,58 @@ sub NLSync {
-         $sync->update( { 'syncstatus' => 'synced' } );
-         # Update the 'synclast' attribute with the "server time" ("server_tid") returned by the method
-         $sync->update( { 'lastsync' => $response->{'server_tid'} } );
+@@ -257,10 +258,55 @@ sub NLSync {
+             # Turn off any further syncing
+             $sync->update( { 'sync' => 0 } );
+         }
+-        # Update the syncstatus to 'synced'
+-        $sync->update( { 'syncstatus' => 'synced' } );
+-        # Update the 'synclast' attribute with the "server time" ("server_tid") returned by the method
+-        $sync->update( { 'lastsync' => $response->{'server_tid'} } );
++        $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->{'server_tid'} } );
 +    } else {
 +        # Handle error special cases
 +        my $cause = $response->result->{'melding'};
@@ -46,8 +51,8 @@ index 237ddd7..65cd94c 100644
 +            # Because of staff mistakes, patrons are sometimes registered with existing cardnumber
 +            # without checking if they allready exist in NL.
 +            # We set syncstatus to 'edited', so that it might be correctly synced next time.
-+            # The lastsync value is arbritary, and will be corrected if NL complains
-+            $sync->update( { 'syncstatus' => 'edited', 'lastsync' => `date +"%Y-%m-%dT%T"` } );
++            # The lastsync value is arbritary, and will be corrected on next iteration
++            $sync->update( { 'syncstatus' => 'edited', 'lastsync' => '2016-11-12T14:05:22' } );
 +        } elsif ($cause =~ /lnr finnes ikke i registeret/) {
 +            # Make sure syncstatus is 'new'
 +            $sync->update( { 'syncstatus' => 'new' } );
@@ -60,8 +65,7 @@ index 237ddd7..65cd94c 100644
 +            $sync->update( { 'lastsync' => substr($cause, $i + 14, 19) } );
 +        } elsif ($cause =~ /Oppdaterte felt/) {
 +            # The request was succesfull, even if not reported with status=1
-+            $sync->update( { 'syncstatus' => 'synced' } );
-+            $sync->update( { 'lastsync' => $response->{'server_tid'} } );
++            $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->{'server_tid'} } );
 +        } elsif ($cause =~ /Person med gitt fnr finnes allerede i registeret med nummer/) {
 +            # Patron was registered as new, withouth checking for existing patron in NL using the given fnr
 +            # We attemt to sync the new cardnumber to NL.
@@ -83,17 +87,14 @@ index 237ddd7..65cd94c 100644
 +
 +            $cause = $response->result->{'melding'};
 +            if ( $response->{'status'} && $response->{'status'} == 1 || ($cause && $cause =~ /Oppdaterte felt/)) {
-+                # Update the syncstatus to 'synced'
-+                $sync->update( { 'syncstatus' => 'synced' } );
-+                # Update the 'synclast' attribute with the "server time" ("server_tid") returned by the method
-+                $sync->update( { 'lastsync' => $response->{'server_tid'} } );
++                $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->{'server_tid'} } );
 +            }
 +        }
 +
      }
      return $response;
 
-@@ -564,6 +617,23 @@ sub _format_soap_error {
+@@ -564,6 +610,23 @@ sub _format_soap_error {
 
  }
 
@@ -117,7 +118,7 @@ index 237ddd7..65cd94c 100644
  =head2 _soap_to_koha_patron
 
  Convert a SOAP object of type "Laaner" into a hash that can be sent to AddMember or ModMember.
-@@ -635,13 +705,13 @@ sub _koha_patron_to_soap {
+@@ -635,13 +698,13 @@ sub _koha_patron_to_soap {
              SOAP::Data->name( 'fnr_hash'    => $patron_attributes->{ 'fnr' } )->type( 'string' )->type( 'string' ),
              SOAP::Data->name( 'navn'        => $patron->surname . ', ' . $patron->firstname    )->type( 'string' ),
              SOAP::Data->name( 'sist_endret' => $sync->lastsync      )->type( 'string' ),
