@@ -6,10 +6,10 @@ Also enables expanded item with status
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..a70efda
+index 0000000..9649ccf
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,204 @@
+@@ -0,0 +1,207 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -71,7 +71,12 @@ index 0000000..a70efda
 +        return $c->$cb({error => "Biblio not found"}, 404);
 +    }
 +
++
 +    my $expanded = $biblio->items->unblessed;
++
++    $biblio = $biblio->unblessed;
++    $biblio->{numholds} = Koha::Holds->search({biblionumber => $args->{biblionumber}})->count;
++
 +    for my $item (@{$expanded}) {
 +
 +        # we assume item is available and reservable by default
@@ -114,15 +119,13 @@ index 0000000..a70efda
 +            $item->{reservable} = 0;
 +        }
 +
-+        my $holds = Koha::Holds->search({itemnumber => $item->{itemnumber}})->unblessed;
 +
-+        # mark as checked out if item marked as hold
-+        if (scalar(@{$holds}) > 0) {
++        if ($biblio->{numholds} > 0 && Koha::Holds->search({itemnumber => $item->{itemnumber}})->count > 0) {
 +            $item->{status} = "Utlånt";
 +        }
 +    }
 +
-+    return $c->$cb({ biblio => $biblio->unblessed, items => $expanded }, 200);
++    return $c->$cb({ biblio => $biblio, items => $expanded }, 200);
 +}
 +
 +sub add {
