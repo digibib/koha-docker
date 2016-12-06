@@ -7,10 +7,10 @@ cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8
 	LEFT JOIN biblioitems b ON (i.biblionumber=b.biblionumber)
 	SET i.replacementprice = (
 	  SELECT 
-	  CASE EXTRACTVALUE(marcxml, '//record/datafield[@tag="337"]/subfield[@code="a"]/text()') /* mediaType */
+	  CASE EXTRACTVALUE(b.marcxml, '//record/datafield[@tag="337"]/subfield[@code="a"]/text()') /* mediaType */
 	    WHEN 'Bok' THEN
 	      CASE
-	        WHEN EXTRACTVALUE(marcxml, '//record/datafield[@tag="385"]/subfield[@code="a"]/text()') = 'Voksne' THEN '450.00' /* audience */
+	        WHEN EXTRACTVALUE(b.marcxml, '//record/datafield[@tag="385"]/subfield[@code="a"]/text()') = 'Voksne' THEN '450.00' /* audience */
 	        ELSE '300.00'
 	      END
 	    WHEN 'Film' THEN '300.00'
@@ -23,8 +23,10 @@ cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8
 	    WHEN 'Periodika' THEN '100.00'
 	    WHEN 'Noter' THEN '250.00'
 	    WHEN 'Brettspill' THEN '500.00'
-	    ELSE '200,00' /* a sensible default */
 	  END
 	)
-	WHERE i.biblionumber=b.biblionumber;
+	WHERE i.biblionumber=b.biblionumber
+	/* EXCLUDED: 'REALIA' */
+	AND i.itype IN ('BOK', 'DAGSLAAN', 'EBOK', 'FILM', 'KART', 'LYDBOK', 'MUSIKK',
+	'NOTER', 'PERIODIKA', 'SPILL', 'SPRAAKKURS', 'TOUKESLAAN', 'UKESLAAN');
 EOF
