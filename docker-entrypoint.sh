@@ -56,6 +56,9 @@ do
     koha-translate --install $language
 done
 
+echo "Fixing bug in translated member search template..."
+sed -i 's/l\xc3\xa5nenummer/borrowernumber/' /usr/share/koha/intranet/htdocs/intranet-tmpl/prog/nb-NO/modules/members/tables/members_results.tt
+
 echo "Restarting apache to activate local changes..."
 service apache2 restart
 
