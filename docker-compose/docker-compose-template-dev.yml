@@ -16,7 +16,6 @@ services:
       - backend
     depends_on:
       - koha_mysql
-      - sip
     cap_add:
       - SYS_NICE
       - DAC_READ_SEARCH
