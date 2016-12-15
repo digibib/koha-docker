@@ -5,6 +5,9 @@ networks:
   backend:
     driver: bridge
 
+volumes:
+  koha_mysql_data: {}
+
 services:
   koha_build:
     container_name: koha_build
@@ -79,33 +82,8 @@ services:
       MYSQL_PASSWORD: "${KOHA_ADMINPASS}"
       MYSQL_ROOT_PASSWORD: "${KOHA_ADMINPASS}"
       MYSQL_USER: "${KOHA_ADMINUSER}"
-    volumes_from:
-      - koha_mysql_data
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "1m"
-        max-file: "2"
-
-  koha_mysql_data:
-    container_name: koha_mysql_data
-    image: "busybox:latest"
     volumes:
-      - /var/lib/mysql
-
-  sip:
-    container_name: sip_proxy
-    image: "digibib/tcp-proxy:14dc5417bf211317351a0bae084db12c64a1dd45"
-    networks:
-      - backend
-    ports:
-      - "6002:9999"
-    command:
-      - "/app/tcp-proxy"
-      - "-vv"
-      - "-r"
-      - "${HOST}:${SIP_PORT}"
-      - "-replace=(|AB)10([0-9]{14})~$$1$$2"
+      - "koha_mysql_data:/var/lib/mysql"
     logging:
       driver: "json-file"
       options:
