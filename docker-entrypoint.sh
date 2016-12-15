@@ -7,6 +7,7 @@ envsubst < /templates/global/passwd.tmpl > /etc/koha/passwd
 
 echo "Setting up local cronjobs ..."
 envsubst < /cronjobs/deichman-koha-common.tmpl > /etc/cron.d/deichman-koha-common
+envsubst < /cronjobs/koha-common.tmpl > /etc/cron.d/koha-common
 chmod 644 /etc/cron.d/deichman-koha-common
 
 echo "Setting up supervisord ..."

@@ -53,12 +53,6 @@ apply_always() {
           koha-mysql $KOHA_INSTANCE
   fi
 
-  echo "Configuring messaging settings ..."
-  if [ -n "$MESSAGE_QUEUE_FREQUENCY" ]; then
-    sed -i "/process_message_queue/c\*/${MESSAGE_QUEUE_FREQUENCY} * * * * root koha-foreach --enabled --email \
-    /usr/share/koha/bin/cronjobs/process_message_queue.pl" /etc/cron.d/koha-common
-  fi
-
   echo "Configuring email settings ..."
   if [ -n "$EMAIL_ENABLED" ]; then
     # Koha uses perl5 Sendmail module defaulting to localhost, so need to override perl Sendmail config
