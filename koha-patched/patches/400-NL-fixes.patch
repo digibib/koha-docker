@@ -27,7 +27,7 @@ Various fixes to NL-synchronization
 
 
 diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
-index 237ddd7..03d3435 100644
+index 237ddd7..c4209c7 100644
 --- a/Koha/NorwegianPatronDB.pm
 +++ b/Koha/NorwegianPatronDB.pm
 @@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
@@ -105,15 +105,6 @@ index 237ddd7..03d3435 100644
      }
      return $response;
 
-@@ -426,7 +479,7 @@ sub NLUpdateHashedPIN {
-     my $borrowersync = Koha::Database->new->schema->resultset('BorrowerSync')->find({
-         'synctype'       => 'norwegianpatrondb',
-         'borrowernumber' => $borrowernumber,
--        });
-+    });
-     return $borrowersync->update({ 'hashed_pin', _encrypt_pin( $pin ) });
-
- }
 @@ -564,6 +617,23 @@ sub _format_soap_error {
 
  }
@@ -194,28 +185,44 @@ index 29ec13e..0fa3ac2 100755
          'dateexpiry'   => scalar $cgi->param('gyldig_til'),
          'email'        => scalar $cgi->param('epost'),
          'mobile'       => scalar $cgi->param('tlf_mobil'),
-@@ -133,6 +132,10 @@ if ( $op && $op eq 'search' ) {
+@@ -133,21 +133,31 @@ if ( $op && $op eq 'search' ) {
          'branchcode'   => $userenv->{'branch'},
          'categorycode' => scalar $cgi->param('categorycode'),
      );
 +    # Some patrons do not have a PIN-code in NL
 +    if ( $cgi->param('pin') ne "" ) {
-+         $borrower{'password'} = NLDecodePin( $cgi->param('pin') );
++        $borrower{'password'} = NLDecodePin( $cgi->param('pin') );
 +    }
      # Add the new patron
      my $borrowernumber = &AddMember(%borrower);
      if ( $borrowernumber ) {
-@@ -147,7 +150,9 @@ if ( $op && $op eq 'search' ) {
++        # Set standard message transport preferences for the given patron category
++        C4::Members::Messaging::SetMessagingPreferencesFromDefaults(
++            { borrowernumber => $borrowernumber,
++              categorycode   => scalar $cgi->param('categorycode') } );
++
+         # Add extended patron attributes
+         SetBorrowerAttributes($borrowernumber, [
+-            { code => 'fnr', value => scalar $cgi->param('fnr_hash') },
+-        ], 'no_branch_limit' );
++                { code => 'fnr', value => scalar $cgi->param('fnr_hash') },
++            ], 'no_branch_limit' );
+         # Override the default sync data created by AddMember
+         my $borrowersync = Koha::Database->new->schema->resultset('BorrowerSync')->find({
+             'synctype'       => 'norwegianpatrondb',
+             'borrowernumber' => $borrowernumber,
          });
-         $borrowersync->update({ 'syncstatus', 'synced' });
-         $borrowersync->update({ 'lastsync',   $cgi->param('sist_endret') });
+-        $borrowersync->update({ 'syncstatus', 'synced' });
+-        $borrowersync->update({ 'lastsync',   $cgi->param('sist_endret') });
 -        $borrowersync->update({ 'hashed_pin', $cgi->param('pin') });
++        $borrowersync->update({ 'syncstatus', 'edited', 'lastsync',   $cgi->param('sist_endret') });
 +        if ( $cgi->param('pin') ne "" ) {
 +            $borrowersync->update({ 'hashed_pin', $cgi->param('pin') });
 +        }
          # Try to sync in real time. If this fails it will be picked up by the cronjob
          NLSync({ 'borrowernumber' => $borrowernumber });
          # Redirect to the edit screen
+
 diff --git a/misc/cronjobs/nl-sync-from-koha.pl b/misc/cronjobs/nl-sync-from-koha.pl
 index 81e3218..96911a9 100755
 --- a/misc/cronjobs/nl-sync-from-koha.pl
