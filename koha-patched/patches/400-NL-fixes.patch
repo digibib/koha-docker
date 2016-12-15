@@ -21,9 +21,13 @@ Various fixes to NL-synchronization
 
 * Re-sync patrons which have been created as new, but allready exitsed with the same fnr in NL.
 
+* Add standard message preferences according to patron category
+
+* Fix re-sync of imported patron from NL
+
 
 diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
-index 237ddd7..a56d65f 100644
+index 237ddd7..03d3435 100644
 --- a/Koha/NorwegianPatronDB.pm
 +++ b/Koha/NorwegianPatronDB.pm
 @@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
@@ -34,7 +38,7 @@ index 237ddd7..a56d65f 100644
  )] );
  Exporter::export_ok_tags('all');
 
-@@ -257,10 +258,55 @@ sub NLSync {
+@@ -257,10 +258,62 @@ sub NLSync {
              # Turn off any further syncing
              $sync->update( { 'sync' => 0 } );
          }
@@ -52,10 +56,16 @@ index 237ddd7..a56d65f 100644
 +            # without checking if they allready exist in NL.
 +            # We set syncstatus to 'edited', so that it might be correctly synced next time.
 +            # The lastsync value is arbritary, and will be corrected on next iteration
-+            $sync->update( { 'syncstatus' => 'edited', 'lastsync' => '2016-11-12T14:05:22' } );
++            my $now = `date +"%Y-%m-%dT%T"`;
++            chomp($now);
++            $sync->update( { 'syncstatus' => 'edited', 'lastsync' => $now } );
 +        } elsif ($cause =~ /lnr finnes ikke i registeret/) {
 +            # Make sure syncstatus is 'new'
 +            $sync->update( { 'syncstatus' => 'new' } );
++        } elsif ($cause =~ /Mangler verdi for sist_endret/) {
++            my $now = `date +"%Y-%m-%dT%T"`;
++            chomp($now);
++            $sync->update( { 'lastsync' => $now } );
 +        } elsif ($cause =~ /SIST_ENDRET/) {
 +            # NL has different timestamp; returnin an error like this:
 +            #  endre: Uoverensstemmelse med gjeldende data i basen:
@@ -89,12 +99,22 @@ index 237ddd7..a56d65f 100644
 +            if ( $response->{'status'} && $response->{'status'} == 1 || ($cause && $cause =~ /Oppdaterte felt/)) {
 +                $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->{'server_tid'} } );
 +            }
++        } elsif ($cause =~ /Person med gitt fnr finnes allerede i registeret/) {
++            # TODO patron exists with Høgskolekort. Don't know what to do with it.
 +        }
-+
      }
      return $response;
 
-@@ -564,6 +610,23 @@ sub _format_soap_error {
+@@ -426,7 +479,7 @@ sub NLUpdateHashedPIN {
+     my $borrowersync = Koha::Database->new->schema->resultset('BorrowerSync')->find({
+         'synctype'       => 'norwegianpatrondb',
+         'borrowernumber' => $borrowernumber,
+-        });
++    });
+     return $borrowersync->update({ 'hashed_pin', _encrypt_pin( $pin ) });
+
+ }
+@@ -564,6 +617,23 @@ sub _format_soap_error {
 
  }
 
@@ -118,7 +138,7 @@ index 237ddd7..a56d65f 100644
  =head2 _soap_to_koha_patron
 
  Convert a SOAP object of type "Laaner" into a hash that can be sent to AddMember or ModMember.
-@@ -635,13 +698,13 @@ sub _koha_patron_to_soap {
+@@ -635,13 +705,13 @@ sub _koha_patron_to_soap {
              SOAP::Data->name( 'fnr_hash'    => $patron_attributes->{ 'fnr' } )->type( 'string' )->type( 'string' ),
              SOAP::Data->name( 'navn'        => $patron->surname . ', ' . $patron->firstname    )->type( 'string' ),
              SOAP::Data->name( 'sist_endret' => $sync->lastsync      )->type( 'string' ),
@@ -135,11 +155,14 @@ index 237ddd7..a56d65f 100644
              SOAP::Data->name( 'm_adresse2'  => $patron->b_address2  )->type( 'string' ),
              SOAP::Data->name( 'm_postnr'    => $patron->b_zipcode   )->type( 'string' ),
 diff --git a/members/nl-search.pl b/members/nl-search.pl
-index 29ec13e..516f277 100755
+index 29ec13e..0fa3ac2 100755
 --- a/members/nl-search.pl
 +++ b/members/nl-search.pl
-@@ -42,7 +42,7 @@ use C4::Output;
+@@ -40,9 +40,10 @@ use C4::Auth;
+ use C4::Context;
+ use C4::Output;
  use C4::Members;
++use C4::Members::Messaging;
  use C4::Members::Attributes qw( SetBorrowerAttributes );
  use C4::Utils::DataTables::Members;
 -use Koha::NorwegianPatronDB qw( NLCheckSysprefs NLSearch NLDecodePin NLGetFirstname NLGetSurname NLSync );
@@ -147,7 +170,7 @@ index 29ec13e..516f277 100755
  use Koha::Database;
  use Koha::DateUtils;
  use Koha::Patron::Categories;
-@@ -110,7 +110,7 @@ if ( $op && $op eq 'search' ) {
+@@ -110,7 +111,7 @@ if ( $op && $op eq 'search' ) {
      my %borrower = (
          'surname'      => NLGetSurname( $cgi->param('navn') ),
          'firstname'    => NLGetFirstname( $cgi->param('navn') ),
@@ -156,7 +179,7 @@ index 29ec13e..516f277 100755
          'dateofbirth'  => scalar $cgi->param('fdato'),
          'cardnumber'   => scalar $cgi->param('lnr'),
          'userid'       => scalar $cgi->param('lnr'),
-@@ -118,13 +118,12 @@ if ( $op && $op eq 'search' ) {
+@@ -118,13 +119,12 @@ if ( $op && $op eq 'search' ) {
          'address2'     => scalar $cgi->param('p_adresse2'),
          'zipcode'      => scalar $cgi->param('p_postnr'),
          'city'         => scalar $cgi->param('p_sted'),
