@@ -24,7 +24,6 @@ ENV KOHA_ADMINPASS secret
 ENV KOHA_INSTANCE  name
 ENV KOHA_ZEBRAUSER zebrauser
 ENV KOHA_ZEBRAPASS lkjasdpoiqrr
-ENV KOHA_DBHOST    koha_mysql
 
 #######
 # Mysql config for initial db
