@@ -14,7 +14,7 @@ cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8
 	        ELSE '300.00'
 	      END
 	    WHEN 'Film' THEN '300.00'
-	    WHEN 'Tegneserier' THEN '250.00'
+	    WHEN 'Tegneserie' THEN '250.00'
 	    WHEN 'Musikkopptak' THEN '300.00'
 	    WHEN 'Lydbok' THEN '450.00'
 	    WHEN 'Språkkurs' THEN '500.00'
