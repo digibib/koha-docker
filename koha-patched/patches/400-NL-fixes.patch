@@ -215,9 +215,9 @@ index 29ec13e..0fa3ac2 100755
 -        $borrowersync->update({ 'syncstatus', 'synced' });
 -        $borrowersync->update({ 'lastsync',   $cgi->param('sist_endret') });
 -        $borrowersync->update({ 'hashed_pin', $cgi->param('pin') });
-+        $borrowersync->update({ 'syncstatus', 'edited', 'lastsync',   $cgi->param('sist_endret') });
++        $borrowersync->update({ 'syncstatus' => 'edited', 'lastsync' => $cgi->param('sist_endret') });
 +        if ( $cgi->param('pin') ne "" ) {
-+            $borrowersync->update({ 'hashed_pin', $cgi->param('pin') });
++            $borrowersync->update({ 'hashed_pin' => $cgi->param('pin') });
 +        }
          # Try to sync in real time. If this fails it will be picked up by the cronjob
          NLSync({ 'borrowernumber' => $borrowernumber });
