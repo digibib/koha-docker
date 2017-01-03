@@ -159,7 +159,7 @@ koha-plack --enable "$KOHA_INSTANCE"
 
 echo "Installation finished - Stopping all services and giving supervisord control ..."
 service apache2 stop
-sleep 3 && ps aux | grep apache
+sleep 3
 koha-indexer --stop "$KOHA_INSTANCE" || true
 koha-stop-zebra "$KOHA_INSTANCE" || true
 
