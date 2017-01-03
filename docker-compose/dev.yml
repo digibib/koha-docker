@@ -6,3 +6,7 @@ services:
     build:
       context: "${KOHAPATH}/kohadev"
       dockerfile: Dockerfile
+
+  koha_mysql:
+    ports:
+      - "3306:3306"

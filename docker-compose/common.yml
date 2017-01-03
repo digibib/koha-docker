@@ -88,8 +88,6 @@ services:
       MYSQL_PASSWORD: "${KOHA_ADMINPASS:-secret}"
       MYSQL_ROOT_PASSWORD: "${KOHA_ADMINPASS:-secret}"
       MYSQL_USER: "${KOHA_ADMINUSER:-admin}"
-    ports:
-      - "3306:3306"
     volumes:
       - "koha_mysql_data:/var/lib/mysql"
     logging:
