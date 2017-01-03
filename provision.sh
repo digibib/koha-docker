@@ -48,7 +48,7 @@ else
   export MOUNTPATH=$KOHAPATH
 fi
 
-CMD="docker-compose -f common.yml KOHAPATH=${KOHAPATH} GITREF=${GITREF} "
+CMD="docker-compose -f common.yml KOHAPATH=$KOHAPATH GITREF=$GITREF "
 
 case "$KOHAENV" in
   'dev')
