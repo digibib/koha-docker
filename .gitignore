@@ -3,4 +3,5 @@ orca
 build.log
 docker-compose/secrets.env
 docker-compose/docker-compose.yml
+docker-compose/.env
 provision

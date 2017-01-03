@@ -1,0 +1,11 @@
+---
+version: '2.1'
+
+services:
+  koha:
+    build:
+      context: "${KOHAPATH}/koha-patched"
+      dockerfile: Dockerfile
+    volumes:
+      - ${KOHAPATH}/koha-patched/patches:/patches
+      - ${KOHAPATH}/koha-patched/debian:/debian

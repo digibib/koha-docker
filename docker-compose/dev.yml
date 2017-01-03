@@ -1,0 +1,8 @@
+---
+version: '2.1'
+
+services:
+  koha:
+    build:
+      context: "${KOHAPATH}/kohadev"
+      dockerfile: Dockerfile
