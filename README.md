@@ -116,9 +116,9 @@ But to install vagrant:
 
 ## Building the Koha Docker image in the build machine
 
-For local setup on machine, use NOVAGRANT=true, otherwise Vagrant will be used.
+If you want to work purely virtual, use VAGRANT=true, and a virtualbox will be set up.
 
-To build locally we recommend using the included docker-compose setup. For a very simple setup installed locally, use `NOVAGRANT=true make provision`
+To build locally we recommend using the included docker-compose setup. For a very simple setup installed locally, use `make provision`
 
 Using Makefile, the following commands are available:
 
@@ -148,7 +148,7 @@ Using Makefile, the following commands are available:
 
 To setup a development setup, please provision with
 
-`KOHAENV=dev NOVAGRANT=true make provision`
+`KOHAENV=dev make provision`
 
 some extra make targets for development:
 
