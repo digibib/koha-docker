@@ -88,3 +88,5 @@ ADD ./applypatch.sh /root/applypatch.sh
 ADD ./build.sh /root/build.sh
 
 CMD ["/root/build.sh"]
+# ARG can be removed when docker 1.13 is released
+ARG KOHA_BUILD

@@ -6,7 +6,6 @@ services:
     build:
       context: "${KOHAPATH}/koha-patched"
       dockerfile: Dockerfile
-      args: {}
     volumes:
       - ${KOHAPATH}/koha-patched/patches:/patches
       - ${KOHAPATH}/koha-patched/debian:/debian
