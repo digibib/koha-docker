@@ -12,6 +12,9 @@ services:
   koha:
     container_name: koha_build
     image: "digibib/koha:${GITREF}"
+    build:
+      context: "${KOHAPATH}"
+      dockerfile: Dockerfile
     networks:
       - backend
     depends_on:

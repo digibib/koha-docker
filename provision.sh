@@ -60,6 +60,7 @@ case "$KOHAENV" in
   $CMD -f patched.yml up -d
   ;;
   'build'|*)
+  $CMD build koha
   $CMD up -d
   ;;
 esac
