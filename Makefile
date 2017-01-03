@@ -36,7 +36,7 @@ provision:  shell_provision   	## Full provision
 
 wait_until_ready:
 	@echo "=======    wait until ready    ======\n"
-	$(CMD) -c 'sudo docker exec -t koha ./wait_until_ready.py'
+	$(CMD) -c 'sudo docker exec -t koha_build ./wait_until_ready.py'
 
 ifeq ($(KOHAENV),build)
 COMPOSE=cd $(KOHAPATH)/docker-compose && source docker-compose.env && KOHAPATH=$(KOHAPATH) docker-compose -f common.yml
