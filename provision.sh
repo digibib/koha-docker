@@ -48,19 +48,19 @@ else
   export MOUNTPATH=$KOHAPATH
 fi
 
-CMD="KOHAPATH=${KOHAPATH} GITREF=${GITREF} docker-compose -f common.yml"
+CMD="docker-compose -f common.yml KOHAPATH=${KOHAPATH} GITREF=${GITREF} "
 
 case "$KOHAENV" in
   'dev')
-  $CMD -f dev.yml build koha
-  $CMD -f dev.yml up -d
+  ${CMD} -f dev.yml build koha
+  ${CMD} -f dev.yml up -d
   ;;
   'patched')
-  $CMD -f patched.yml build koha
-  $CMD -f patched.yml up -d
+  ${CMD} -f patched.yml build koha
+  ${CMD} -f patched.yml up -d
   ;;
   'build'|*)
-  $CMD build koha
-  $CMD up -d
+  ${CMD} build koha
+  ${CMD} up -d
   ;;
 esac
