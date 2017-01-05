@@ -2,7 +2,7 @@ BEGIN{
   FS=","
 }
 {
-	print "\t<login id=\""$1"\" password=\""$2"\" delimiter=\"|\" error-detect=\"enabled\" institution=\""$3"\" checked_in_ok=\"1\">"
+	print "\t<login encoding=\""$1"\" id=\""$2"\" password=\""$3"\" delimiter=\"|\" error-detect=\"enabled\" institution=\""$4"\" checked_in_ok=\"1\">"
 	print "\t\t<!-- General messages -->"
 	print "\t\t<screen_msg_regex find=\"^.*Invalid password.*$\" replace=\"Feil passord\" />"
 	print "\t\t<!-- Checkout screen messages we can translate directly -->"

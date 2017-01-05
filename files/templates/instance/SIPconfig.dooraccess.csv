@@ -1,6 +1,7 @@
-dooraccess,$SIP_AUTOPASS,hutl
-doormajor,$SIP_AUTOPASS,fmaj
-doorfuru,$SIP_AUTOPASS,ffur
-doortoy,$SIP_AUTOPASS,fgam
-doorboler,$SIP_AUTOPASS,fbol
-doorlamb,$SIP_AUTOPASS,flam
+utf8,dooraccess,$SIP_AUTOPASS,hutl
+utf8,doormajor,$SIP_AUTOPASS,fmaj
+utf8,doorfuru,$SIP_AUTOPASS,ffur
+utf8,doortoy,$SIP_AUTOPASS,fgam
+utf8,doorboler,$SIP_AUTOPASS,fbol
+utf8,doorlamb,$SIP_AUTOPASS,flam
+utf8,doorbje,$SIP_AUTOPASS,fbje
