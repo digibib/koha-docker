@@ -4,17 +4,22 @@ This makes sure only one message_transport_type is used when
 running the overdue notices cronjob
 The code already checks if email or sms exists before running
 
+diff --git a/usr/share/koha/bin/cronjobs/overdue_notices.pl b/usr/share/koha/bin/cronjobs/overdue_notices.pl
 old mode 100644
 new mode 100755
 index 7504c7a..2e7346f
---- a/tmp/overdue.pl
+--- a/usr/share/koha/bin/cronjobs/overdue_notices.pl
 +++ b/usr/share/koha/bin/cronjobs/overdue_notices.pl
 @@ -770,7 +770,7 @@ END_SQL
                              ) unless $test_mode;
-                             # A print notice should be sent only once per overdue level.
-                             # Without this check, a print could be sent twice or more if the library checks sms and email and print and the patron has no email or sms number.
+                             # A print notice should be sent only once per overd
+ue level.
+                             # Without this check, a print could be sent twice o
+r more if the library checks sms and email and print and the patron has no email
+ or sms number.
 -                            $print_sent = 1 if $effective_mtt eq 'print';
 +                            $print_sent = 1;
                          }
                      }
                  }
+
