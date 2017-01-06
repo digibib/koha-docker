@@ -1,5 +1,5 @@
 #!/bin/sh
-# /root/auto_branchtransfer_automat_checkins.sh
+# /cronjobs/auto_branchtransfer_automat_checkins.sh
 # updates branchtransfers for items checked in with automat users
 # sets `datearrived` to NOW if missing if there are no reserves on biblio
 # and tobranch matches automat branch
