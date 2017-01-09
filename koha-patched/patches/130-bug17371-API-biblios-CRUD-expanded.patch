@@ -1,4 +1,4 @@
-130-API-biblios-CRUD-expanded
+130-bug17371-API-biblios-CRUD-expanded
 
 Patch to enable full CRUD on /api/v1/biblios
 Delete all items on DELETE as default, except if items have holds or issues
@@ -6,10 +6,10 @@ Also enables expanded item with status
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..ba9bf8b
+index 0000000..3cae1a1
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,210 @@
+@@ -0,0 +1,214 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -33,7 +33,7 @@ index 0000000..ba9bf8b
 +
 +use Koha::AuthUtils qw(hash_password);
 +use C4::Biblio qw( GetBiblioData AddBiblio ModBiblio DelBiblio ModZebra );
-+use C4::Items qw ( AddItemBatchFromMarc );
++use C4::Items qw ( AddItemBatchFromMarc DelItemCheck );
 +use Koha::Biblios;
 +use MARC::Record;
 +use MARC::Batch;
@@ -201,21 +201,25 @@ index 0000000..ba9bf8b
 +    # Delete items first
 +    my @item_errors = ();
 +    foreach my $item (@items) {
-+        my $res = $item->delete;
++        my $res = C4::Items::DelItemCheck($item->biblionumber, $item->itemnumber);
 +        unless ($res eq 1) {
 +            push @item_errors, $item->unblessed->{itemnumber};
 +        }
 +    }
 +
-+    ModZebra( $args->{biblionumber}, "recordDelete", "biblioserver" );
-+
-+    my $res = $biblio->delete;
-+    if ($res eq '1') {
-+        return $c->$cb({}, 200);
-+    } elsif ($res eq '-1') {
-+        return $c->$cb({error => "Not found. Error code: " . $res, items => @item_errors}, 404);
++    if (scalar @item_errors > 0) {
++      return $c->$cb({error => "One or more items could not be deleted. ", items => @item_errors}, 400);
 +    } else {
-+        return $c->$cb({error => "Error code: " . $res, items => @item_errors}, 400);
++        ModZebra( $args->{biblionumber}, "recordDelete", "biblioserver" );
++
++        my $res = $biblio->delete;
++        if ($res eq '1') {
++            return $c->$cb({}, 200);
++        } elsif ($res eq '-1') {
++            return $c->$cb({error => "Not found. Error code: " . $res, items => @item_errors}, 404);
++        } else {
++            return $c->$cb({error => "Error code: " . $res, items => @item_errors}, 400);
++        }
 +    }
 +}
 +
