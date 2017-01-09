@@ -24,11 +24,18 @@ EOF`"
 }
 
 update_returned_items() {
-    # sets status to 'returned' for yesterdays returns
+    # sets status to 'returned' for yesterdays returns, or 'lost_paid' if item is marked with itemlost=8
     local RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -vv 2>&1
         UPDATE kemnersaker k
         JOIN old_issues oi ON (oi.itemnumber=k.itemnumber)
-        SET k.status='returned', k.timestamp=TIMESTAMP(NOW())
+        JOIN items i ON (i.itemnumber=k.itemnumber)
+        SET k.status=(
+            SELECT
+            CASE i.itemlost
+            WHEN '8' THEN 'lost_paid'
+            ELSE 'returned'
+            END),
+            k.timestamp=TIMESTAMP(NOW())
         WHERE DATE_SUB(DATE(NOW()), INTERVAL 1 DAY) = DATE(oi.returndate)
         AND k.status IN ('new','sent');
 EOF`"
