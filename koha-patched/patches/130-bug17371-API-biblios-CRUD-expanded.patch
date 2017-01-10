@@ -9,7 +9,7 @@ new file mode 100644
 index 0000000..3cae1a1
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,212 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -212,13 +212,11 @@ index 0000000..3cae1a1
 +    } else {
 +        ModZebra( $args->{biblionumber}, "recordDelete", "biblioserver" );
 +
-+        my $res = $biblio->delete;
-+        if ($res eq '1') {
-+            return $c->$cb({}, 200);
-+        } elsif ($res eq '-1') {
-+            return $c->$cb({error => "Not found. Error code: " . $res, items => @item_errors}, 404);
++        my $err = C4::Biblio::DelBiblio($biblio-biblionumber);
++        if ($err) {
++            return $c->$cb({error => $err, items => @item_errors}, 400);
 +        } else {
-+            return $c->$cb({error => "Error code: " . $res, items => @item_errors}, 400);
++            return $c->$cb({}, 200);
 +        }
 +    }
 +}
