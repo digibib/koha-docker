@@ -212,7 +212,7 @@ index 0000000..3cae1a1
 +    } else {
 +        ModZebra( $args->{biblionumber}, "recordDelete", "biblioserver" );
 +
-+        my $err = C4::Biblio::DelBiblio($biblio-biblionumber);
++        my $err = C4::Biblio::DelBiblio($biblio->biblionumber);
 +        if ($err) {
 +            return $c->$cb({error => $err, items => @item_errors}, 400);
 +        } else {
