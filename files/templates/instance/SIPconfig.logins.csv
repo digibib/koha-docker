@@ -6,7 +6,7 @@ utf8,autonor,$SIP_AUTOPASS,fnor
 utf8,autoroms,$SIP_AUTOPASS,from
 ,autoblr,$SIP_AUTOPASS,autoblr
 ,autofuru,$SIP_AUTOPASS,autofuru
-,autogru,$SIP_AUTOPASS,autolmb
+,autogru,$SIP_AUTOPASS,fgry
 ,automaj,$SIP_AUTOPASS,automaj
 ,autotoy,$SIP_AUTOPASS,autotoy
 ,autohol,$SIP_AUTOPASS,fhol
