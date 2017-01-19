@@ -40,19 +40,24 @@ diff --git a/Koha/REST/V1/Patron.pm b/Koha/REST/V1/Patron.pm
 index b97a154..1e2f4f8 100644
 --- a/Koha/REST/V1/Patron.pm
 +++ b/Koha/REST/V1/Patron.pm
-@@ -18,15 +18,25 @@ package Koha::REST::V1::Patron;
+@@ -18,15 +18,30 @@ package Koha::REST::V1::Patron;
  use Modern::Perl;
- 
+
  use Mojo::Base 'Mojolicious::Controller';
 -
 +use Koha::AuthUtils qw(hash_password);
  use Koha::Patrons;
 +use Koha::Patron::Categories;
 +use Koha::Libraries;
- 
++
++use Module::Load;
++if ( C4::Context->preference('NorwegianPatronDBEnable') && C4::Context->preference('NorwegianPatronDBEnable') == 1 ) {
++    load Koha::NorwegianPatronDB, qw( NLGetSyncDataFromBorrowernumber NLEncryptPIN NLSync);
++}
+
  sub list {
      my ($c, $args, $cb) = @_;
- 
+
 -    my $user = $c->stash('koha.user');
 -
 -    my $patrons = Koha::Patrons->search;
@@ -67,22 +72,22 @@ index b97a154..1e2f4f8 100644
 +    } else {
 +        $patrons = Koha::Patrons->search;
 +    }
- 
+
      $c->$cb($patrons->unblessed, 200);
  }
-@@ -34,8 +44,6 @@ sub list {
+@@ -34,8 +49,6 @@ sub list {
  sub get {
      my ($c, $args, $cb) = @_;
- 
+
 -    my $user = $c->stash('koha.user');
 -
      my $patron = Koha::Patrons->find($args->{borrowernumber});
      unless ($patron) {
          return $c->$cb({error => "Patron not found"}, 404);
-@@ -44,4 +52,127 @@ sub get {
+@@ -44,4 +57,143 @@ sub get {
      return $c->$cb($patron->unblessed, 200);
  }
- 
+
 +sub add {
 +    my ($c, $args, $cb) = @_;
 +
@@ -158,6 +163,17 @@ index b97a154..1e2f4f8 100644
 +            return $c->$cb({error => "Patron category \"" . $body->{categorycode} . "\" does not exist"}, 404);
 +        }
 +    }
++
++    # Update the hahsed_pin needed for NL-syncronization while we have the password in cleartext.
++    my $nlsync;
++    if ( $body->{password} && C4::Context->preference('NorwegianPatronDBEnable') && C4::Context->preference('NorwegianPatronDBEnable') == 1 ) {
++        my $sync = NLGetSyncDataFromBorrowernumber( $args->{borrowernumber} );
++        if ( $sync ) {
++            $sync->update({ 'syncstatus' => 'edited', 'hashed_pin' => NLEncryptPIN( $body->{password} ) });
++            $nlsync = 1;
++        }
++    }
++
 +    # ALL OK - Update patron
 +    # Perhaps limit/validate what should be updated here? flags, et.al.
 +    if ($body->{password}) { $body->{password} = hash_password($body->{password}) }; # bcrypt password if given
@@ -165,6 +181,11 @@ index b97a154..1e2f4f8 100644
 +    my $updatedpatron = eval {
 +        $patron->set($body);
 +    };
++
++    # Do a live-sync with NL. Will be retried by cron-job if it fails.
++    if ($nlsync) {
++        NLSync({ 'borrowernumber' => $args->{borrowernumber} });
++    }
 +
 +    if ($updatedpatron) {
 +        if ($updatedpatron->is_changed) {
