@@ -1,4 +1,4 @@
-.PHONY: all test clean
+.PHONY: all provision test clean
 
 KOHAENV ?= build
 
