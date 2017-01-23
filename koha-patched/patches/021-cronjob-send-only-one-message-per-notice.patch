@@ -8,7 +8,7 @@ Fallback is 'print' if any other fails.
 diff --git a/misc/cronjobs/overdue_notices.pl b/misc/cronjobs/overdue_notices.pl
 old mode 100644
 new mode 100755
-index 2e7346f..5a99d1a
+index 7504c7a..5a99d1a
 --- a/misc/cronjobs/overdue_notices.pl
 +++ b/misc/cronjobs/overdue_notices.pl
 @@ -680,8 +680,19 @@ END_SQL
@@ -49,7 +49,7 @@ index 2e7346f..5a99d1a
 +                            # Enqueue exactly ONE notice.
                              # A print notice should be sent only once per overdue level.
 -                            # Without this check, a print could be sent twice or more if the library checks sms and email and print and the patron has no email or sms number.
--                            $print_sent = 1;
+-                            $print_sent = 1 if $effective_mtt eq 'print';
 +                            if ($print_sent == 0) {
 +                              C4::Letters::EnqueueLetter(
 +                                  {   letter                 => $letter,
