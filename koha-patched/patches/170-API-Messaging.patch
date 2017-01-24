@@ -6,18 +6,17 @@ Available routes:
 
 diff --git a/Koha/REST/V1/Messaging.pm b/Koha/REST/V1/Messaging.pm
 new file mode 100644
-index 0000000..513a059
+index 0000000..bc5a12b
 --- /dev/null
 +++ b/Koha/REST/V1/Messaging.pm
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,78 @@
 +package Koha::REST::V1::Messaging;
 +
 +# This file is part of Koha.
 +#
 +# Koha is free software; you can redistribute it and/or modify it under the
 +# terms of the GNU General Public License as published by the Free Software
-+# Foundation; either version 3 of the License, or (at your option) any later
-+# version.
++# Foundation; either version 3 of the License, or (at your option) any later version.
 +#
 +# Koha is distributed in the hope that it will be useful, but WITHOUT ANY
 +# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -30,31 +29,29 @@ index 0000000..513a059
 +use Modern::Perl;
 +
 +use Mojo::Base 'Mojolicious::Controller';
-+use C4::Letters qw( GetPreparedLetter );
-+use Koha::NorwegianPatronDB qw( NLDecodePin );
-+use Mail::Sendmail;
++use C4::Letters;
++use C4::Context;
++
 +use Koha::Libraries;
 +use Koha::Patrons;
-+use Koha::Email;
 +
-+use Data::Dumper;
-+
-+sub send_patron_account_details {
-+	my ($c, $args, $cb) = @_;
++sub add {
++     my ($c, $args, $cb) = @_;
 +
 +    my $patron = Koha::Patrons->find($args->{borrowernumber});
++
 +    unless ($patron) {
 +        return $c->$cb({error => "Patron not found"}, 404);
 +    }
 +
-+	unless ($patron->email) {
-+		return $c->$cb({error => "Invalid or no email address"}, 400);
-+	}
++    unless ($patron->email) {
++        return $c->$cb({error => "Invalid or no email address"}, 500);
++    }
 +
-+	my $library = Koha::Libraries->find( $patron->branchcode );
++    my $library = Koha::Libraries->find( $patron->branchcode );
 +
-+	#https://github.com/Koha-Community/Koha/blob/master/C4/Letters.pm#L596
-+    my $letter = GetPreparedLetter (
++    #https://github.com/Koha-Community/Koha/blob/master/C4/Letters.pm#L596
++    my $letter = C4::Letters::GetPreparedLetter (
 +        module => 'members',
 +        letter_code => 'ACCTDETAILS',
 +        branchcode => $patron->branchcode, # override default letter with branchcode letter if existing
@@ -63,43 +60,31 @@ index 0000000..513a059
 +            'borrowers' => $args->{borrowernumber},
 +        },
 +        substitute => { 'borrowers.password' => $patron->password },
-+	);
++    );
 +
-+    my $mail = _dispatch($letter, $patron, $library);
-+    if ($mail) {
-+    	return $c->$cb({}, 200);
-+	} else {
-+		return $c->$cb({error => "Failed sending message"}, 400);
-+	}
++    my $message_id = _enqueue_message($letter, $patron);
++
++    if ($message_id) {
++        return $c->$cb({}, 200);
++    } else {
++        return $c->$cb({error => "Failed sending message"}, 500);
++    }
 +
 +}
 +
-+# dispatch letter to patron
-+sub _dispatch {
-+	my ($letter, $patron, $library) = @_;
-+	my $mail = Koha::Email->new();
-+    my %dispatcher = $mail->create_message_headers(
++sub _enqueue_message {
++    my ($letter, $patron) = @_;
++
++    my $from = C4::Context->preference('KohaAdminEmailAddress');
++    return C4::Letters::EnqueueLetter(
 +        {
-+            to      => $patron->email,
-+            from    => $library->branchemail,
-+            replyto => $library->branchreplyto,
-+            sender  => $library->branchreturnpath,
-+            subject => Encode::encode( "UTF-8", "" . $letter->{'title'} ),
-+            message => $letter->{'is_html'}
-+                        ? "<html><body>"  . Encode::encode( "UTF-8", $letter->{'content'} ) . "</body></html>"
-+                        : Encode::encode( "UTF-8", "" . $letter->{'content'} ),
-+            contenttype => $letter->{'is_html'}
-+                            ? 'text/html; charset="utf-8"'
-+                            : 'text/plain; charset="utf-8"',
++            letter                 => $letter,
++            borrowernumber         => $patron->borrowernumber,
++            to_address             => $patron->email,
++            from_address           => $from,
++            message_transport_type => 'email',
 +        }
 +    );
-+	my $res = sendmail(%dispatcher);
-+    if ($res) {
-+		return 1;
-+	} else {
-+		warn Dumper($res);
-+    	return 0;
-+	}
 +}
 +
 +1;
@@ -117,14 +102,15 @@ index 3d72b54..e81c59f 100644
    },
 diff --git a/api/v1/swagger/paths/messaging.json b/api/v1/swagger/paths/messaging.json
 new file mode 100644
-index 0000000..9e059eb
+index 0000000..e9eb875
 --- /dev/null
 +++ b/api/v1/swagger/paths/messaging.json
-@@ -0,0 +1,38 @@
+@@ -0,0 +1,39 @@
 +{
 +  "/messaging/patrons/{borrowernumber}/accountdetails": {
 +    "put": {
-+      "operationId": "sendPatronAccountDetailsFromMessaging",
++      "x-mojo-controller": "Koha::REST::V1::Messaging",
++      "operationId": "add",
 +      "tags": ["patrons", "messages"],
 +      "parameters": [
 +        {
@@ -136,7 +122,7 @@ index 0000000..9e059eb
 +        "200": {
 +          "description": "Patron account details sent"
 +        },
-+        "400": {
++        "500": {
 +          "description": "Error sending patron account details",
 +          "schema": {
 +            "$ref": "../definitions.json#/error"
