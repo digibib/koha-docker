@@ -29,6 +29,24 @@ index 2920da9..a2d3823
  
 -
 -
+diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/tools/batchMod.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/tools/batchMod.tt
+index 115e4ea..0e4a094 100644
+--- a/koha-tmpl/intranet-tmpl/prog/en/modules/tools/batchMod.tt
++++ b/koha-tmpl/intranet-tmpl/prog/en/modules/tools/batchMod.tt
+@@ -46,7 +46,12 @@
+
+                             [% UNLESS del %]
+                                 <fieldset class="rows">
+-                                    <legend>Use default values</legend>
++                                    <legend>Framework</legend>
++                                    <label>Choose MARC framework</label>
++                                    <select name="framework">
++                                        <option value="DCHM">Deichman-rammeverk</option>
++                                        <option value="">Default</option>
++                                    </select>
+                                     <ol class="radio">
+                                         <li>
+                                             <label>
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/catalogue/detail.tt b/koha-tmpl/intranet-tmpl/prog/en/modules/catalogue/detail.tt
 index 2b6583b..bc60c78 100644
 --- a/koha-tmpl/intranet-tmpl/prog/en/modules/catalogue/detail.tt
