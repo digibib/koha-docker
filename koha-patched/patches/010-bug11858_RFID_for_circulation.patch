@@ -71,10 +71,10 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
      <table id="checkedintable">
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
 new file mode 100644
-index 0000000..6679179
+index 0000000..35d33bb
 --- /dev/null
 +++ b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
-@@ -0,0 +1,314 @@
+@@ -0,0 +1,322 @@
 +[% USE Koha %]
 +<style type="text/css">
 +/*
@@ -125,12 +125,15 @@ index 0000000..6679179
 + * inserts table to #patronlists and adds highlighted items as they arrive from websocket
 + */
 +var windowInFocus = true;
++var wasOnceConnected = false;
 +$(document).ready(function() {
 +  connect();
 +
 +  window.onfocus = function() {
 +    windowInFocus = true;
-+    connect();
++    if (wasOnceConnected) {
++      connect();
++    }
 +  }
 +});
 +
@@ -144,9 +147,10 @@ index 0000000..6679179
 +  state = $("body").attr("id");
 +  // activate RFID Modal
 +  $("#RFIDStatus").remove(); // In case this is a reconnect
-+  $("div.gradient").append('<div id="RFIDStatus"><a href="#" class="btn btn-small">RFID</a><span id="RFIDStatusMessage"></span><button id="RFIDPreg" onclick="activateWrite(ws);">Preg brikker</button></div>');
++  $("div.gradient").append('<div id="RFIDStatus"><a class="btn btn-small" onclick="location.reload();">RFID</a><span id="RFIDStatusMessage"></span><button id="RFIDPreg" onclick="activateWrite(ws);">Preg brikker</button></div>');
 +  ws.onopen = function() {
 +    console.log("connected");
++
 +    $('#RFIDStatus .btn').css("backgroundColor", "green");
 +
 +    ws.onmessage = function(resp) {
@@ -154,7 +158,7 @@ index 0000000..6679179
 +      // Major Error handling
 +      if (data.RFIDError) { // RFIDhun cannot access RFID
 +        $('#RFIDStatus .btn').css("backgroundColor", "red");
-+        $('#RFIDStatusMessage').text("ERROR connecting to RFID, please press button or refresh Browser to try again!");
++        $('#RFIDStatusMessage').text("ERROR connecting to RFID, refresh Browser to try again!");
 +      } else if (data.SIPError) { // RFIDhub cannot access SIP Server
 +        $('#RFIDStatus .btn').css("backgroundColor", "red");
 +        $('#RFIDStatusMessage').text("ERROR connecting to SIP Server, please ask Zarathustra for help or refresh browser!");
@@ -179,14 +183,17 @@ index 0000000..6679179
 +            $('#RFIDStatusMessage').text("Disconnected from RFIDHub, please refresh Browser to try to reconnect!");
 +            break;
 +          case "CHECKIN":
++            wasOnceConnected = true;
 +            console.log(" <- "+resp.data);
 +            handleItem(data);
 +            break;
 +          case "CHECKOUT":
++            wasOnceConnected = true;
 +            console.log(" <- "+resp.data);
 +            handleItem(data);
 +            break;
 +          case "ITEM-INFO":
++            wasOnceConnected = true;
 +            console.log(" <- "+resp.data);
 +            if (data.Item.Unknown) { // Failed to Look up Item
 +              $('#itemStatusDiv').toggleClass('hidden', false);
@@ -197,6 +204,7 @@ index 0000000..6679179
 +            }
 +            break;
 +          case "WRITE":
++            wasOnceConnected = true;
 +            console.log(" <- "+resp.data);
 +            $('#itemStatusDiv').toggleClass('hidden', false);
 +            if (data.Item.WriteFailed || data.Item.TagCountFailed) { // Failed to Write
@@ -217,7 +225,7 @@ index 0000000..6679179
 +  ws.onclose = function() {
 +    console.log("disconnected");
 +    $('#RFIDStatus .btn').css("backgroundColor", "orange");
-+    if (windowInFocus) {
++    if (windowInFocus && wasOnceConnected) {
 +      connect();
 +    }
 +  }
