@@ -71,10 +71,10 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
      <table id="checkedintable">
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
 new file mode 100644
-index 0000000..cfe5fea
+index 0000000..ed08dce
 --- /dev/null
 +++ b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
-@@ -0,0 +1,288 @@
+@@ -0,0 +1,303 @@
 +[% USE Koha %]
 +<style type="text/css">
 +/*
@@ -124,14 +124,30 @@ index 0000000..cfe5fea
 + * creates <div> with <table>
 + * inserts table to #patronlists and adds highlighted items as they arrive from websocket
 + */
++var windowInFocus = true;
 +$(document).ready(function() {
++  connect();
++
++  window.onfocus = function() {
++    windowInFocus = true;
++    connect();
++  }
++});
++
++var connect = function() {
 +  ws=new WebSocket(rfidhuburl);
++  window.onblur = function() {
++    windowInFocus = false;
++    ws.close();
++  }
 +  branch = document.getElementById("logged-in-branch-code") ? document.getElementById("logged-in-branch-code").innerHTML : "ukjent";
 +  state = $("body").attr("id");
 +  // activate RFID Modal
-+  $("div.gradient").append('<div id="RFIDStatus"><a href="#" class="btn btn-small" onclick="reconnectHUB();">RFID</a><span id="RFIDStatusMessage"></span><button id="RFIDPreg" onclick="activateWrite();">Preg brikker</button></div>');
++  $("#RFIDStatus").remove(); // In case this is a reconnect
++  $("div.gradient").append('<div id="RFIDStatus"><a href="#" class="btn btn-small">RFID</a><span id="RFIDStatusMessage"></span><button id="RFIDPreg" onclick="activateWrite(ws);">Preg brikker</button></div>');
 +  ws.onopen = function() {
 +    console.log("connected");
++    $('#RFIDStatus .btn').css("backgroundColor", "green");
 +
 +    ws.onmessage = function(resp) {
 +      var data = JSON.parse(resp.data);
@@ -198,16 +214,15 @@ index 0000000..cfe5fea
 +  ws.onclose = function() {
 +    console.log("disconnected");
 +    $('#RFIDStatus .btn').css("backgroundColor", "orange");
++    if (windowInFocus) {
++      connect();
++    }
 +  }
 +  ws.onerror = function() {
 +    console.log("No connection to RFIDhub!");
 +    $('#RFIDStatus .btn').css("backgroundColor", "red");
 +    $('#RFIDStatusMessage').text("ERROR connecting to RFIDhub, please refresh Browser to try again!");
 +  }
-+});
-+
-+function reconnectHUB() {
-+  window.location.reload();
 +}
 +
 +function handleItem(msg) {
@@ -254,7 +269,7 @@ index 0000000..cfe5fea
 +    row.children('td').css("backgroundColor", "pink");
 +  } else if(msg.Item.AlarmOnFailed || msg.Item.AlarmOffFailed) {
 +    row.children('td').css("backgroundColor", "pink");
-+    row.append('<td><a href="#" class="btn btn-small" onclick="return retryAlarm();">Retry</a></td>');
++    row.append('<td><a href="#" class="btn btn-small" onclick="return retryAlarm(ws);">Retry</a></td>');
 +  } else {
 +    row.children('td').effect("highlight", {color: "lightgreen"}, 3000);
 +  }
@@ -309,18 +324,18 @@ index 0000000..cfe5fea
 +  '<p id="itemStatus">&nbsp;</p>'+
 +  '</div>'+
 +  '<div id="writeRFIDButtons">'+
-+  '<a href="#" id="writeButton" class="hidden btn btn-small" onclick="return writeItem();">Preg brikker</a></div>'+
-+  '<a href="#" class="btn btn-small" onclick="return lookupItem();">Søk opp bok</a>'+
-+  '<a href="#" class="btn btn-small" onclick="return deactivateWrite();">Avslutt</a></div>');
++  '<a href="#" id="writeButton" class="hidden btn btn-small" onclick="return writeItem(ws);">Preg brikker</a></div>'+
++  '<a href="#" class="btn btn-small" onclick="return lookupItem(ws);">Søk opp bok</a>'+
++  '<a href="#" class="btn btn-small" onclick="return deactivateWrite(ws);">Avslutt</a></div>');
 +}
 +
-+function lookupItem() {
++function lookupItem(ws) {
 +  // Request item info
 +  ws.send(JSON.stringify({Action: "ITEM-INFO", Item: { Barcode: $('#barcodeInput').val() } }));
 +  return true;
 +}
 +
-+function writeItem() {
++function writeItem(ws) {
 +  var msg = JSON.stringify({Action: "WRITE", Item: { Barcode: $('#barcodeInput').val(), NumTags: parseInt($('#itemTags').val()) } });
 +  console.log(msg);
 +  ws.send(msg);
