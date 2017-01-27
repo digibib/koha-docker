@@ -71,10 +71,10 @@ diff --git a/koha-tmpl/intranet-tmpl/prog/en/modules/circ/returns.tt b/koha-tmpl
      <table id="checkedintable">
 diff --git a/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
 new file mode 100644
-index 0000000..ed08dce
+index 0000000..6679179
 --- /dev/null
 +++ b/koha-tmpl/intranet-tmpl/prog/en/includes/rfidhub.inc
-@@ -0,0 +1,303 @@
+@@ -0,0 +1,314 @@
 +[% USE Koha %]
 +<style type="text/css">
 +/*
@@ -205,6 +205,9 @@ index 0000000..ed08dce
 +            } else {
 +              $('#itemStatus').text("SUCCESS writing tag!");
 +              $('#itemStatus').attr("style", "background-color: lightgreen");
++              $('#barcodeInput').val('');
++              $('#itemLabel').val('');
++              $('#barcodeInput').focus();
 +            }
 +            break;
 +          }
@@ -300,6 +303,12 @@ index 0000000..ed08dce
 +  ws.send(JSON.stringify({Action: "END" }));
 +  buildWriteRFIDModal();
 +  $("#writeRFIDModal").toggleClass('hidden', false);
++  $("#barcodeInput").focus();
++  $("#barcodeInput").on('keyup', function(e) {
++    if (e.keyCode == 13) {
++      lookupItem(ws);
++    }
++  })
 +}
 +
 +function deactivateWrite() {
@@ -330,6 +339,7 @@ index 0000000..ed08dce
 +}
 +
 +function lookupItem(ws) {
++  $('#itemStatus').text('') // clear any message from previous write
 +  // Request item info
 +  ws.send(JSON.stringify({Action: "ITEM-INFO", Item: { Barcode: $('#barcodeInput').val() } }));
 +  return true;
@@ -348,6 +358,7 @@ index 0000000..ed08dce
 +  $("#itemTags").attr("value", item.NumTags);
 +  $("#itemInfoDiv").toggleClass('hidden', false);
 +  $("#writeButton").toggleClass('hidden', false);
++  $('#writeButton').focus();
 +}
 +
 +function getRfidDiv() {
