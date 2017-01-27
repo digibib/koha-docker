@@ -1,11 +1,12 @@
 diff --git a/Koha/REST/V1.pm b/Koha/REST/V1.pm
-index aae35f5..146881a 100644
+index e307552..2820287 100644
 --- a/Koha/REST/V1.pm
 +++ b/Koha/REST/V1.pm
-@@ -57,6 +57,12 @@ sub startup {
+@@ -56,6 +56,13 @@ sub startup {
+         validate => 1,
          spec_path => '/spec'
      });
-
++
 +    # Deichman mod: Add CORS header to all responses
 +    # TODO restrict to domain koha.deichman.no or whatever when subdomain-names are fixed
 +    $self->hook(before_dispatch => sub {
