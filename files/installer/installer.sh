@@ -112,8 +112,8 @@ apply_once() {
   VERSION=16.0600046
   if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
     echo "Configuring National Library Card settings ..."
-    if [ -n "$NLVENDORURL" ]; then
-      echo -n "UPDATE systempreferences SET value = \"1\" WHERE variable = 'NorwegianPatronDBEnable';" | koha-mysql $KOHA_INSTANCE
+    if [ -n "$NLENABLE" ]; then
+      echo -n "UPDATE systempreferences SET value = \"$NLENABLE\" WHERE variable = 'NorwegianPatronDBEnable';" | koha-mysql $KOHA_INSTANCE
       echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
       echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
       echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE

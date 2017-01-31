@@ -39,6 +39,7 @@ services:
       SMS_USER: "${SMS_USER:-smsuser}"
       SMS_PASS: "${SMS_PASS:-smspass}"
       API_PASSPHRASE: "${API_PASSPHRASE:-ChangeMe}"
+      NLENABLE: "${NLENABLE:-0}"
       NLBASEUSER: "${NLBASEUSER:-nlbaseuser}"
       NLBASEPASS: "${NLBASEPASS:-nlbasepass}"
       NLVENDORURL: "${NLVENDORURL:-http://nlsink:9999}"
