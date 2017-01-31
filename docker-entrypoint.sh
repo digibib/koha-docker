@@ -63,8 +63,8 @@ sleep 1 # waiting for apache restart to finish
 echo "Running webinstaller and applying local deichman mods - please be patient ..."
 cd /usr/share/koha/lib && /installer/installer.sh
 
-echo "Fixing bug in translated member search template..."
-sed -i 's/l\xc3\xa5nenummer/borrowernumber/' /usr/share/koha/intranet/htdocs/intranet-tmpl/prog/nb-NO/modules/members/tables/members_results.tt
+echo "Fixing bug in translated member search template in Norwegian..."
+sed -i 's/l\xc3\xa5nenummer/borrowernumber/' /usr/share/koha/intranet/htdocs/intranet-tmpl/prog/nb-NO/modules/members/tables/members_results.tt || true
 
 echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
