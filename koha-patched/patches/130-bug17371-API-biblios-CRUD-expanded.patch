@@ -6,7 +6,7 @@ Also enables expanded item with status and reservability
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..58a2c09
+index 0000000..2235b05
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
 @@ -0,0 +1,217 @@
@@ -88,6 +88,9 @@ index 0000000..58a2c09
 +            $item->{status} = "Utlånt";
 +        }
 +
++        if ($item->{holdingbranch} eq 'hsko') {
++            $item->{reservable} = 0;        }
++
 +        if ($item->{onloan}) {
 +            $item->{status} = "Utlånt";
 +        }
@@ -95,7 +98,6 @@ index 0000000..58a2c09
 +        my $notloan = $item->{notforloan};
 +        if ($notloan) {
 +            # -2  Bestilt
-+            #  5  Hurtiglån         (status=Utlånt/Ledig depending on item.onloan)
 +            #  8  Ikke til hjemlån
 +            #  1  Til internt bruk
 +            # -1  Til klargjøring
@@ -112,8 +114,6 @@ index 0000000..58a2c09
 +                if ($item->{onloan}) {
 +                    $item->{status} = "Ikke til hjemlån (utlånt)"
 +                }
-+            } elsif ($notloan == 5) {
-+                $item->{reservable} = 0;
 +            }
 +        }
 +
