@@ -2,14 +2,14 @@
 
 Patch to enable full CRUD on /api/v1/biblios
 Delete all items on DELETE as default, except if items have holds or issues
-Also enables expanded item with status
+Also enables expanded item with status and reservability
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..3cae1a1
+index 0000000..58a2c09
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,217 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -115,6 +115,11 @@ index 0000000..3cae1a1
 +            } elsif ($notloan == 5) {
 +                $item->{reservable} = 0;
 +            }
++        }
++
++        # certain item types are not reservable
++        if ( grep { $_ eq $item->{itype}} qw(10DLAAN TOUKESLAAN UKESLAAN SETT) ) {
++            $item->{reservable} = 0;
 +        }
 +
 +        if ($item->{itemlost}) {
