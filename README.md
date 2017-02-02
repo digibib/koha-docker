@@ -3,7 +3,7 @@ Koha Docker Container
 
 This project builds a [Docker](https://www.docker.com/) image containg an installation of the library system [Koha](http://koha-community.org/). 
 
-If you don't want to build the Docker image yourself we automatically build and push new versions of the image to [Docker Hub Registry](https://registry.hub.docker.com/u/digibib/koha/) on every push to [this GitHub repository](https://github.com/digibib/koha-salt-docker). New images are given tags that correspond to the git head revisions in the git repo. See the section [Using the Koha Docker image](#using-the-Koha-docker-image) for more information.
+If you don't want to build the Docker image yourself we automatically build and push new versions of the image to [Docker Hub Registry](https://registry.hub.docker.com/u/digibib/koha/) from pushes to master branch on [this GitHub repository](https://github.com/digibib/koha-docker). New images are given tags that correspond to the git head revisions in the git repo. See the section [Using the Koha Docker image](#using-the-Koha-docker-image) for more information.
 
 The Docker image produced uses currently released [Debian packages of Koha](http://wiki.koha-community.org/wiki/Koha_on_Debian). 
 
@@ -12,6 +12,38 @@ The image will on startup go through the steps of the Koha Webinstaller acceptin
 ## Using the Koha Docker image
 
 This section assumes [some](https://www.docker.com/whatisdocker/) [understanding](https://docs.docker.com/introduction/understanding-docker/) [of Docker](http://www.dockerbook.com/), and a machine (virtual or physical) capable of running Docker.
+
+It also assumes basic understanding of [docker-compose](https://docs.docker.com/compose/) for docker automated setup, although not mandatory.
+
+Environments
+==
+
+This setup has three environments (set with KOHAENV variable)
+
+    build:   standard Koha setup and install (default)
+    patched: runtime build of debian packages from Koha git applying bugzilla and local patches
+    dev:     development setup of Koha from git
+
+Environment variables used in containers can be seen in `docker-compose/common.yml` along with defaults.
+
+Automated setup with docker-compose
+==
+
+We recommend setup with docker-compose and Makefile for simplest possible use.
+
+On Linux you would simply do `make provision` to setup system with docker-compose, docker and pulling docker
+images and setting up containers and data volumes. For overriding any variables, simply put them in a file:
+`docker-compose/.env`
+
+`make help` will give overview of make targets
+
+On osX or Windows you would need to install docker and docker-compose manually.
+
+NB: If not using Makefile, please note that some environment variables are needed (from docker-compose/docker-compose.env).
+These need to be sourced before using docker-compose manually if you use other env than default `build`
+
+Manual setup with docker
+==
 
 For mysql and apache to work properly in docker, you need to add some capabilities to the container:
 
@@ -57,6 +89,8 @@ You should set credentials for the Koha instance database user on container star
 	-t digibib/koha
 </pre>
 
+For more env vars, see `docker-compose/common.yml`
+
 ### External MySql
 
 Note: Koha is p.t. incompatible with versions > 5.6.20.
@@ -100,7 +134,7 @@ But to install vagrant:
         * Download and install "VirtualBox platform package" for Window hosts: [Virtualbox Downloads](https://www.virtualbox.org/wiki/Downloads)
         * Download and install Vagrant for Windows: [Vagrant Downloads](https://www.vagrantup.com/downloads)
         * Reboot your machine.
-        * [Install Cygwin] (https://cygwin.com/install.html)
+        * [Install Cygwin](https://cygwin.com/install.html)
           - Choose the following packages:
             * git
             * make
