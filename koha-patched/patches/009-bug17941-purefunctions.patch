@@ -1,0 +1,250 @@
+009-bug17941-purefunctions.patch
+
+This patch adds Koha::Util::PureFunctions
+
+PureFunctions adds a HashMap function attribute that will work as a Cached Index for 
+stable, idempotent Getter functions that will greatly improve the speed of Koha in
+places where same function is called many times and produces many Mysql requests
+
+diff --git a/Koha/Util/PureFunctions b/Koha/Util/PureFunctions
+new file mode 100644
+index 0000000..2d209d1
+--- /dev/null
++++ b/Koha/Util/PureFunctions
+@@ -0,0 +1,83 @@
++use strict;
++use warnings;
++
++package Koha::Util::PureFunctions;
++our $DBG;
++our $STORE;
++our $STATS;
++
++use Attribute::Handlers;
++use YAML::XS;
++use Data::Dumper;
++
++sub pure(&) {
++    my ($code) = @_;
++    local $STORE //= {};
++    $code->();
++}
++
++sub PureFunction :ATTR(BEGIN) {
++    my ($package, $subp, $code, $attr) = @_;
++    my $subn = $package."::".*{$subp}{NAME};
++    my $memo = sub {
++        local $::STORE = $::STORE//{};
++        local $YAML::SortKeys = 1;
++        my $key = Dump \@_;
++        $key = "A$key" if wantarray;
++        $DBG and printf STDERR "$subn : PureFunction(%s)... store: $::STORE\n", $key;
++        my $cache = $STORE->{$subn}//={};
++        my $stats; $stats = $STATS->{$subn}//={} if $STATS;
++        if (exists $cache->{$key}) {
++            $stats && $stats->{hit}++;
++        } else {
++            $stats && $stats->{miss}++;
++            if (wantarray) {
++                $cache->{$key} = [$code->(@_)]; # exceptions will fall thru, no caching for them
++            } else {
++                $cache->{$key} = $code->(@_);
++            }
++        }
++        if (wantarray) {
++            return @{$cache->{$key}};
++        } else {
++            return $cache->{$key};
++        }
++    };
++    $DBG and print STDERR "redefining '$subn'...\n";
++    no warnings 'redefine';
++    *{$subp} = $memo;
++}
++
++sub PureFunctionHash :ATTR(BEGIN) {
++    my ($package, $subp, $code, $attr) = @_;
++    my $subn = $package."::".*{$subp}{NAME};
++    my $memo = sub {
++        local $STORE = $STORE//{};
++        my %args = @_;
++        my $key = Dump \%args;
++        $key = "A$key" if wantarray;
++        $DBG and print STDERR "$subn : PureFunctionHash($key)... store: $::STORE\n";
++        my $cache = $STATS->{$subn}//={};
++        my $stats; $stats = $STATS->{$subn}//={} if $STATS;
++        if (exists $cache->{$key}) {
++            $stats && $stats->{hit}++;
++        } else {
++            $stats && $stats->{miss}++;
++            if (wantarray) {
++                $cache->{$key} = [$code->(@_)]; # exceptions will fall thru, no caching for them
++            } else {
++                $cache->{$key} = $code->(@_);
++            }
++        }
++        if (wantarray) {
++            return @{$cache->{$key}};
++        } else {
++            return $cache->{$key};
++        }
++    };
++    $DBG and print STDERR "redefining '$subn'...\n";
++    no warnings 'redefine';
++    *{$subp} = $memo;
++}
++
++1;
+diff --git a/C4/Circulation.pm b/C4/Circulation.pm
+index 0230429..2e2d948 100644
+--- a/C4/Circulation.pm
++++ b/C4/Circulation.pm
+@@ -68,8 +68,10 @@ use Date::Calc qw(
+ use vars qw(@ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
+ 
+ BEGIN {
++    require Koha::Util::PureFunctions;
+ 	require Exporter;
+-	@ISA    = qw(Exporter);
++
++@ISA    = qw(Koha::Util::PureFunctions Exporter );
+ 
+ 	# FIXME subs that should probably be elsewhere
+ 	push @EXPORT, qw(
+@@ -1682,7 +1684,7 @@ Neither C<$branchcode> nor C<$itemtype> should be '*'.
+ 
+ =cut
+ 
+-sub GetBranchItemRule {
++sub GetBranchItemRule : PureFunction {
+     my ( $branchcode, $itemtype ) = @_;
+     my $dbh = C4::Context->dbh();
+     my $result = {};
+@@ -2614,7 +2616,7 @@ already renewed the loan. $error will contain the reason the renewal can not pro
+ 
+ =cut
+ 
+-sub CanBookBeRenewed {
++sub CanBookBeRenewed : PureFunction {
+     my ( $borrowernumber, $itemnumber, $override_limit ) = @_;
+ 
+     my $dbh    = C4::Context->dbh;
+diff --git a/C4/Items.pm b/C4/Items.pm
+index 3330a1f..dbb4daa 100644
+--- a/C4/Items.pm
++++ b/C4/Items.pm
+@@ -48,9 +48,9 @@ use Koha::Libraries;
+ use vars qw(@ISA @EXPORT);
+ 
+ BEGIN {
+-
+-	require Exporter;
+-    @ISA = qw( Exporter );
++    require Koha::Util::PureFunctions;
++    require Exporter;
++    @ISA = qw( Koha::Util::PureFunctions Exporter );
+ 
+     # function exports
+     @EXPORT = qw(
+@@ -154,7 +154,7 @@ names to values.  If C<$serial> is true, include serial publication data.
+ 
+ =cut
+ 
+-sub GetItem {
++sub GetItem : PureFunction {
+     my ($itemnumber,$barcode, $serial) = @_;
+     my $dbh = C4::Context->dbh;
+ 
+diff --git a/C4/Members.pm b/C4/Members.pm
+index a501041..a126cbf 100644
+--- a/C4/Members.pm
++++ b/C4/Members.pm
+@@ -56,8 +56,9 @@ if ( ! can_load( modules => { 'Koha::NorwegianPatronDB' => undef } ) ) {
+ 
+ BEGIN {
+     $debug = $ENV{DEBUG} || 0;
++    require Koha::Util::PureFunctions;
+     require Exporter;
+-    @ISA = qw(Exporter);
++    @ISA = qw(Koha::Util::PureFunctions Exporter);
+     #Get data
+     push @EXPORT, qw(
+         &GetMember
+@@ -299,7 +300,7 @@ enforced in the routine itself.
+ =cut
+ 
+ #'
+-sub GetMember {
++sub GetMember : PureFunction {
+     my ( %information ) = @_;
+     if (exists $information{borrowernumber} && !defined $information{borrowernumber}) {
+         #passing mysql's kohaadmin?? Makes no sense as a query
+diff --git a/C4/Reserves.pm b/C4/Reserves.pm
+index 3f124a6..592ac0d 100644
+--- a/C4/Reserves.pm
++++ b/C4/Reserves.pm
+@@ -98,8 +98,9 @@ This modules provides somes functions to deal with reservations.
+ =cut
+ 
+ BEGIN {
++    require Koha::Util::PureFunctions;
+     require Exporter;
+-    @ISA = qw(Exporter);
++    @ISA = qw(Koha::Util::PureFunctions Exporter);
+     @EXPORT = qw(
+         &AddReserve
+ 
+@@ -457,7 +458,7 @@ sub CanBookBeReserved{
+ 
+ =cut
+ 
+-sub CanItemBeReserved {
++sub CanItemBeReserved : PureFunction {
+     my ( $borrowernumber, $itemnumber ) = @_;
+ 
+     my $dbh = C4::Context->dbh;
+@@ -821,7 +822,7 @@ If several reserves exist, the reserve with the lower priority is given.
+ ## It only ever checks the first reserve result, even though
+ ## multiple reserves for that bib can have the itemnumber set
+ ## the sub is only used once in the codebase.
+-sub GetReserveStatus {
++sub GetReserveStatus : PureFunction {
+     my ($itemnumber) = @_;
+ 
+     my $dbh = C4::Context->dbh;
+@@ -872,7 +873,7 @@ table in the Koha database.
+ 
+ =cut
+ 
+-sub CheckReserves {
++sub CheckReserves : PureFunction {
+     my ( $item, $barcode, $lookahead_days, $ignore_borrowers) = @_;
+     my $dbh = C4::Context->dbh;
+     my $sth;
+@@ -1480,7 +1481,7 @@ and canreservefromotherbranches.
+ 
+ =cut
+ 
+-sub IsAvailableForItemLevelRequest {
++sub IsAvailableForItemLevelRequest : PureFunction {
+     my $item = shift;
+     my $borrower = shift;
+ 
+@@ -1572,7 +1573,7 @@ sub _get_itype {
+     return $itype;
+ }
+ 
+-sub _OnShelfHoldsAllowed {
++sub _OnShelfHoldsAllowed : PureFunction {
+     my ($itype,$borrowercategory,$branchcode) = @_;
+ 
+     my $issuing_rule = Koha::IssuingRules->get_effective_issuing_rule({ categorycode => $borrowercategory, itemtype => $itype, branchcode => $branchcode });
+@@ -2447,7 +2448,7 @@ sub CalculatePriority {
+ 
+ =cut
+ 
+-sub IsItemOnHoldAndFound {
++sub IsItemOnHoldAndFound : PureFunction {
+     my ($itemnumber) = @_;
+ 
+     my $rs = Koha::Database->new()->schema()->resultset('Reserve');
