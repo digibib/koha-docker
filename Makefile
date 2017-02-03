@@ -41,7 +41,7 @@ up:				## Sets up all docker containers
 
 wait_until_ready:
 	@echo "=======    wait until ready    ======\n"
-	$(CMD) -c 'docker exec -it koha_$(KOHAENV) ./wait_until_ready.py'
+	$(CMD) -c 'docker exec -i koha_$(KOHAENV) ./wait_until_ready.py'
 
 rebuild:			## Build and start Koha
 	@echo "======= FORCE RECREATING koha ======\n"
