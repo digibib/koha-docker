@@ -30,7 +30,7 @@ services:
       KOHA_ADMINUSER: "${KOHA_ADMINUSER:-admin}"
       KOHA_INSTANCE: "${KOHA_INSTANCE:-name}"
       KOHA_DBHOST: koha_mysql
-      INSTALL_LANGUAGES: "${INSTALL_LANGUAGES:-}"
+      INSTALL_LANGUAGES: "${INSTALL_LANGUAGES:-en}"
       DEFAULT_LANGUAGE: "${DEFAULT_LANGUAGE:-en}"
       EMAIL_ENABLED: "True"
       SMTP_SERVER_HOST: mailrelay # access through network 'backend'
