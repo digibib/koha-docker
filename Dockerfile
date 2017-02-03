@@ -55,9 +55,9 @@ RUN sed -i "s/httpredir.debian.org/`curl -s -D - http://httpredir.debian.org/dem
 COPY docker-wait_until_ready.py /root/wait_until_ready.py
 RUN apt-get install -y python-requests && apt-get clean
 # Missing perl dependencies
-RUN apt-get update && apt-get install -y \
-    libwww-csrf-perl libpath-tiny-perl \
-    libhtml-strip-perl libipc-run3-perl paps && \
+RUN apt-get install -y \
+    libhtml-strip-perl libipc-run3-perl paps \
+    libyaml-libyaml-perl && \
     apt-get clean
 
 # Installer files
