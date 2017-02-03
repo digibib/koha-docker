@@ -6,11 +6,11 @@ PureFunctions adds a HashMap function attribute that will work as a Cached Index
 stable, idempotent Getter functions that will greatly improve the speed of Koha in
 places where same function is called many times and produces many Mysql requests
 
-diff --git a/Koha/Util/PureFunctions b/Koha/Util/PureFunctions
+diff --git a/Koha/Util/PureFunctions.pm b/Koha/Util/PureFunctions.pm
 new file mode 100644
 index 0000000..2d209d1
 --- /dev/null
-+++ b/Koha/Util/PureFunctions
++++ b/Koha/Util/PureFunctions.pm
 @@ -0,0 +1,83 @@
 +use strict;
 +use warnings;
