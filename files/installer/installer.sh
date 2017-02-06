@@ -16,9 +16,9 @@ finish() {
     echo -e "$RESULT"
     if [ -n $EXIT_CODE ];
     then
-      exit $EXIT_CODE
+      exit $EXIT_CODE  # Exit with manually set EXIT_CODE from subshell/function/command
     else
-      exit $exit_code
+      exit $exit_code  # Exit with exit code from 'exit 1' or similar
     fi
 }
 
@@ -45,12 +45,14 @@ apply_always() {
   echo "Installing the default language if not already installed ..."
   if [ -n "$DEFAULT_LANGUAGE" ]; then
       if [ -z `koha-translate --list | grep -Fx $DEFAULT_LANGUAGE` ] ; then
-          koha-translate --install $DEFAULT_LANGUAGE
+          RESULT=`koha-translate --install $DEFAULT_LANGUAGE`
+          EXIT_CODE=$?
       fi
 
       echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
           UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
           koha-mysql $KOHA_INSTANCE
+          EXIT_CODE=$?
   fi
 
   echo "Configuring email settings ..."
@@ -70,6 +72,7 @@ apply_always() {
       sendmail=/usr/share/perl5/Mail/Sendmail.pm
       awk -v sb="$sub" '/^%mailcfg/,/;/ { if ( $0 ~ /\);/ ) print sb; next } 1' $sendmail > tmp && \
         mv tmp $sendmail
+      EXIT_CODE=$?
     fi
     # setup default debian exim4 to use smtp relay (used by sendmail and MIME::Lite)
     sed -i "s/dc_smarthost.*/dc_smarthost='mailrelay::2525'/" /etc/exim4/update-exim4.conf.conf
@@ -77,12 +80,14 @@ apply_always() {
     update-exim4.conf -v
 
     koha-email-enable $KOHA_INSTANCE
+    EXIT_CODE=$?
   fi
 
   echo "Setting up MYSQL triggers ..."
   for trigger in /installer/triggers/*.sql
   do
       RESULT=`koha-mysql $KOHA_INSTANCE < $trigger`
+      EXIT_CODE=$?
   done
 
   echo "Patching DBIx schema files ..."
@@ -107,6 +112,7 @@ apply_once() {
     echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
     echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = 'SMSSendUsername';" | koha-mysql $KOHA_INSTANCE
     echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = 'SMSSendPassword';" | koha-mysql $KOHA_INSTANCE
+    EXIT_CODE=$?
   fi
 
   VERSION=16.0600046
@@ -117,6 +123,7 @@ apply_once() {
       echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
       echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
       echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
+      EXIT_CODE=$?
     fi
   fi
 
@@ -138,6 +145,7 @@ apply_once() {
         KEY kemner_borroweridx (borrowernumber)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 EOF
+  EXIT_CODE=$?
   fi
 }
 
