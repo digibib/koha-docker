@@ -84,6 +84,11 @@ apply_always() {
   fi
 
   echo "Setting up MYSQL triggers ..."
+  # drop all triggers first
+  echo -n "SELECT CONCAT('DROP TRIGGER ', TRIGGER_NAME, ';') FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = SCHEMA();" | \
+    koha-mysql $KOHA_INSTANCE  -B --column-names=FALSE > /tmp/droptriggers.sql
+  koha-mysql $KOHA_INSTANCE < /tmp/droptriggers.sql
+
   for trigger in /installer/triggers/*.sql
   do
       RESULT=`koha-mysql $KOHA_INSTANCE < $trigger`
