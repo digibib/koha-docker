@@ -62,8 +62,8 @@ index 7d67975..309d701 100644
 +            },
 +            "suspend_until": {
 +              "description": "Suspend until",
-+              "type": "string",
-+              "format": "date"
++              "type": ["string", "null"],
++              "format": "datetime"
 +            }
 +          }
 +        }
