@@ -25,9 +25,13 @@ Various fixes to NL-synchronization
 
 * Fix re-sync of imported patron from NL
 
+* Retry fixing bad data with up to 3 calls to NL
+
+* Make sure 'server_tid' is stored in borrower_sync.lastsync after successfull sync.
+
 
 diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
-index 237ddd7..c4209c7 100644
+index 237ddd7..731bd78 100644
 --- a/Koha/NorwegianPatronDB.pm
 +++ b/Koha/NorwegianPatronDB.pm
 @@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
@@ -38,7 +42,63 @@ index 237ddd7..c4209c7 100644
  )] );
  Exporter::export_ok_tags('all');
 
-@@ -257,10 +258,62 @@ sub NLSync {
+@@ -237,33 +238,125 @@ sub NLSync {
+
+     my $cardnumber = SOAP::Data->name( 'lnr' => $patron->cardnumber );
+
+-    # Call the appropriate method based on syncstatus
++    # We will now perform the SOAP call. After that we must carefully
++    # inspect the response and take actions depending
++    # on its contents. There are several situations we have to handle.
++    # NL is very picky about what it accepts, and issues might stem
++    # from missing or bad data or inconsistency with existing data in NL.
++    #
++    # We might need to perform multiple extra SOAP calls to fix the
++    # issue, so in order to not risk enter into an infinite loop, we
++    # limit the number of times we try to fix things before we give
++    # up and return the last response.
++
++    my $max_tries = 3;
++    my $ok;
+     my $response;
+-    if ( $sync->syncstatus eq 'edited' || $sync->syncstatus eq 'new' ) {
+-        my $soap_patron = _koha_patron_to_soap( $patron );
+-        if ( $sync->syncstatus eq 'edited' ) {
+-            $response = $client->endre( $cardnumber, $soap_patron );
+-        } elsif ( $sync->syncstatus eq 'new' ) {
+-            $response = $client->nyPost( $soap_patron );
++
++    for (my $i=1; $i<=$max_tries; $i++) {
++        # Call the appropriate method based on syncstatus
++        if ( $sync->syncstatus eq 'edited' || $sync->syncstatus eq 'new' ) {
++            my $soap_patron = _koha_patron_to_soap( $patron );
++            if ( $sync->syncstatus eq 'edited' ) {
++                $response = $client->endre( $cardnumber, $soap_patron );
++            } elsif ( $sync->syncstatus eq 'new' ) {
++                $response = $client->nyPost( $soap_patron );
++            }
++        } elsif ( $sync->syncstatus eq 'delete' ) {
++            $response = $client->slett( $cardnumber );
+         }
++
++        ($response, $ok) = _responseOK($sync, $response, $patron, $client);
++        last if $ok;
+     }
+-    if ( $sync->syncstatus eq 'delete' ) {
+-        $response = $client->slett( $cardnumber );
+-    }
+
+-    # Update the sync data according to the results
+-    if ( $response->{'status'} && $response->{'status'} == 1 ) {
++    return $response;
++}
++
++sub _responseOK {
++    my ( $sync, $response, $patron, $client ) = @_;
++
++    # Handle successfull operation
++    if ( $response->result->{'status'} && $response->result->{'status'} == 1 ) {
+         if ( $sync->syncstatus eq 'delete' ) {
              # Turn off any further syncing
              $sync->update( { 'sync' => 0 } );
          }
@@ -46,66 +106,95 @@ index 237ddd7..c4209c7 100644
 -        $sync->update( { 'syncstatus' => 'synced' } );
 -        # Update the 'synclast' attribute with the "server time" ("server_tid") returned by the method
 -        $sync->update( { 'lastsync' => $response->{'server_tid'} } );
-+        $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->{'server_tid'} } );
-+    } else {
-+        # Handle error special cases
-+        my $cause = $response->result->{'melding'};
-+        return $response unless $cause;
-+        if ($cause =~ /lnr finnes allerede i registeret/) {
-+            # Because of staff mistakes, patrons are sometimes registered with existing cardnumber
-+            # without checking if they allready exist in NL.
-+            # We set syncstatus to 'edited', so that it might be correctly synced next time.
-+            # The lastsync value is arbritary, and will be corrected on next iteration
-+            my $now = `date +"%Y-%m-%dT%T"`;
-+            chomp($now);
-+            $sync->update( { 'syncstatus' => 'edited', 'lastsync' => $now } );
-+        } elsif ($cause =~ /lnr finnes ikke i registeret/) {
-+            # Make sure syncstatus is 'new'
-+            $sync->update( { 'syncstatus' => 'new' } );
-+        } elsif ($cause =~ /Mangler verdi for sist_endret/) {
-+            my $now = `date +"%Y-%m-%dT%T"`;
-+            chomp($now);
-+            $sync->update( { 'lastsync' => $now } );
-+        } elsif ($cause =~ /SIST_ENDRET/) {
-+            # NL has different timestamp; returnin an error like this:
-+            #  endre: Uoverensstemmelse med gjeldende data i basen:
-+            #  SIST_ENDRET = 2016-11-12T14:05:22 != '2016-11-07T15:14:30'
-+            # Save the timestamp as in NL, to be corrected in next sync
-+            my $i = index($cause, 'SIST_ENDRET');
-+            $sync->update( { 'lastsync' => substr($cause, $i + 14, 19) } );
-+        } elsif ($cause =~ /Oppdaterte felt/) {
-+            # The request was succesfull, even if not reported with status=1
-+            $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->{'server_tid'} } );
-+        } elsif ($cause =~ /Person med gitt fnr finnes allerede i registeret med nummer/) {
-+            # Patron was registered as new, withouth checking for existing patron in NL using the given fnr
-+            # We attemt to sync the new cardnumber to NL.
-+            # Reference error message:
-+            #   Person med gitt fnr finnes allerede i registeret med nummer: N001981874
-+            my $old_lnr = substr($cause, 69);
-+            my $soap_patron = _koha_patron_to_soap($patron);
-+            $cardnumber = SOAP::Data->name( 'lnr' => $old_lnr );
++        $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->result->{'server_tid'} } );
++        return ($response, 1);
++    }
 +
-+            # We also need sist_endret value as found in NL:
-+            my $old_res = NLSearch($old_lnr);;
-+            my $old_patron = $old_res->result()->{'respons_poster'}[0];
-+            my $sist_endret = $old_patron->{'sist_endret'};
-+            $sync->update( { 'lastsync' => $sist_endret });
++    # Handle error special cases
++    my $cause = $response->result->{'melding'};
++    return ($response, 1) unless $cause;
++    say $cause;
 +
-+            my $new_lnr = $patron->cardnumber;
-+            say "attempting to update cardnumber from '$old_lnr' to '$new_lnr'";
-+            $response = $client->endre( $cardnumber, $soap_patron );
-+
-+            $cause = $response->result->{'melding'};
-+            if ( $response->{'status'} && $response->{'status'} == 1 || ($cause && $cause =~ /Oppdaterte felt/)) {
-+                $sync->update( { 'syncstatus' => 'synced', 'lastsync' => $response->{'server_tid'} } );
-+            }
-+        } elsif ($cause =~ /Person med gitt fnr finnes allerede i registeret/) {
-+            # TODO patron exists with Høgskolekort. Don't know what to do with it.
-+        }
++    if ($cause =~ /lnr finnes allerede i registeret/) {
++        # Because of staff mistakes, patrons are sometimes registered with existing cardnumber
++        # without checking if they allready exist in NL.
++        # We set syncstatus to 'edited', so that it might be correctly synced next time.
++        # The lastsync value is arbritary, and will be corrected on next iteration
++        my $now = `date +"%Y-%m-%dT%T"`;
++        chomp($now);
++        $sync->update( { 'syncstatus' => 'edited', 'lastsync' => $now } );
++        return ($response, 0);
      }
-     return $response;
+-    return $response;
 
-@@ -564,6 +617,23 @@ sub _format_soap_error {
++    if ($cause =~ /lnr finnes ikke i registeret/) {
++        # Make sure syncstatus is 'new'
++        $sync->update( { 'syncstatus' => 'new' } );
++        return ($response, 0);
++    }
++
++    if ($cause =~ /Mangler verdi for sist_endret/) {
++        # Set an arbritary value to missing laststync, it will be corrected on next iteration
++        my $now = `date +"%Y-%m-%dT%T"`;
++        chomp($now);
++        $sync->update( { 'lastsync' => $now } );
++        return ($response, 0);
++    }
++
++    if ($cause =~ /SIST_ENDRET/) {
++        # NL has different timestamp; returnin an error like this:
++        #  endre: Uoverensstemmelse med gjeldende data i basen:
++        #  SIST_ENDRET = 2016-11-12T14:05:22 != '2016-11-07T15:14:30'
++        # Save the timestamp as in NL, to be corrected in next sync
++        my $i = index($cause, 'SIST_ENDRET');
++        $sync->update( { 'lastsync' => substr($cause, $i + 14, 19) } );
++        return ($response, 0);
++    }
++
++    if ($cause =~ /Person med gitt fnr finnes allerede i registeret med nummer/) {
++        # Patron was registered as new, withouth checking for existing patron in NL using the given fnr
++        # We attemt to sync the new cardnumber to NL.
++        # Reference error message:
++        #   Person med gitt fnr finnes allerede i registeret med nummer: N001981874
++        my $old_lnr = substr($cause, 69);
++        my $soap_patron = _koha_patron_to_soap($patron);
++        my $cardnumber = SOAP::Data->name( 'lnr' => $old_lnr );
++
++        # We also need sist_endret value as found in NL:
++        my $old_res = NLSearch($old_lnr);;
++        my $old_patron = $old_res->result()->{'respons_poster'}[0];
++        my $sist_endret = $old_patron->{'sist_endret'};
++        $sync->update( { 'lastsync' => $sist_endret });
++
++        my $new_lnr = $patron->cardnumber;
++        say "attempting to update cardnumber from '$old_lnr' to '$new_lnr'";
++        $response = $client->endre( $cardnumber, $soap_patron );
++
++        return _responseOK($sync, $response, $patron, $client);
++    }
++
++    if ($cause =~ /Person med gitt fnr finnes allerede i registeret/) {
++        # TODO patron exists with Høgskolekort. Don't know what to do with it.
++        # Needs to be fixed manually by NL maintainer.
++        return ($response, 1);
++    }
++
++    # Something is wrong but we don't know how to handle it, so no point
++    # in trying again.
++    return ($response, 1);
+ }
+
+ =head2 NLGetChanged
+@@ -426,7 +519,7 @@ sub NLUpdateHashedPIN {
+     my $borrowersync = Koha::Database->new->schema->resultset('BorrowerSync')->find({
+         'synctype'       => 'norwegianpatrondb',
+         'borrowernumber' => $borrowernumber,
+-        });
++    });
+     return $borrowersync->update({ 'hashed_pin', _encrypt_pin( $pin ) });
+
+ }
+@@ -564,6 +657,23 @@ sub _format_soap_error {
 
  }
 
@@ -129,7 +218,7 @@ index 237ddd7..c4209c7 100644
  =head2 _soap_to_koha_patron
 
  Convert a SOAP object of type "Laaner" into a hash that can be sent to AddMember or ModMember.
-@@ -635,13 +705,13 @@ sub _koha_patron_to_soap {
+@@ -635,13 +745,13 @@ sub _koha_patron_to_soap {
              SOAP::Data->name( 'fnr_hash'    => $patron_attributes->{ 'fnr' } )->type( 'string' )->type( 'string' ),
              SOAP::Data->name( 'navn'        => $patron->surname . ', ' . $patron->firstname    )->type( 'string' ),
              SOAP::Data->name( 'sist_endret' => $sync->lastsync      )->type( 'string' ),
@@ -141,10 +230,11 @@ index 237ddd7..c4209c7 100644
              SOAP::Data->name( 'p_postnr'    => $patron->zipcode     )->type( 'string' ),
              SOAP::Data->name( 'p_sted'      => $patron->city        )->type( 'string' ),
 -            SOAP::Data->name( 'p_land'      => $patron->country     )->type( 'string' ),
-+            SOAP::Data->name( 'p_land'      => 'no'                 )->type( 'string'),
++            SOAP::Data->name( 'p_land'      => 'no'                 )->type( 'string' ),
              SOAP::Data->name( 'm_adresse1'  => $patron->b_address   )->type( 'string' ),
              SOAP::Data->name( 'm_adresse2'  => $patron->b_address2  )->type( 'string' ),
              SOAP::Data->name( 'm_postnr'    => $patron->b_zipcode   )->type( 'string' ),
+
 diff --git a/members/nl-search.pl b/members/nl-search.pl
 index 29ec13e..0fa3ac2 100755
 --- a/members/nl-search.pl
