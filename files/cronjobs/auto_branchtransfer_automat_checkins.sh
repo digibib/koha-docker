@@ -30,9 +30,10 @@ cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8
 		SELECT 'autotoy'  AS user, 'fgam' AS branch
 	) aut ON (aut.user=bt.frombranch)
 	JOIN branches br ON (br.branchcode=bt.frombranch)
-	LEFT JOIN items i ON (i.itemnumber=bt.itemnumber)
+	JOIN items i ON (i.itemnumber=bt.itemnumber)
 	LEFT JOIN reserves res ON (res.biblionumber=i.biblionumber)
-	SET bt.datearrived = NOW()
+	SET bt.datearrived = NOW(),
+	    i.holdingbranch = aut.branch
 	WHERE bt.datearrived IS NULL
 	AND res.biblionumber IS NULL
 	AND bt.tobranch = aut.branch ;
