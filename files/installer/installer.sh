@@ -42,21 +42,21 @@ run_webinstaller() {
 }
 
 apply_always() {
-  echo "Installing the default language if not already installed ..."
   if [ -n "$DEFAULT_LANGUAGE" ]; then
-      if [ -z `koha-translate --list | grep -Fx $DEFAULT_LANGUAGE` ] ; then
-          RESULT=`koha-translate --install $DEFAULT_LANGUAGE`
-          EXIT_CODE=$?
-      fi
+    echo "Installing the default language if not already installed ..."
+    if [ -z `koha-translate --list | grep -Fx $DEFAULT_LANGUAGE` ] ; then
+        RESULT=`koha-translate --install $DEFAULT_LANGUAGE`
+        EXIT_CODE=$?
+    fi
 
-      echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
-          UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
-          koha-mysql $KOHA_INSTANCE
-          EXIT_CODE=$?
+    echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
+        UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
+        koha-mysql $KOHA_INSTANCE
+        EXIT_CODE=$?
   fi
 
-  echo "Configuring email settings ..."
   if [ -n "$EMAIL_ENABLED" ]; then
+    echo "Configuring email settings ..."
     # Koha uses perl5 Sendmail module defaulting to localhost, so need to override perl Sendmail config
     if [ -n "$SMTP_SERVER_HOST" ]; then
       sub="%mailcfg = (
@@ -83,31 +83,35 @@ apply_always() {
     EXIT_CODE=$?
   fi
 
-  echo "Setting up MYSQL triggers ..."
-  # drop all triggers first
-  echo -n "SELECT CONCAT('DROP TRIGGER ', TRIGGER_NAME, ';') FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = SCHEMA();" | \
-    koha-mysql $KOHA_INSTANCE  -B --column-names=FALSE > /tmp/droptriggers.sql
-  koha-mysql $KOHA_INSTANCE < /tmp/droptriggers.sql
+  if [ -n "$ENABLE_MYSQL_TRIGGERS" ]; then
+    echo "Setting up MYSQL triggers ..."
+    # drop all triggers first
+    echo -n "SELECT CONCAT('DROP TRIGGER ', TRIGGER_NAME, ';') FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = SCHEMA();" | \
+      koha-mysql $KOHA_INSTANCE  -B --column-names=FALSE > /tmp/droptriggers.sql
+    koha-mysql $KOHA_INSTANCE < /tmp/droptriggers.sql
 
-  for trigger in /installer/triggers/*.sql
-  do
-      RESULT=`koha-mysql $KOHA_INSTANCE < $trigger`
-      EXIT_CODE=$?
-  done
+    for trigger in /installer/triggers/*.sql
+    do
+        RESULT=`koha-mysql $KOHA_INSTANCE < $trigger`
+        EXIT_CODE=$?
+    done
+  fi
 
-  echo "Patching DBIx schema files ..."
-  for schema in /installer/schema/*.patch
-  do
-    patch -d / -p1 -N --dry-run -i $schema > /dev/null # Dry run
-    rv=$?
-    if [ $rv -eq 0 ]; then
-      RESULT="`patch -d / -p1 -N < $schema` ------------> OK"
-        else
-      RESULT="'Patch error: ${schema}'"
-      exit 1
-    fi
-    echo $RESULT
-  done
+  if [ -n "$ENABLE_MYSQL_SCHEMA" ]; then
+    echo "Patching DBIx schema files ..."
+    for schema in /installer/schema/*.patch
+    do
+      patch -d / -p1 -N --dry-run -i $schema > /dev/null # Dry run
+      rv=$?
+      if [ $rv -eq 0 ]; then
+        RESULT="`patch -d / -p1 -N < $schema` ------------> OK"
+          else
+        RESULT="'Patch error: ${schema}'"
+        exit 1
+      fi
+      echo $RESULT
+    done
+  fi
 }
 
 apply_once() {
