@@ -1,4 +1,4 @@
-009-bug17941-purefunctions.patch
+009b-bug17941-purefunctions.patch
 
 This patch adds Koha::Util::PureFunctions
 
