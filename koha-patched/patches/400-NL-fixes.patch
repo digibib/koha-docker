@@ -29,9 +29,13 @@ Various fixes to NL-synchronization
 
 * Make sure 'server_tid' is stored in borrower_sync.lastsync after successfull sync.
 
+* Turn of sync if patron is missing fnr
+
+* Turn of sync if patron is allready deleted in NL
+
 
 diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
-index 237ddd7..731bd78 100644
+index 237ddd7..378cfed 100644
 --- a/Koha/NorwegianPatronDB.pm
 +++ b/Koha/NorwegianPatronDB.pm
 @@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
@@ -42,7 +46,7 @@ index 237ddd7..731bd78 100644
  )] );
  Exporter::export_ok_tags('all');
 
-@@ -237,33 +238,125 @@ sub NLSync {
+@@ -237,33 +238,130 @@ sub NLSync {
 
      my $cardnumber = SOAP::Data->name( 'lnr' => $patron->cardnumber );
 
@@ -113,7 +117,6 @@ index 237ddd7..731bd78 100644
 +    # Handle error special cases
 +    my $cause = $response->result->{'melding'};
 +    return ($response, 1) unless $cause;
-+    say $cause;
 +
 +    if ($cause =~ /lnr finnes allerede i registeret/) {
 +        # Because of staff mistakes, patrons are sometimes registered with existing cardnumber
@@ -124,9 +127,8 @@ index 237ddd7..731bd78 100644
 +        chomp($now);
 +        $sync->update( { 'syncstatus' => 'edited', 'lastsync' => $now } );
 +        return ($response, 0);
-     }
--    return $response;
-
++    }
++
 +    if ($cause =~ /lnr finnes ikke i registeret/) {
 +        # Make sure syncstatus is 'new'
 +        $sync->update( { 'syncstatus' => 'new' } );
@@ -139,8 +141,9 @@ index 237ddd7..731bd78 100644
 +        chomp($now);
 +        $sync->update( { 'lastsync' => $now } );
 +        return ($response, 0);
-+    }
-+
+     }
+-    return $response;
+
 +    if ($cause =~ /SIST_ENDRET/) {
 +        # NL has different timestamp; returnin an error like this:
 +        #  endre: Uoverensstemmelse med gjeldende data i basen:
@@ -179,13 +182,19 @@ index 237ddd7..731bd78 100644
 +        return ($response, 1);
 +    }
 +
++    if ($cause =~ /fnr_hash mangler/) {
++        # Missing required personal number. Turn of NL-sync
++        $sync->update( { 'sync' => 0 } );
++        return ($response, 1);
++    }
++
 +    # Something is wrong but we don't know how to handle it, so no point
 +    # in trying again.
 +    return ($response, 1);
  }
 
  =head2 NLGetChanged
-@@ -426,7 +519,7 @@ sub NLUpdateHashedPIN {
+@@ -426,7 +524,7 @@ sub NLUpdateHashedPIN {
      my $borrowersync = Koha::Database->new->schema->resultset('BorrowerSync')->find({
          'synctype'       => 'norwegianpatrondb',
          'borrowernumber' => $borrowernumber,
@@ -194,7 +203,7 @@ index 237ddd7..731bd78 100644
      return $borrowersync->update({ 'hashed_pin', _encrypt_pin( $pin ) });
 
  }
-@@ -564,6 +657,23 @@ sub _format_soap_error {
+@@ -564,6 +662,23 @@ sub _format_soap_error {
 
  }
 
@@ -218,7 +227,7 @@ index 237ddd7..731bd78 100644
  =head2 _soap_to_koha_patron
 
  Convert a SOAP object of type "Laaner" into a hash that can be sent to AddMember or ModMember.
-@@ -635,13 +745,13 @@ sub _koha_patron_to_soap {
+@@ -635,13 +750,13 @@ sub _koha_patron_to_soap {
              SOAP::Data->name( 'fnr_hash'    => $patron_attributes->{ 'fnr' } )->type( 'string' )->type( 'string' ),
              SOAP::Data->name( 'navn'        => $patron->surname . ', ' . $patron->firstname    )->type( 'string' ),
              SOAP::Data->name( 'sist_endret' => $sync->lastsync      )->type( 'string' ),
