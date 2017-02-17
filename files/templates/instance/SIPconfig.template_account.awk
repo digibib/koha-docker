@@ -26,7 +26,7 @@ BEGIN{
 	print "\t\t<!-- Missing screen messages in Koha and other quirks -->"
 	print "\t\t<screen_msg_regex find=\"^.*Patron owes.+$\" replace=\"Du har utestående gebyrer - henvend deg til personalet.\" />"
 	print "\t\t<screen_msg_regex find=\"^Patron Blocked$\" replace=\"Lånekortet er sperret - henvend deg til personalet.\" />"
-	print "\t\t<screen_msg_regex find=\"AGE_RESTRICTION[\\:]*\" replace=\"\" />"
+	print "\t\t<screen_msg_regex find=\"Aldersgrense\" replace=\"Du kan ikke låne denne - aldersgrense\" />"
 	print "\t\t<screen_msg_regex find=\"TOO_MANY_CHECKOUTS\" replace=\"For mange utlån\" />"
 	print "\t\t<screen_msg_regex find=\"NOT_FOR_LOAN.*$\" replace=\"Materialet er ikke til utlån.\" />"
 	print "\t\t<screen_msg_regex find=\"item_notforloan.*$\" replace=\"Materialet er ikke til utlån.\" />"
