@@ -33,9 +33,13 @@ Various fixes to NL-synchronization
 
 * Turn of sync if patron is allready deleted in NL
 
+* Return early if NLSync is called on a patron without a row in borrower_sync
+
+* Don't try syncing when password hash length is not 32
+
 
 diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
-index 237ddd7..378cfed 100644
+index 237ddd7..3ba9873 100644
 --- a/Koha/NorwegianPatronDB.pm
 +++ b/Koha/NorwegianPatronDB.pm
 @@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
@@ -46,7 +50,27 @@ index 237ddd7..378cfed 100644
  )] );
  Exporter::export_ok_tags('all');
 
-@@ -237,33 +238,130 @@ sub NLSync {
+@@ -230,6 +231,19 @@ sub NLSync {
+         }
+     }
+
++    # NLSync should never have been called, this patron has no row in borrower_sync
++    return unless $sync;
++
++    if (length($sync->hashed_pin) != 32) {
++        # NL password is assumed to be a hashed 4-digit PIN-code. The hash length should
++        # be excactly 32.
++
++        # Turn off any further syncing
++        $sync->update( { 'sync' => 0 } );
++
++        return;
++    }
++
+     my $client = SOAP::Lite
+         ->on_action( sub { return '""';})
+         ->uri( $nl_uri )
+@@ -237,33 +251,135 @@ sub NLSync {
 
      my $cardnumber = SOAP::Data->name( 'lnr' => $patron->cardnumber );
 
@@ -84,13 +108,13 @@ index 237ddd7..378cfed 100644
 +        } elsif ( $sync->syncstatus eq 'delete' ) {
 +            $response = $client->slett( $cardnumber );
          }
+-    }
+-    if ( $sync->syncstatus eq 'delete' ) {
+-        $response = $client->slett( $cardnumber );
 +
 +        ($response, $ok) = _responseOK($sync, $response, $patron, $client);
 +        last if $ok;
      }
--    if ( $sync->syncstatus eq 'delete' ) {
--        $response = $client->slett( $cardnumber );
--    }
 
 -    # Update the sync data according to the results
 -    if ( $response->{'status'} && $response->{'status'} == 1 ) {
@@ -133,17 +157,17 @@ index 237ddd7..378cfed 100644
 +        # Make sure syncstatus is 'new'
 +        $sync->update( { 'syncstatus' => 'new' } );
 +        return ($response, 0);
-+    }
-+
+     }
+-    return $response;
+
 +    if ($cause =~ /Mangler verdi for sist_endret/) {
 +        # Set an arbritary value to missing laststync, it will be corrected on next iteration
 +        my $now = `date +"%Y-%m-%dT%T"`;
 +        chomp($now);
 +        $sync->update( { 'lastsync' => $now } );
 +        return ($response, 0);
-     }
--    return $response;
-
++    }
++
 +    if ($cause =~ /SIST_ENDRET/) {
 +        # NL has different timestamp; returnin an error like this:
 +        #  endre: Uoverensstemmelse med gjeldende data i basen:
@@ -188,13 +212,18 @@ index 237ddd7..378cfed 100644
 +        return ($response, 1);
 +    }
 +
++    if ($cause =~ /slettet tidligere/) {
++        $sync->update( { 'sync' => 0 } );
++        return ($response, 1);
++    }
++
 +    # Something is wrong but we don't know how to handle it, so no point
 +    # in trying again.
 +    return ($response, 1);
  }
 
  =head2 NLGetChanged
-@@ -426,7 +524,7 @@ sub NLUpdateHashedPIN {
+@@ -426,7 +542,7 @@ sub NLUpdateHashedPIN {
      my $borrowersync = Koha::Database->new->schema->resultset('BorrowerSync')->find({
          'synctype'       => 'norwegianpatrondb',
          'borrowernumber' => $borrowernumber,
@@ -203,7 +232,7 @@ index 237ddd7..378cfed 100644
      return $borrowersync->update({ 'hashed_pin', _encrypt_pin( $pin ) });
 
  }
-@@ -564,6 +662,23 @@ sub _format_soap_error {
+@@ -564,6 +680,23 @@ sub _format_soap_error {
 
  }
 
@@ -227,7 +256,7 @@ index 237ddd7..378cfed 100644
  =head2 _soap_to_koha_patron
 
  Convert a SOAP object of type "Laaner" into a hash that can be sent to AddMember or ModMember.
-@@ -635,13 +750,13 @@ sub _koha_patron_to_soap {
+@@ -635,13 +768,13 @@ sub _koha_patron_to_soap {
              SOAP::Data->name( 'fnr_hash'    => $patron_attributes->{ 'fnr' } )->type( 'string' )->type( 'string' ),
              SOAP::Data->name( 'navn'        => $patron->surname . ', ' . $patron->firstname    )->type( 'string' ),
              SOAP::Data->name( 'sist_endret' => $sync->lastsync      )->type( 'string' ),
