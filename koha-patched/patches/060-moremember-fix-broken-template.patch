@@ -1,0 +1,20 @@
+060-moremember-fix-broken-template.patch
+
+This patch simply comments out housebound_role as it is never used and breaks rest
+of template, including patron debarments.
+
+diff --git a/members/moremember.pl b/members/moremember.pl
+old mode 100644
+new mode 100755
+index 2f65278..7786388
+--- a/members/moremember.pl
++++ b/members/moremember.pl
+@@ -341,7 +341,7 @@ $template->param(
+     is_child        => ($category_type eq 'C'),
+     samebranch      => $samebranch,
+     quickslip       => $quickslip,
+-    housebound_role => $patron->housebound_role,
++    #housebound_role => $patron->housebound_role,
+     privacy_guarantor_checkouts => $data->{'privacy_guarantor_checkouts'},
+     activeBorrowerRelationship => (C4::Context->preference('borrowerRelationship') ne ''),
+     AutoResumeSuspendedHolds => C4::Context->preference('AutoResumeSuspendedHolds'),
