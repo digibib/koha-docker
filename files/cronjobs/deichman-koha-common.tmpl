@@ -86,3 +86,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ##############
 
 10 0 * * * root echo "TRUNCATE TABLE pickup_counter;" | koha-mysql $(koha-list --enabled)
+
+##############
+# Remove debarments on juveniles with no more issues
+#############
+40 03 * * *   root koha-foreach --enabled /cronjobs/unblock_juvenile_debarments.sh
