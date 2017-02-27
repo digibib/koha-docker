@@ -194,7 +194,7 @@ index 237ddd7..3ba9873 100644
 +        $sync->update( { 'lastsync' => $sist_endret });
 +
 +        my $new_lnr = $patron->cardnumber;
-+        say "attempting to update cardnumber from '$old_lnr' to '$new_lnr'";
++        #say "attempting to update cardnumber from '$old_lnr' to '$new_lnr'";
 +        $response = $client->endre( $cardnumber, $soap_patron );
 +
 +        return _responseOK($sync, $response, $patron, $client);
