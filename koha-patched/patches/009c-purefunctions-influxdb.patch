@@ -54,7 +54,7 @@ index 0000000..8f878b1 100644
 +
 +1;
 diff --git a/debian/templates/plack.psgi b/debian/templates/plack.psgi
-index 3538b9a..af307e0 100644
+index 3538b9a..fdb2529 100644
 --- a/debian/templates/plack.psgi
 +++ b/debian/templates/plack.psgi
 @@ -36,6 +36,9 @@ use Koha::Caches;
@@ -67,37 +67,16 @@ index 3538b9a..af307e0 100644
 
  use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
  {
-@@ -50,29 +53,71 @@ use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
-     };
- }
+@@ -65,14 +68,57 @@ my $apiv1  = builder {
+     $server->to_psgi_app;
+ };
 
--my $home = $ENV{KOHA_HOME};
- my $intranet = Plack::App::CGIBin->new(
--    root => $ENV{DEV_INSTALL}? $home: "$home/intranet/cgi-bin"
-+    root => '/usr/share/koha/intranet/cgi-bin'
- )->to_app;
-
- my $opac = Plack::App::CGIBin->new(
--    root => $ENV{DEV_INSTALL}? "$home/opac": "$home/opac/cgi-bin/opac"
-+    root => '/usr/share/koha/opac/cgi-bin/opac'
- )->to_app;
-
- my $apiv1  = builder {
--    my $server = Mojo::Server::PSGI->new;
--    $server->load_app("$home/api/v1/app.pl");
--    $server->to_psgi_app;
--};
-+        my $server = Mojo::Server::PSGI->new;
-+        $server->load_app('/usr/share/koha/api/v1/app.pl');
-+        $server->to_psgi_app;
-+    };
-+
 +my %defaults = (
 +    hit => 0,
 +    miss => 0,
 +    miss_time => 0,
 +);
-
++
  builder {
 -    enable "ReverseProxy";
 -    enable "Plack::Middleware::Static";
@@ -117,17 +96,18 @@ index 3538b9a..af307e0 100644
 +                        my $s = $stats->{$e{package}."::".$e{name}} //= {%defaults};
 +                        $s->{$_} += $e{$_}//0 for keys %$s;
 +                    };
-+
-+                    my $t0 = time();
-+                    my $res = $app->($env);
-+                    my $dt = time() - $t0;
-+
-+                    printf STDERR "%s %s elapsed %.3fs\n", scalar(gmtime()), $env->{REQUEST_URI}, $dt;
-+                    Koha::Util::InfluxDB::metric(plack => elapsed => $dt, { path => $env->{PATH_INFO} });
 
 -    mount '/opac'          => $opac;
 -    mount '/intranet'      => $intranet;
 -    mount '/api/v1/app.pl' => $apiv1;
++                    my $t0 = time();
++                    my $res = $app->($env);
++                    my $dt = time() - $t0;
+
+-};
++                    printf STDERR "%s %s elapsed %.3fs\n", scalar(gmtime()), $env->{REQUEST_URI}, $dt;
++                    Koha::Util::InfluxDB::metric(plack => elapsed => $dt, { path => $env->{PATH_INFO} });
++
 +                    for my $k (sort keys %$stats) {
 +                        my $s = $stats->{$k};
 +                        my $st = $s->{hit}+$s->{miss}; $st||=1;
@@ -138,8 +118,7 @@ index 3538b9a..af307e0 100644
 +                        Koha::Util::InfluxDB::metric(pure => hit => $s->{hit} => { func => $k });
 +                        Koha::Util::InfluxDB::metric(pure => ratio => $s->{hit}/$st => { func => $k });
 +                    }
-
--};
++
 +                    return $res;
 +                };
 +            };
