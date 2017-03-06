@@ -1,0 +1,156 @@
+diff --git a/Koha/Util/InfluxDB.pm b/Koha/Util/InfluxDB.pm
+new file mode 100644
+index 0000000..8f878b1 100644
+--- a/Koha/Util/InfluxDB.pm
++++ b/Koha/Util/InfluxDB.pm
+@@ -0,0 +1,49 @@
++use strict;
++use warnings;
++
++package Koha::Util::InfluxDB;
++use Data::Dumper;
++use Sys::Hostname;
++use IO::Socket;
++use base 'Exporter';
++
++our @EXPORTER_OK = qw/metric/;
++
++our $TAGS;
++our $server;
++our $port = 8089;
++our $sock;
++
++sub init {
++    $server or die "set \$".__PACKAGE__."::server first";
++    $sock = IO::Socket::INET->new(
++        Proto => 'udp',
++        PeerPort => $port,
++        PeerAddr => $server,
++    );
++
++    $TAGS = {
++        hostname => hostname,
++    };
++    while(my ($k,$v) = each %ENV) {
++        $k =~ m{^METRICS?_(\S+)$} or next;
++        $TAGS->{lc($1)}=$v;
++    }
++
++}
++
++# example metric(plack => elapsed => 0.34 => { path => '/foo/bar.pl' });
++sub metric {
++    $sock or init();
++    my ($app, $name, $value, $tags) = @_;
++
++    $app // die "you must specify a metric";
++    $name // die "you must specify a name";
++
++    my $all_tags = {%$TAGS, %$tags};
++    my $ln = join(',', $app, map { "$_=$all_tags->{$_}"; } keys %$all_tags)." $name=$value";
++
++    $sock->send($ln) or warn "metric send error: $!";
++}
++
++1;
+diff --git a/debian/templates/plack.psgi b/debian/templates/plack.psgi
+index 3538b9a..af307e0 100644
+--- a/debian/templates/plack.psgi
++++ b/debian/templates/plack.psgi
+@@ -36,6 +36,9 @@ use Koha::Caches;
+ use Koha::Cache::Memory::Lite;
+ use Koha::Database;
+ use Koha::DateUtils;
++use Koha::Util::InfluxDB;
++
++$Koha::Util::InfluxDB::server = 'metrics';
+
+ use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
+ {
+@@ -50,29 +53,71 @@ use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
+     };
+ }
+
+-my $home = $ENV{KOHA_HOME};
+ my $intranet = Plack::App::CGIBin->new(
+-    root => $ENV{DEV_INSTALL}? $home: "$home/intranet/cgi-bin"
++    root => '/usr/share/koha/intranet/cgi-bin'
+ )->to_app;
+
+ my $opac = Plack::App::CGIBin->new(
+-    root => $ENV{DEV_INSTALL}? "$home/opac": "$home/opac/cgi-bin/opac"
++    root => '/usr/share/koha/opac/cgi-bin/opac'
+ )->to_app;
+
+ my $apiv1  = builder {
+-    my $server = Mojo::Server::PSGI->new;
+-    $server->load_app("$home/api/v1/app.pl");
+-    $server->to_psgi_app;
+-};
++        my $server = Mojo::Server::PSGI->new;
++        $server->load_app('/usr/share/koha/api/v1/app.pl');
++        $server->to_psgi_app;
++    };
++
++my %defaults = (
++    hit => 0,
++    miss => 0,
++    miss_time => 0,
++);
+
+ builder {
+-    enable "ReverseProxy";
+-    enable "Plack::Middleware::Static";
+-    # + is required so Plack doesn't try to prefix Plack::Middleware::
+-    enable "+Koha::Middleware::SetEnv";
++        enable sub {
++                my $app = shift;
++                sub {
++                    my $env = shift;
++                    if ($Koha::Util::PureFunctions::STORE) {
++                        warn "PureFunctions still holding a cache?!?";
++                    }
++                    $Koha::Util::PureFunctions::STORE = undef; # be safe!
++                    my $stats = {};
++                    my $hook = $Koha::Util::PureFunctions::HOOKS->{plack} = sub {
++                        my %e = @_;
++                        my $s = $stats->{$e{package}."::".$e{name}} //= {%defaults};
++                        $s->{$_} += $e{$_}//0 for keys %$s;
++                    };
++
++                    my $t0 = time();
++                    my $res = $app->($env);
++                    my $dt = time() - $t0;
++
++                    printf STDERR "%s %s elapsed %.3fs\n", scalar(gmtime()), $env->{REQUEST_URI}, $dt;
++                    Koha::Util::InfluxDB::metric(plack => elapsed => $dt, { path => $env->{PATH_INFO} });
+
+-    mount '/opac'          => $opac;
+-    mount '/intranet'      => $intranet;
+-    mount '/api/v1/app.pl' => $apiv1;
++                    for my $k (sort keys %$stats) {
++                        my $s = $stats->{$k};
++                        my $st = $s->{hit}+$s->{miss}; $st||=1;
++                        my $s_saved = $s->{miss} ? $s->{miss_time}/$s->{miss}*$s->{hit} : 0;
++                        Koha::Util::InfluxDB::metric(pure => miss_time => $s->{miss_time} => { func => $k });
++                        Koha::Util::InfluxDB::metric(pure => saved => $s_saved => { func => $k });
++                        Koha::Util::InfluxDB::metric(pure => miss => $s->{miss} => { func => $k });
++                        Koha::Util::InfluxDB::metric(pure => hit => $s->{hit} => { func => $k });
++                        Koha::Util::InfluxDB::metric(pure => ratio => $s->{hit}/$st => { func => $k });
++                    }
+
+-};
++                    return $res;
++                };
++            };
++
++        enable "ReverseProxy";
++        enable "Plack::Middleware::Static";
++        # + is required so Plack doesn't try to prefix Plack::Middleware::
++        enable "+Koha::Middleware::SetEnv";
++
++        mount '/opac'          => $opac;
++        mount '/intranet'      => $intranet;
++        mount '/api/v1/app.pl' => $apiv1;
++
++    };
