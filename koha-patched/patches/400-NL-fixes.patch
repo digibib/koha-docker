@@ -39,7 +39,7 @@ Various fixes to NL-synchronization
 
 
 diff --git a/Koha/NorwegianPatronDB.pm b/Koha/NorwegianPatronDB.pm
-index 237ddd7..3ba9873 100644
+index 237ddd7..bd8c407 100644
 --- a/Koha/NorwegianPatronDB.pm
 +++ b/Koha/NorwegianPatronDB.pm
 @@ -74,6 +74,7 @@ our %EXPORT_TAGS = ( all => [qw(
@@ -57,7 +57,7 @@ index 237ddd7..3ba9873 100644
 +    # NLSync should never have been called, this patron has no row in borrower_sync
 +    return unless $sync;
 +
-+    if (length($sync->hashed_pin) != 32) {
++    if ($sync->syncstatus ne 'new' && $sync->hashed_pin && length($sync->hashed_pin) != 32) {
 +        # NL password is assumed to be a hashed 4-digit PIN-code. The hash length should
 +        # be excactly 32.
 +
