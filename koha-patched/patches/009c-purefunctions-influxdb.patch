@@ -1,9 +1,9 @@
 diff --git a/Koha/Util/InfluxDB.pm b/Koha/Util/InfluxDB.pm
 new file mode 100644
-index 0000000..8f878b1 100644
+index 0000000..e5db2cc 100644
 --- a/Koha/Util/InfluxDB.pm
 +++ b/Koha/Util/InfluxDB.pm
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,50 @@
 +use strict;
 +use warnings;
 +
@@ -40,7 +40,8 @@ index 0000000..8f878b1 100644
 +
 +# example metric(plack => elapsed => 0.34 => { path => '/foo/bar.pl' });
 +sub metric {
-+    $sock or init();
++    $TAGS or init();
++    $sock or return;
 +    my ($app, $name, $value, $tags) = @_;
 +
 +    $app // die "you must specify a metric";
