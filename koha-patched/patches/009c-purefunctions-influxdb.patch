@@ -101,9 +101,9 @@ index 3538b9a..fdb2529 100644
 -    mount '/opac'          => $opac;
 -    mount '/intranet'      => $intranet;
 -    mount '/api/v1/app.pl' => $apiv1;
-+                    my $t0 = time();
++                    my $t0 = Time::HiRes::time();
 +                    my $res = $app->($env);
-+                    my $dt = time() - $t0;
++                    my $dt = Time::HiRes::time() - $t0;
 
 -};
 +                    printf STDERR "%s %s elapsed %.3fs\n", scalar(gmtime()), $env->{REQUEST_URI}, $dt;
