@@ -6,10 +6,10 @@ Also enables expanded item with status and reservability
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..2235b05
+index 0000000..1f1e1d0
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
-@@ -0,0 +1,217 @@
+@@ -0,0 +1,224 @@
 +package Koha::REST::V1::Biblio;
 +
 +# This file is part of Koha.
@@ -75,7 +75,14 @@ index 0000000..2235b05
 +    my $expanded = $biblio->items->unblessed;
 +
 +    $biblio = $biblio->unblessed;
-+    $biblio->{numholds} = Koha::Holds->search({biblionumber => $args->{biblionumber}})->count;
++    my $holds = Koha::Holds->search({biblionumber => $args->{biblionumber}});
++    $biblio->{numholds} = $holds->count;
++
++    # do we have a pending hold with priority 0?
++    $biblio->{behindExpiditedUser} = 0;
++    for my $hold (@{$holds->unblessed}) {
++        $biblio->{behindExpiditedUser} = 1 if $hold->{priority} == 0;
++    }
 +
 +    for my $item (@{$expanded}) {
 +
