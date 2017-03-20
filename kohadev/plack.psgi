@@ -68,7 +68,6 @@ my $apiv1  = builder {
     $server->load_app('/kohadev/kohaclone/api/v1/app.pl');
     $server->to_psgi_app;
 };
-
 builder {
 
     # enable 'Debug',  panels => [
@@ -80,6 +79,7 @@ builder {
     enable "ReverseProxy";
     enable "Plack::Middleware::Static";
     enable "+Koha::Middleware::SetEnv";
+    #enable "+Koha::Middleware::Session";
 
     mount '/opac'          => $opac;
     mount '/intranet'      => $intranet;

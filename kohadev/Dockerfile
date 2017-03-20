@@ -1,10 +1,10 @@
 #######
 # DEVELOPMENT IMAGE OF KOHA
-# Based on debian jessy Koha 
-# USES a docker image built from GITREF from koha-salt-docker 
+# Based on debian jessy Koha
+# USES a docker image built from GITREF from koha-salt-docker
 #######
 
-FROM digibib/koha:cb722c4263a34c8666a98c10872e7cd7d6f0aaa9
+FROM digibib/koha:b161c80d01dacc654b1f1b811e52cae07e58e55a
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 

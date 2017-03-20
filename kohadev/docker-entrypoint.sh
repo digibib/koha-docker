@@ -80,86 +80,18 @@ do
     koha-translate --install $language
 done
 
-echo "Running webinstaller - please be patient ..."
-service apache2 reload
-sleep 5 # waiting for apache to respond
-cd /kohadev/kohaclone && /installer/updatekohadbversion.sh
+echo "Restarting apache to activate local changes..."
+service apache2 restart
 
-echo "Installing the default language if not already installed ..."
-if [ -n "$DEFAULT_LANGUAGE" ]; then
-    if [ -z `koha-translate --list | grep -Fx $DEFAULT_LANGUAGE` ] ; then
-        koha-translate --install $DEFAULT_LANGUAGE
-    fi
-
-    echo -n "UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'language';
-        UPDATE systempreferences SET value = '$DEFAULT_LANGUAGE' WHERE variable = 'opaclanguages';" | \
-        koha-mysql $KOHA_INSTANCE
-fi
-
-echo "Configuring messaging settings ..."
-if [ -n "$MESSAGE_QUEUE_FREQUENCY" ]; then
-  sed -i "/process_message_queue/c\*/${MESSAGE_QUEUE_FREQUENCY} * * * * root koha-foreach --enabled --email \
-  /usr/share/koha/bin/cronjobs/process_message_queue.pl" /etc/cron.d/koha-common
-fi
-
-echo "Configuring email settings ..."
-if [ -n "$EMAIL_ENABLED" ]; then
-  # Koha uses default sendmail localhost, so need to override perl Sendmail config
-  if [ -n "$SMTP_SERVER_HOST" ]; then
-    sub="%mailcfg = (
-      'smtp'    => [ '$SMTP_SERVER_HOST' ],
-      'from'    => '', # default sender e-mail, used when no From header in mail
-      'mime'    => 1, # use MIME encoding by default
-      'retries' => 1, # number of retries on smtp connect failure
-      'delay'   => 1, # delay in seconds between retries
-      'tz'      => '', # only to override automatic detection
-      'port'    => $SMTP_SERVER_PORT,
-      'debug'   => 0,
-    );"
-    sendmail=/usr/share/perl5/Mail/Sendmail.pm
-    awk -v sb="$sub" '/^%mailcfg/,/;/ { if ( $0 ~ /\);/ ) print sb; next } 1' $sendmail > sendmailtmp && \
-      mv sendmailtmp $sendmail
-  fi
-  # setup default debian exim4 to use smtp relay (used by sendmail and MIME::Lite)
-  sed -i "s/dc_smarthost.*/dc_smarthost='mailrelay::2525'/" /etc/exim4/update-exim4.conf.conf
-  sed -i "s/dc_eximconfig_configtype.*/dc_eximconfig_configtype='smarthost'/" /etc/exim4/update-exim4.conf.conf
-  update-exim4.conf -v
-
-  koha-email-enable $KOHA_INSTANCE
-fi
-
-echo "Configuring SMS settings ..."
-if [ -n "$SMS_SERVER_HOST" ]; then
-  # SMS modules need to be in shared perl libs
-  mkdir -p /usr/share/perl5/SMS/Send/NO
-  envsubst < /usr/share/koha/intranet/cgi-bin/sms/LinkMobilityHTTP.pm > /usr/share/perl5/SMS/Send/NO/LinkMobilityHTTP.pm
-  echo -n "UPDATE systempreferences SET value = \"$SMS_DRIVER\" WHERE variable = 'SMSSendDriver';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$SMS_USER\" WHERE variable = ' SMSSendUsername ';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$SMS_PASS\" WHERE variable = ' SMSSendPassword ';" | koha-mysql $KOHA_INSTANCE
-fi
-
-echo "Configuring National Library Card settings ..."
-if [ -n "$NLVENDORURL" ]; then
-  echo -n "UPDATE systempreferences SET value = \"1\" WHERE variable = 'NorwegianPatronDBEnable';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$NLVENDORURL\" WHERE variable = 'NorwegianPatronDBEndpoint';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$NLBASEUSER\" WHERE variable = 'NorwegianPatronDBUsername';" | koha-mysql $KOHA_INSTANCE
-  echo -n "UPDATE systempreferences SET value = \"$NLBASEPASS\" WHERE variable = 'NorwegianPatronDBPassword';" | koha-mysql $KOHA_INSTANCE
-  # Patron attribute for NL sync
-  echo "INSERT IGNORE INTO borrower_attribute_types (code, description, unique_id, staff_searchable) \
-  VALUES ('fnr', 'Fødselsnummer', 1, 1);" | koha-mysql $KOHA_INSTANCE
-fi
-
-#echo "Starting SIP2 Server in DEV mode..."
-#screen -dmS kohadev-sip sh -c "cd /kohadev/kohaclone ; \
-#  KOHA_CONF=/etc/koha/sites/$KOHA_INSTANCE/koha-conf.xml perl -IC4/SIP -MILS C4/SIP/SIPServer.pm \
-#  /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml ; exec bash"
+sleep 1 # waiting for apache restart to finish
+echo "Running webinstaller and applying local deichman mods - please be patient ..."
+cd /usr/share/koha/lib && /installer/installer.sh
 
 echo "Enabling plack ..."
 koha-plack --enable "$KOHA_INSTANCE"
 
 echo "Installation finished - Stopping all services and giving supervisord control ..."
 service apache2 stop
-sleep 3
 koha-indexer --stop "$KOHA_INSTANCE" || true
 koha-stop-zebra "$KOHA_INSTANCE" || true
 
