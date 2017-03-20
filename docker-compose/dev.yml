@@ -3,6 +3,7 @@ version: '2.1'
 
 services:
   koha:
+    container_name: koha_dev
     build:
       context: "${KOHAPATH}/kohadev"
       dockerfile: Dockerfile
