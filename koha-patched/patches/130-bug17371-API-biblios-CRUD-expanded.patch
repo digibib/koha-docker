@@ -6,7 +6,7 @@ Also enables expanded item with status and reservability
 
 diff --git a/Koha/REST/V1/Biblio.pm b/Koha/REST/V1/Biblio.pm
 new file mode 100644
-index 0000000..1f1e1d0
+index 0000000..236af1a
 --- /dev/null
 +++ b/Koha/REST/V1/Biblio.pm
 @@ -0,0 +1,224 @@
@@ -129,7 +129,7 @@ index 0000000..1f1e1d0
 +            $item->{reservable} = 0;
 +        }
 +
-+        if ($item->{itemlost}) {
++        if ($item->{itemlost} || $item->{damaged}) {
 +            $item->{status} = "Utilgjengelig";
 +            $item->{reservable} = 0;
 +        }
