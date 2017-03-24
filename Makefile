@@ -82,7 +82,7 @@ logs-f:				## Tail and follow Koha logs
 logs-f-nocolor:			## Tail and follow Koha logs without ansi colours
 	$(CMD) -c "$(COMPOSE) logs -f --no-color koha"
 
-browser:			## Open Koha intra in firefox 
+browser:			## Open Koha intra in firefox
 	$(CMD) -c 'firefox "http://localhost:8081/" > firefox.log 2> firefox.err < /dev/null' &
 
 test: wait_until_ready 		## Run status checks on Koha container
@@ -113,28 +113,28 @@ delete_kohadb: stop delete_mysql_server		## Deletes Koha database
 
 load_testdata:			## Load optional test data
 	@echo "======= LOADING KOHA TESTDATA ======\n"
-	$(CMD) -c "$(COMPOSE) exec koha bash -c \
-	\"for file in /kohadev/kohaclone/installer/data/mysql/en/optional/*.sql; do \
-	koha-mysql name < \$$file ; \
-	done;\""
+	$(CMD) -c '$(COMPOSE) exec koha bash -c \
+	"for file in /kohadev/kohaclone/installer/data/mysql/en/optional/*.sql; do \
+	koha-mysql name < \$${file} ; \
+	done;"'
 
 reset_git:			## Resets git by removing and doing new shallow clone
 	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
-	$(CMD) -c "$(COMPOSE) exec koha bash -c \"cd /kohadev/kohaclone && \
+	$(CMD) -c '$(COMPOSE) exec koha bash -c "cd /kohadev/kohaclone && \
 		git clean -xdf && git am --abort || true && git reset --hard && \
-		git checkout master && git branch -D sandbox || true\""
+		git checkout master && git branch -D sandbox || true"'
 
 reset_git_hard:			## Resets git by removing and doing new shallow clone
 	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
-	$(CMD) -c "$(COMPOSE) exec koha bash -c \"cd /kohadev && rm -rf kohaclone && git clone --depth 1 \$$KOHA_REPO kohaclone\""
+	$(CMD) -c '$(COMPOSE) exec koha bash -c "cd /kohadev && rm -rf kohaclone && git clone --depth 1 \$$KOHA_REPO kohaclone"'
 
 patch:				## Apply patches on koha dev, needs PATCHES="<bugid> <bugid> <bugid>"
 	@echo "======= PATCHING KOHADEV CONTAINER ======\n"
-	$(CMD) -c "$(COMPOSE) exec koha bash -c \"cd /kohadev/kohaclone && \
+	$(CMD) -c '$(COMPOSE) exec koha_dev bash -c "cd /kohadev/kohaclone && \
 	(git checkout -b sandbox || true) && \
 	for patch in $(PATCHES) ; do \
 		yes | git bz apply \$$patch ; \
-	done\""
+	done"'
 
 ######### DOCKER HUB SPECIFIC TARGETS #########
 
