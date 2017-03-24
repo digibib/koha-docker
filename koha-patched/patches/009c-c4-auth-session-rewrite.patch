@@ -806,10 +806,18 @@ index 0000000..8a5e985
 +
 +1;
 diff --git a/debian/templates/plack.psgi b/debian/templates/plack.psgi
-index 235e56d..c27479c 100644
+index 235e56d..934ae5b 100644
 --- a/debian/templates/plack.psgi
 +++ b/debian/templates/plack.psgi
-@@ -53,10 +53,12 @@ use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
+@@ -39,6 +39,7 @@ use Koha::Caches;
+ use Koha::Cache::Memory::Lite;
+ use Koha::Database;
+ use Koha::DateUtils;
++use Koha::Middleware::App;
+
+ use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
+ {
+@@ -53,10 +54,12 @@ use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
      };
  }
 
@@ -822,7 +830,7 @@ index 235e56d..c27479c 100644
  my $opac = Plack::App::CGIBin->new(
      root => '/usr/share/koha/opac/cgi-bin/opac'
  )->to_app;
-@@ -71,6 +73,7 @@ builder {
+@@ -71,6 +74,7 @@ builder {
      enable "ReverseProxy";
      enable "Plack::Middleware::Static";
      # + is required so Plack doesn't try to prefix Plack::Middleware::
@@ -830,9 +838,6 @@ index 235e56d..c27479c 100644
      enable "+Koha::Middleware::SetEnv";
 
      mount '/opac'          => $opac;
-diff --git a/t/auth/10-session.t b/t/auth/10-session.t
-new file mode 100644
-index 0000000..b302ced
 --- /dev/null
 +++ b/t/auth/10-session.t
 @@ -0,0 +1,47 @@
