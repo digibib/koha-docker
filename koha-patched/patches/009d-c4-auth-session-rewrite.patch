@@ -818,7 +818,7 @@ index 3538b9a..6f11ce2 100644
      root => $ENV{DEV_INSTALL}? $home: "$home/intranet/cgi-bin"
  )->to_app;
  
-+m#y $opac = Koha::Middleware::App->new(
++#my $opac = Koha::Middleware::App->new(
  my $opac = Plack::App::CGIBin->new(
      root => $ENV{DEV_INSTALL}? "$home/opac": "$home/opac/cgi-bin/opac"
  )->to_app;
