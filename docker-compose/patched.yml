@@ -2,10 +2,67 @@
 version: '2.1'
 
 services:
-  koha:
+   koha_build:
+    container_name: koha_build
+    image: "digibib/koha:${GITREF}"
     build:
       context: "${KOHAPATH}/koha-patched"
       dockerfile: Dockerfile
     volumes:
       - ${KOHAPATH}/koha-patched/patches:/patches
       - ${KOHAPATH}/koha-patched/debian:/debian
+    networks:
+      - backend
+    depends_on:
+      - koha_mysql
+    cap_add:
+      - SYS_NICE
+      - DAC_READ_SEARCH
+      - MKNOD
+    environment:
+      KOHA_ADMINPASS: "${KOHA_ADMINPASS:-secret}"
+      KOHA_ADMINUSER: "${KOHA_ADMINUSER:-admin}"
+      KOHA_INSTANCE: "${KOHA_INSTANCE:-name}"
+      KOHA_DBHOST: koha_mysql
+      INSTALL_LANGUAGES: "${INSTALL_LANGUAGES}"
+      DEFAULT_LANGUAGE: "${DEFAULT_LANGUAGE}"
+      EMAIL_ENABLED: "True"
+      ENABLE_MYSQL_TRIGGERS: "${ENABLE_MYSQL_TRIGGERS}"
+      ENABLE_MYSQL_SCHEMA: "${ENABLE_MYSQL_SCHEMA}"
+      SMTP_SERVER_HOST: mailrelay # access through network 'backend'
+      SMTP_SERVER_PORT: 2525
+      MESSAGE_QUEUE_FREQUENCY: 15
+      SMS_DRIVER: "${SMS_DRIVER:-NO::LinkMobilityHTTP}"
+      SMS_USER: "${SMS_USER:-smsuser}"
+      SMS_PASS: "${SMS_PASS:-smspass}"
+      API_PASSPHRASE: "${API_PASSPHRASE:-ChangeMe}"
+      NLENABLE: "${NLENABLE:-0}"
+      NLBASEUSER: "${NLBASEUSER:-nlbaseuser}"
+      NLBASEPASS: "${NLBASEPASS:-nlbasepass}"
+      NLVENDORURL: "${NLVENDORURL:-http://nlsink:9999}"
+      NLVENDORUSER: "${NLVENDORUSER:-nlvendoruser}"
+      NLVENDORPASS: "${NLVENDORPASS:-nlvendorpass}"
+      NLVENDORKEY: "${NLVENDORKEY:-nlvendorkey}"
+      PIDGEON_URL: "${PIDGEON_URL:-pidgeonurl}"
+      PIDGEON_USER: "${PIDGEON_USER:-pidgeonuser}"
+      PIDGEON_PASS: "${PIDGEON_PASS:-pidgeonpass}"
+      SIP_AUTOPASS: "${SIP_AUTOPASS:-autopass}"
+      SIP_WORKERS: "${SIP_WORKERS:-5}"
+      APACHE_MINSERVERS: "${APACHE_MINSERVERS:-2}"
+      APACHE_TIMEOUT: "${APACHE_TIMEOUT:-200}"
+      APACHE_SERVER_STATUS_NET: "${APACHE_SERVER_STATUS_NET:-127.0.0.1/24}"
+      APACHE_REMOTE_INTERNAL_PROXY: "${APACHE_REMOTE_INTERNAL_PROXY:-127.0.0.0/16}"
+      PLACK_MAX_REQUESTS: "${PLACK_MAX_REQUESTS:-100}"
+      PLACK_WORKERS: "${PLACK_WORKERS:-2}"
+      AUTHOR_NAME: "${AUTHOR_NAME:-john_doe}"
+      AUTHOR_EMAIL: "${AUTHOR_EMAIL:-john@doe.com}"
+      BUGZ_USER: "${BUGZ_USER:-bugsquasher}"
+      BUGZ_PASS: "${BUGZ_PASS:-bugspass}"
+    ports:
+      - "6001:6001"
+      - "8081:8081"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
