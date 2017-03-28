@@ -835,38 +835,34 @@ index 0000000..8b525d7
 +
 +1;
 diff --git a/debian/templates/plack.psgi b/debian/templates/plack.psgi
-index 235e56d..934ae5b 100644
+index 8b9b7be..b5d764c 100644
 --- a/debian/templates/plack.psgi
 +++ b/debian/templates/plack.psgi
-@@ -39,6 +39,7 @@ use Koha::Caches;
- use Koha::Cache::Memory::Lite;
- use Koha::Database;
- use Koha::DateUtils;
-+use Koha::Middleware::App;
+@@ -59,6 +59,16 @@ my $opac = Plack::App::CGIBin->new(
+     root => $ENV{DEV_INSTALL}? "$home/opac": "$home/opac/cgi-bin/opac"
+ )->to_app;
 
- use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
- {
-@@ -53,10 +54,12 @@ use CGI qw(-utf8 ); # we will loose -utf8 under plack, otherwise
-     };
- }
-
++#Uncomment to enable Koha Session Middleware
++#use Koha::Middleware::App;
 +#my $intranet = Koha::Middleware::App->new(
- my $intranet = Plack::App::CGIBin->new(
-     root => '/usr/share/koha/intranet/cgi-bin'
- )->to_app;
-
++#    root => '/usr/share/koha/intranet/cgi-bin'
++#)->to_app;
++#
 +#my $opac = Koha::Middleware::App->new(
- my $opac = Plack::App::CGIBin->new(
-     root => '/usr/share/koha/opac/cgi-bin/opac'
- )->to_app;
-@@ -71,6 +74,7 @@ builder {
-     enable "ReverseProxy";
++#    root => '/usr/share/koha/opac/cgi-bin/opac'
++#)->to_app;
++
+ my $apiv1  = builder {
+     my $server = Mojo::Server::PSGI->new;
+     $server->load_app("$home/api/v1/app.pl");
+@@ -70,6 +80,7 @@ builder {
      enable "Plack::Middleware::Static";
      # + is required so Plack doesn't try to prefix Plack::Middleware::
-+    #enable "+Koha::Middleware::Session";
      enable "+Koha::Middleware::SetEnv";
++    #enable "+Koha::Middleware::Session";
 
      mount '/opac'          => $opac;
+     mount '/intranet'      => $intranet;
 --- /dev/null
 +++ b/t/auth/10-session.t
 @@ -0,0 +1,47 @@
