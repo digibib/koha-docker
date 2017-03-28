@@ -2,8 +2,8 @@
 version: '2.1'
 
 services:
-   koha_build:
-    container_name: koha_build
+   koha_patched:
+    container_name: koha_patched
     image: "digibib/koha:${GITREF}"
     build:
       context: "${KOHAPATH}/koha-patched"

@@ -16,11 +16,7 @@ DOCKER_GW=172.19.0.1
 VAGRANT=false
 endif
 
-ifeq ($(KOHAENV),build)
-COMPOSE=cd $(KOHAPATH)/docker-compose && source docker-compose.env && KOHAPATH=$(KOHAPATH) docker-compose -f common.yml
-else
 COMPOSE=cd $(KOHAPATH)/docker-compose && source docker-compose.env && KOHAPATH=$(KOHAPATH) docker-compose -f common.yml -f $(KOHAENV).yml
-endif
 
 help:				## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -45,10 +41,10 @@ wait_until_ready:
 
 rebuild:			## Build and start Koha
 	@echo "======= FORCE RECREATING koha ======\n"
-	$(CMD) -c "$(COMPOSE) stop koha && true &&\
-	$(COMPOSE) rm -f koha || true &&\
-	$(COMPOSE) build koha &&\
-	$(COMPOSE) up --force-recreate --no-deps -d koha"
+	$(CMD) -c "$(COMPOSE) stop koha_$(KOHAENV) && true &&\
+	$(COMPOSE) rm -f koha_$(KOHAENV) || true &&\
+	$(COMPOSE) build koha_$(KOHAENV) &&\
+	$(COMPOSE) up --force-recreate --no-deps -d koha_$(KOHAENV)"
 
 build_debianfiles:		## Build from local debianfiles (koha-patched/debian)
 	@echo "======= BUILDING KOHA CONTAINER FROM LOCAL DEBIANFILES ======\n"
@@ -56,31 +52,31 @@ build_debianfiles:		## Build from local debianfiles (koha-patched/debian)
 	-f $(KOHAPATH)/Dockerfile.debianfiles -t digibib/koha $(KOHAPATH)'
 
 run: delete 			## Start Koha container
-	$(CMD) -c "$(COMPOSE) up -d koha"
+	$(CMD) -c "$(COMPOSE) up -d koha_$(KOHAENV)"
 
 stop: 				## Stop Koha container
-	$(CMD) -c "$(COMPOSE) stop koha || true"
+	$(CMD) -c "$(COMPOSE) stop koha_$(KOHAENV) || true"
 
 delete: stop 			## Delete Koha container
-	$(CMD) -c "$(COMPOSE) rm -fv koha || true"
+	$(CMD) -c "$(COMPOSE) rm -fv koha_$(KOHAENV) || true"
 
 ######### DEBUGGING TARGETS #########
 
 run_manual: delete 		## Manually start a Koha container without entrypoint
-	@echo "======= MANUAL RUN OF koha CONTAINER ======\n"
-	$(CMD) -c "$(COMPOSE) run --rm --entrypoint bash --service-ports koha"
+	@echo "======= MANUAL RUN OF koha_$(KOHAENV) CONTAINER ======\n"
+	$(CMD) -c "$(COMPOSE) run --rm --entrypoint bash --service-ports koha_$(KOHAENV)"
 
 logs:				## Show Koha logs
-	$(CMD) -c "$(COMPOSE) logs koha"
+	$(CMD) -c "$(COMPOSE) logs koha_$(KOHAENV)"
 
 logs-nocolor:			## Show Koha logs without ansi colours
-	$(CMD) -c "$(COMPOSE) logs --no-color koha"
+	$(CMD) -c "$(COMPOSE) logs --no-color koha_$(KOHAENV)"
 
 logs-f:				## Tail and follow Koha logs
-	$(CMD) -c "$(COMPOSE) logs -f koha"
+	$(CMD) -c "$(COMPOSE) logs -f koha_$(KOHAENV)"
 
 logs-f-nocolor:			## Tail and follow Koha logs without ansi colours
-	$(CMD) -c "$(COMPOSE) logs -f --no-color koha"
+	$(CMD) -c "$(COMPOSE) logs -f --no-color koha_$(KOHAENV)"
 
 browser:			## Open Koha intra in firefox
 	$(CMD) -c 'firefox "http://localhost:8081/" > firefox.log 2> firefox.err < /dev/null' &
@@ -96,11 +92,11 @@ docker_cleanup:			## Clean up unused docker containers and images
 
 dump_kohadb:			## Dumps Koha database
 	@echo "======= DUMPING KOHA DATABASE ======\n"
-	$(CMD) -c "$(COMPOSE) exec koha bash -c \"mysqldump --all-databases > /tmp/kohadump.sql\""
+	$(CMD) -c "$(COMPOSE) exec koha_$(KOHAENV) bash -c \"mysqldump --all-databases > /tmp/kohadump.sql\""
 
 restore_kohadb:			## Restores Koha database
 	@echo "======= RESTORING KOHA DATABASE ======\n"
-	$(CMD) -c "$(COMPOSE) exec koha bash -c \"mysql < /tmp/kohadump.sql\""
+	$(CMD) -c "$(COMPOSE) exec koha_$(KOHAENV) bash -c \"mysql < /tmp/kohadump.sql\""
 
 delete_mysql_server:		## Stops and removes mysql server
 	@echo "======= STOPPING MYSQL SERVER ======\n"
@@ -113,24 +109,24 @@ delete_kohadb: stop delete_mysql_server		## Deletes Koha database
 
 load_testdata:			## Load optional test data
 	@echo "======= LOADING KOHA TESTDATA ======\n"
-	$(CMD) -c '$(COMPOSE) exec koha bash -c \
+	$(CMD) -c '$(COMPOSE) exec koha_$(KOHAENV) bash -c \
 	"for file in /kohadev/kohaclone/installer/data/mysql/en/optional/*.sql; do \
 	koha-mysql name < \$${file} ; \
 	done;"'
 
 reset_git:			## Resets git by removing and doing new shallow clone
 	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
-	$(CMD) -c '$(COMPOSE) exec koha bash -c "cd /kohadev/kohaclone && \
+	$(CMD) -c '$(COMPOSE) exec koha_$(KOHAENV) bash -c "cd /kohadev/kohaclone && \
 		git clean -xdf && git am --abort || true && git reset --hard && \
 		git checkout master && git branch -D sandbox || true"'
 
 reset_git_hard:			## Resets git by removing and doing new shallow clone
 	@echo "======= RELOADING CLEAN KOHA MASTER ======\n"
-	$(CMD) -c '$(COMPOSE) exec koha bash -c "cd /kohadev && rm -rf kohaclone && git clone --depth 1 \$$KOHA_REPO kohaclone"'
+	$(CMD) -c '$(COMPOSE) exec koha_$(KOHAENV) bash -c "cd /kohadev && rm -rf kohaclone && git clone --depth 1 \$$KOHA_REPO kohaclone"'
 
 patch:				## Apply patches on koha dev, needs PATCHES="<bugid> <bugid> <bugid>"
 	@echo "======= PATCHING KOHADEV CONTAINER ======\n"
-	$(CMD) -c '$(COMPOSE) exec koha_dev bash -c "cd /kohadev/kohaclone && \
+	$(CMD) -c '$(COMPOSE) exec koha_$(KOHAENV) bash -c "cd /kohadev/kohaclone && \
 	(git checkout -b sandbox || true) && \
 	for patch in $(PATCHES) ; do \
 		yes | git bz apply \$$patch ; \

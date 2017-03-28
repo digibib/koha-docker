@@ -52,15 +52,15 @@ CMD="sudo KOHAPATH=${KOHAPATH} GITREF=${GITREF} KOHA_VERSION=${KOHA_VERSION} KOH
 
 case "$KOHAENV" in
   'dev')
-  $CMD -f dev.yml build koha
+  $CMD -f dev.yml build koha_dev
   $CMD -f dev.yml up -d
   ;;
   'patched')
-  $CMD -f patched.yml build koha
+  $CMD -f patched.yml build koha_patched
   $CMD -f patched.yml up -d
   ;;
   'build'|*)
-  $CMD build koha
-  $CMD up -d
+  $CMD -f build.yml build koha_build
+  $CMD -f build.yml up -d
   ;;
 esac

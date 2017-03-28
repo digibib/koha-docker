@@ -2,11 +2,11 @@
 version: '2.1'
 
 services:
-   koha_dev:
-    container_name: koha_dev
+  koha_build:
+    container_name: koha_build
     image: "digibib/koha:${GITREF}"
     build:
-      context: "${KOHAPATH}/kohadev"
+      context: "${KOHAPATH}"
       dockerfile: Dockerfile
       args:
         KOHA_BUILD: "$KOHA_BUILD"
@@ -65,7 +65,3 @@ services:
       options:
         max-size: "10m"
         max-file: "2"
-
-  koha_mysql:
-    ports:
-      - "3306:3306"
