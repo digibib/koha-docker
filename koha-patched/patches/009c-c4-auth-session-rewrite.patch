@@ -52,10 +52,10 @@ index 8652aad..0877ad2 100644
      my $dbh            = C4::Context->dbh;
 diff --git a/Koha/Auth.pm b/Koha/Auth.pm
 new file mode 100644
-index 0000000..0eacafb
-@@ -0,0 +1,259 @@
+index 0000000..5544704
 --- /dev/null
 +++ b/Koha/Auth.pm
+@@ -0,0 +1,259 @@
 +use strict;
 +use warnings;
 +
@@ -115,14 +115,14 @@ index 0000000..0eacafb
 +
 +    if ( my $userid = $session->param('userid')//$session->param('id') ) { # 'id' will be set for admin user as well
 +
-+      if ( my $branchcode = $query->param('branch') ) {
-+          my $branch = Koha::Libraries->find($branchcode);
-+          my $branchname = $branch ? $branch->branchname : '';
-+          $session->param(branchcode => $branchcode);
-+          $session->param(branchname => $branchname );
-+      }
++        if ( my $branchcode = $query->param('branch') ) {
++            my $branch = Koha::Libraries->find($branchcode);
++            my $branchname = $branch ? $branch->branchname : '';
++            $session->param(branchcode => $branchcode);
++            $session->param(branchname => $branchname );
++        }
 +
-+      C4::Context->set_userenv(
++        C4::Context->set_userenv(
 +            $session->param('number'),
 +            $userid,
 +            map { $session->param($_); } qw/
