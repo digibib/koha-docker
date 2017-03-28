@@ -55,7 +55,7 @@ index 0000000..e5db2cc 100644
 +
 +1;
 diff --git a/debian/templates/plack.psgi b/debian/templates/plack.psgi
-index b5d764c..eab3c94 100644
+index b5d764c..6826d71 100644
 --- a/debian/templates/plack.psgi
 +++ b/debian/templates/plack.psgi
 @@ -75,6 +75,15 @@ my $apiv1  = builder {
@@ -74,9 +74,9 @@ index b5d764c..eab3c94 100644
  builder {
      enable "ReverseProxy";
      enable "Plack::Middleware::Static";
-@@ -86,4 +95,42 @@ builder {
-     mount '/intranet'      => $intranet;
-     mount '/api/v1/app.pl' => $apiv1;
+@@ -82,6 +91,45 @@ builder {
+     enable "+Koha::Middleware::SetEnv";
+     #enable "+Koha::Middleware::Session";
 
 +    enable sub {
 +        my $app = shift;
@@ -116,4 +116,7 @@ index b5d764c..eab3c94 100644
 +            return $res;
 +        };
 +    };
- };
++
+     mount '/opac'          => $opac;
+     mount '/intranet'      => $intranet;
+     mount '/api/v1/app.pl' => $apiv1;
