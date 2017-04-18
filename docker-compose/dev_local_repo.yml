@@ -1,0 +1,7 @@
+---
+version: '2.1'
+
+services:
+   koha_dev:
+    volumes:
+      - "${KOHA_REPO}:/kohadev/kohaclone"
