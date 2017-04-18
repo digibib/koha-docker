@@ -62,10 +62,6 @@ ADD supervisord.conf.tmpl /templates/global/supervisord.conf.tmpl
 ADD koha-conf.xml.tmpl /templates/instance/koha-conf.xml.tmpl
 ADD apache.tmpl /templates/instance/apache.tmpl
 
-# Use SIP2 Development version from git
-#ADD sip2-dev.sls /srv/salt/koha/sip2-dev.sls
-#ADD sip2-dev-stop.sls /srv/salt/koha/sip2-dev-stop.sls
-
 ENV HOME /root
 WORKDIR /root
 
