@@ -1,23 +1,23 @@
 #!/bin/bash -e
 # Pull Koha either from GITREF or from TAGGED version
 echo "GITREF: ${GITREF}"
-echo "KOHA_VERSION: ${KOHA_VERSION}"
+echo "KOHA_RELEASE: ${KOHA_RELEASE}"
 
-if [ -z "$GITREF" ] && [ -z "$KOHA_VERSION" ]; then
-	echo "Need either GITREF or KOHA_VERSION"
+if [ -z "$GITREF" ] && [ -z "$KOHA_RELEASE" ]; then
+	echo "Need either GITREF or KOHA_RELEASE"
 	exit 1
 fi
 
 mkdir -p /koha && cd /koha
 if [ "$GITREF" ]; then
-	curl -sSk -o koha.tar.gz https://codeload.github.com/Koha-Community/Koha/legacy.tar.gz/${GITREF}
+	curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/legacy.tar.gz/${GITREF}
 else
-  RES=`curl -iso /dev/null -w "%{http_code}" http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz`
+  RES=`curl -sSk -iso /dev/null -w "%{http_code}" https://codeload.github.com/digibib/Koha/tar.gz/relase/${KOHA_RELEASE}`
   if [ $RES -eq 200 ]; then
-    curl -s -o koha.tar.gz http://download.koha-community.org/koha-${KOHA_VERSION}.tar.gz
+    curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/tar.gz/relase/${KOHA_RELEASE}
   else
     echo "Trying old_releases archive..."
-    curl -s -o koha.tar.gz http://download.koha-community.org/old_releases/koha-${KOHA_VERSION}.tar.gz
+    curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/tar.gz/aold_releases/${KOHA_RELEASE}
   fi
 fi
 

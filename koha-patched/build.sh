@@ -5,7 +5,7 @@ set -e
 # BUILD KOHA DEBIAN PACKAGES
 # NB! PBUILDER MUST BE RUN WITH --privileged mode
 ################
-# ENV KOHA_VERSION
+# ENV KOHA_RELEASE
 # ENV KOHABUGS
 # ENV DEBEMAIL     digitalutvikling@gmail.com
 # ENV DEBFULLNAME  Oslo Public Library
@@ -41,7 +41,7 @@ echo "Configuring bugzilla..." && \
 ##########
 
 echo "Patching..."
-echo "KOHA_VERSION: $KOHA_VERSION"
+echo "KOHA_RELEASE: $KOHA_RELEASE"
 echo "GITREF: $GITREF"
 
 # Patch from bugzilla
@@ -66,15 +66,15 @@ if [ -z "$SKIP_BUILD" ]; then
   mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
   dch --force-distribution -D "jessie" \
-      --newversion "${KOHA_VERSION}+$(date +%Y%m%d%H%M)~patched" \
-      "Patched version of koha ${KOHA_VERSION} - Bugpatches included: ${KOHABUGS}"
+      --newversion "${KOHA_RELEASE}+$(date +%Y%m%d%H%M)" \
+      "Patched version of koha ${KOHA_RELEASE} - Bugpatches included: ${KOHABUGS}"
   dch --append "Local patches:"
   for patch in $(find /patches -name *.patch); do \
     if [ -f "$patch" ]; then \
       dch --append "${patch##/*/}"    # strip path of patch
     fi \
   done
-  dch --release "Patched version of koha ${KOHA_VERSION}"
+  dch --release "Patched version of koha ${KOHA_RELEASE}"
 
   # Build
   cd /koha && \

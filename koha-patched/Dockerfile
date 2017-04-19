@@ -27,10 +27,10 @@ RUN apt-get update && \
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
-ENV KOHA_VERSION 16.11.04
+ARG KOHA_RELEASE
 #ENV GITREF b161c80d01dacc654b1f1b811e52cae07e58e55a
 
-# Pull/Download Koha from GITREF or KOHA_VERSION tarball, try old_releases if not existing
+# Pull/Download Koha from GITREF or KOHA:RELEASE tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
 RUN /root/pull.sh
 
@@ -70,12 +70,6 @@ ENV BUGZ_PASS    bugspass
 ENV DEBEMAIL     digitalutvikling@gmail.com
 ENV DEBFULLNAME  Oslo Public Library
 
-# OK    Bug 16694 - Limit SIP2 auth by patron attribute
-# OK    Bug 17004 - REST API: add route to authenticate patron (Single Sign On - SSO)
-# OK    Bug 16330 - REST API: add routes to add, update and delete patrons
-# LOCAL    Bug 16497 - REST API: add routes to list libraries
-# LOCAL    Bug 13895 - Add API routes for checkouts retrieval and renewal
-#ENV KOHABUGS     "16694 17004 16330"
 ENV TEST_QA      0
 
 RUN mkdir -p /debian
@@ -86,5 +80,3 @@ ADD ./applypatch.sh /root/applypatch.sh
 ADD ./build.sh /root/build.sh
 
 CMD ["/root/build.sh"]
-# ARG can be removed when docker 1.13 is released
-ARG KOHA_BUILD

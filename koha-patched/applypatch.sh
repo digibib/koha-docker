@@ -1,5 +1,5 @@
 #!/bin/bash
-# applypatch.sh: Simple bash library to apply patches to koha docker image, 
+# applypatch.sh: Simple bash library to apply patches to koha docker image,
 # either diff patches or bugzilla patches
 # diff patches should be created with:
 #   git diff --no-index orig new > file.patch
@@ -19,7 +19,7 @@ cleanup() {
     fi
 }
 
-usage() { 
+usage() {
   echo -e "\nUsage:\n$0 [-p|--patch] [-b|--bugid] patchdir \n"
   exit 1
 }

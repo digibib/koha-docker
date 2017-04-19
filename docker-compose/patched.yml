@@ -8,6 +8,8 @@ services:
     build:
       context: "${KOHAPATH}/koha-patched"
       dockerfile: Dockerfile
+      args:
+        KOHA_RELEASE: "$KOHA_RELEASE"
     volumes:
       - ${KOHAPATH}/koha-patched/patches:/patches
       - ${KOHAPATH}/koha-patched/debian:/debian
@@ -20,6 +22,7 @@ services:
       - DAC_READ_SEARCH
       - MKNOD
     environment:
+      KOHA_RELEASE: "$KOHA_RELEASE"
       KOHA_ADMINPASS: "${KOHA_ADMINPASS:-secret}"
       KOHA_ADMINUSER: "${KOHA_ADMINUSER:-admin}"
       KOHA_INSTANCE: "${KOHA_INSTANCE:-name}"
