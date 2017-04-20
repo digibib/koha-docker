@@ -2,7 +2,7 @@
 version: '2.1'
 
 services:
-   koha_dev:
+  koha_dev:
     container_name: koha_dev
     image: "digibib/koha:${GITREF}"
     build:
