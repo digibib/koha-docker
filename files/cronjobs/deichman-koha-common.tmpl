@@ -6,11 +6,6 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 ##############
-# Branch sync - trigger reindex of modified holding branches in RDF
-##############
-00 23 * * * root /cronjobs/update_holdingbranches.sh
-
-##############
 # Update item.replacementprice from marcxml
 ##############
 10 23 * * * root /cronjobs/update_items_replacementprice.sh
