@@ -12,12 +12,12 @@ mkdir -p /koha && cd /koha
 if [ "$GITREF" ]; then
 	curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/legacy.tar.gz/${GITREF}
 else
-  RES=`curl -sSk -iso /dev/null -w "%{http_code}" https://codeload.github.com/digibib/Koha/tar.gz/relase/${KOHA_RELEASE}`
+  RES=`curl -sSk -Iso /dev/null -w "%{http_code}" https://codeload.github.com/digibib/Koha/tar.gz/release/${KOHA_RELEASE}`
   if [ $RES -eq 200 ]; then
-    curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/tar.gz/relase/${KOHA_RELEASE}
+    curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/tar.gz/release/${KOHA_RELEASE}
   else
     echo "Trying old_releases archive..."
-    curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/tar.gz/aold_releases/${KOHA_RELEASE}
+    curl -sSk -o koha.tar.gz https://codeload.github.com/digibib/Koha/tar.gz/old_releases/${KOHA_RELEASE}
   fi
 fi
 
