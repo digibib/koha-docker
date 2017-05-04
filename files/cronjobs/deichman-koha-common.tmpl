@@ -82,4 +82,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ##############
 # Remove debarments on juveniles with no more issues
 #############
-40 03 * * *   root koha-foreach --enabled /cronjobs/unblock_juvenile_debarments.sh
+*/5 8-19 * * 1-6  root koha-foreach --enabled /cronjobs/unblock_juvenile_debarments.sh
