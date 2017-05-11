@@ -59,6 +59,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 20 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/brevdue.pl --update_status --print --url $PIDGEON_URL --user $PIDGEON_USER --pass $PIDGEON_PASS
 
 ##############
+# Update issue statistics in biblioitems.totalissues
+##############
+40 2 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/update_totalissues.pl --commit=1000 --use-stats --incremental
+
+##############
 # Cancel expired holds waiting and unsuspend
 ##############
 15 3 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/cancel_expired_holds.pl
