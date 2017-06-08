@@ -11,6 +11,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 10 23 * * * root /cronjobs/update_items_replacementprice.sh
 
 ##############
+# Update items.ccode zone position from marcxml
+##############
+15 23 * * * root /cronjobs/update_items_ccode.sh
+
+##############
 # NL - sync TO Koha
 ##############
 20 23 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/nl-sync-to-koha.pl -v -r
