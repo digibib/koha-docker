@@ -36,21 +36,22 @@ create_anonymous_stats() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 EOF
     echo "creating anonymous stats for issues $DAYS days old ..."
-    QUERY="INSERT INTO anonymous_stats
-          (old_issue_id, itemnumber, returnbranch, age, sex, zipcode, homebranch, categorycode)
-        SELECT old_issues.issue_id,
-            old_issues.itemnumber,
-            old_issues.branchcode AS returnbranch,
-            TIMESTAMPDIFF(YEAR, borrowers.dateofbirth, CURDATE()) AS age,
-            borrowers.sex,
-            borrowers.zipcode,
-            borrowers.branchcode AS homebranch,
-            borrowers.categorycode 
-        FROM old_issues
-        LEFT JOIN borrowers ON (borrowers.borrowernumber=old_issues.borrowernumber)
-        WHERE (TO_DAYS(now()) - TO_DAYS(old_issues.returndate)) = $DAYS;"
-    RES=`echo $QUERY | koha-mysql $(koha-list --enabled) -vv`
-    echo "$RES"
+    QUERY="INSERT INTO anonymous_stats (old_issue_id, itemnumber, returnbranch, age, sex, zipcode, homebranch, categorycode)
+      SELECT old_issues.issue_id,
+             old_issues.itemnumber,
+             old_issues.branchcode AS returnbranch,
+             TIMESTAMPDIFF(YEAR, borrowers.dateofbirth, CURDATE()) AS age,
+             borrowers.sex,
+             borrowers.zipcode,
+             borrowers.branchcode AS homebranch,
+             borrowers.categorycode
+      FROM old_issues
+      LEFT JOIN borrowers ON (borrowers.borrowernumber=old_issues.borrowernumber)
+      WHERE (TO_DAYS(now()) - TO_DAYS(old_issues.returndate)) = $DAYS;
+
+      SELECT ROW_COUNT();"
+    RES=`echo $QUERY | koha-mysql $(koha-list --enabled) -N`
+    echo "Number of anonymized issues: $RES"
 }
 
 case "$1" in
