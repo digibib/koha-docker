@@ -96,6 +96,9 @@ sub upgrade {
   if ($self->{mech}->{content} ~~ /$mods/ && $self->{mech}->{content} ~~ /$deps/) {
     # Upgrade with all modules and deps in place
     $self->{mech}->submit_form( form_name => "checkmodules" );
+    $self->{mech}->submit_form( form_name => "checkinformation" );
+    $self->{mech}->submit_form( form_name => "checkdbparameters" );
+    $self->{mech}->follow_link( url => "install.pl?step=3&op=updatestructure" );
     $self->{mech}->follow_link( url => "install.pl?step=3&op=finished" );
     print "Successfully completed the upgrade process!";
     exit 0;
