@@ -19,6 +19,7 @@ services:
       - DAC_READ_SEARCH
       - MKNOD
     environment:
+      KOHA_HOME: "${KOHA_HOME:-/kohadev/kohaclone/}"
       KOHA_ADMINPASS: "${KOHA_ADMINPASS:-secret}"
       KOHA_ADMINUSER: "${KOHA_ADMINUSER:-admin}"
       KOHA_INSTANCE: "${KOHA_INSTANCE:-name}"
