@@ -7,11 +7,11 @@ report="REPORT FROM CRONJOB update_items_replacementprice.sh\n"
 RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
 
     UPDATE items i
-    LEFT JOIN biblio_metadata bm ON (i.biblionumber=bm.biblionumber)
-    SET i.replacementprice =
-      (SELECT CASE EXTRACTVALUE(bm.metadata, '//record/datafield[@tag="337"]/subfield[@code="a"]/text()') /* mediaType */
+    JOIN
+      (SELECT biblionumber,
+              CASE EXTRACTVALUE(metadata, '//record/datafield[@tag="337"]/subfield[@code="a"]/text()') /* mediaType */
                   WHEN 'Bok' THEN CASE
-                                      WHEN EXTRACTVALUE(bm.metadata, '//record/datafield[@tag="385"]/subfield[@code="a"]/text()') = 'Voksne' THEN '450.00' /* audience */
+                                      WHEN EXTRACTVALUE(metadata, '//record/datafield[@tag="385"]/subfield[@code="a"]/text()') = 'Voksne' THEN '450.00' /* audience */
                                       ELSE '300.00'
                                   END
                   WHEN 'Film' THEN '300.00'
@@ -20,25 +20,13 @@ RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf
                   WHEN 'Lydbok' THEN '450.00'
                   WHEN 'Språkkurs' THEN '500.00'
                   WHEN 'Spill' THEN '500.00'
-                  WHEN 'Dataspill' THEN '500.00'
                   WHEN 'Periodika' THEN '100.00'
                   WHEN 'Noter' THEN '250.00'
-                  WHEN 'Brettspill' THEN '500.00'
-              END)
-    WHERE i.biblionumber=bm.biblionumber /* EXCLUDED: 'REALIA' */
-      AND i.itype IN ('BOK',
-                      'DAGSLAAN',
-                      'EBOK',
-                      'FILM',
-                      'KART',
-                      'LYDBOK',
-                      'MUSIKK',
-                      'NOTER',
-                      'PERIODIKA',
-                      'SPILL',
-                      'SPRAAKKURS',
-                      'TOUKESLAAN',
-                      'UKESLAAN');
+                  ELSE NULL
+              END AS price
+       FROM biblio_metadata) tmp USING(biblionumber)
+    SET i.replacementprice = tmp.price
+    WHERE tmp.price IS NOT NULL;
 
     SELECT ROW_COUNT();
 EOF`"
