@@ -52,10 +52,18 @@ RUN echo "search deich.folkebibl.no guest.oslo.kommune.no\nnameserver 10.172.2.1
 # Script and deps for checking if koha is up & ready (to be executed using docker exec)
 COPY docker-wait_until_ready.py /root/wait_until_ready.py
 RUN apt-get install -y python-requests && apt-get clean
+
 # Missing perl dependencies
 RUN apt-get install -y \
     libhtml-strip-perl libipc-run3-perl paps \
     libyaml-libyaml-perl && \
+    apt-get clean
+
+# NCIP Server and dependencies
+ADD ./files/NCIPServer /NCIPServer
+
+RUN apt-get update && apt-get install -y \
+    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl && \
     apt-get clean
 
 # Installer files
