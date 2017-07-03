@@ -156,6 +156,18 @@ apply_once() {
 EOF
   EXIT_CODE=$?
   fi
+
+  VERSION=17.0500000
+  if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
+    if [ -n "$ILLENABLE" ]; then
+      echo "Configuring Interlibrary Loan Module Settings ..."
+      echo -n "UPDATE systempreferences SET value = \"$ILLENABLE\" WHERE variable = 'ILLModule';" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT IGNORE INTO branches (branchcode,branchname) VALUES ('ILL', 'Fjernlån');" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT IGNORE INTO categories (categorycode,description,enrolmentperioddate,overduenoticerequired,category_type) VALUES ('IL', 'Fjernlån', '2999-12-31', 1, 'I');" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT IGNORE INTO borrower_attribute_types (code,description,unique_id,class) VALUES ('nncip_uri', 'NNCIP endpoint', 1, 'nncip_uri');" | koha-mysql $KOHA_INSTANCE
+      EXIT_CODE=$?
+    fi
+  fi
 }
 
 run_webinstaller
