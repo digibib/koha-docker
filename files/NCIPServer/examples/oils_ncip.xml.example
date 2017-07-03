@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configuration for the Evergreen NCIPServer driver. -->
+<ncip>
+  <!-- Information needed to authenticate with Evergreen -->
+  <credentials>
+    <!-- NCIPServer staff account -->
+    <username></username>
+    <!-- Password for the above -->
+    <password></password>
+    <!-- NCIPServer organizational unit shortname -->
+    <work_ou></work_ou>
+    <!-- Workstation registered for the URSA staff account -->
+    <workstation></workstation>
+  </credentials>
+  <!-- Path to opensrf_core.xml bootstrap configuration -->
+  <bootstrap></bootstrap>
+  <!-- Configurable options for created copies. -->
+  <items>
+    <!-- If you are on Evergreen version 2.7.0-alpha or later, you can
+         uncomment the following element to use precat copies instead
+         of making "short" bib records.  If you are on an older
+         version of Evergreen, enabling this setting will not work the
+         way you wish and will cause staff no end of confusion.
+    -->
+    <!-- <use_precats /> -->
+
+    <!-- The following setting will cause force holds to be placed on
+         copies created by the AcceptItem message. This will also
+         cause those copies not to be holdable. The latter only takes
+         effect when use_precats is not in operation, since there is
+         no other way to place holds on precat copies.
+    -->
+    <!-- <use_force_holds /> -->
+
+    <!-- The following setting is recommended if you do not use precat
+         copies.  If it is not present, a default of System Local will
+         be used.
+
+	 It will be used as the bibliographic record source when the
+	 "short" bibs are created.  Having a unique entry for this in
+	 your database makes it easy to identify bibliographic records
+	 created via NCIP.  It is highly recommended that you create
+	 one just for this purpose.
+
+	 The element can be set up empty with the cbs attribute
+	 holding the database ID of the config.bib_source entry to
+	 use.  You can optionally set the text value of the element to
+	 the name of the bib_source.  If the cbs attribute is omitted,
+	 then the text value name must be provided.  The example
+	 provided below will use the System Local config.bib_source
+	 that comes with Evergreen.
+    -->
+    <bib_source cbs="2">System Local</bib_source>
+
+    <!-- Add a stat_cat_entry element for each stat cat that you wish
+         to fill in when creating copies. If you aren't using
+         stat_cats or if you don't wish to create any for these, you
+         don't need to have stat_cat_entry elements. You could delete
+         the dummy entry in this case.  If you have any required stat
+         cats, then it is a good idea to have an entry here.
+
+	 The stat_cat attribute is the numeric id of the stat_cat for
+	 the entry.
+
+	 The element's text node is used as the asset.stat_cat_entry's
+	 value in the database.
+    -->
+    <!-- <stat_cat_entry stat_cat=""></stat_cat_entry> -->
+  </items>
+  <!-- Configurable options for patron retrieval/validation -->
+  <patrons>
+    <!-- You can block patrons by profile group in two ways:
+
+	 The first is to enter a block_profile tag with a grp
+	 attribute set to the value of the profile group's id, for
+	 example:
+
+	 <block_profile grp="20"/>
+
+	 The second is to enter a block_profile tag with a text value
+	 equal to the name of the profile group, for instance:
+
+	 <block_profile>Local Use Only</block_profile>
+
+	 In this case, the name must match exactly the case, spacing,
+	 and punctuation (if any) of the profile group's name in the
+	 permission.grp_tree table.
+
+	 If you specify both the grp attribute and a text value with a
+	 group name, then the value of the grp tag is used. The text
+	 value will be ignored:
+
+	 <block_profile grp="20">Local Use Only</block_profile>
+
+	 You might want to do this in order to have slightly faster
+	 configuration load times and still have the group name as a
+	 reminder to the person that edits the configuration.
+    -->
+  </patrons>
+</ncip>

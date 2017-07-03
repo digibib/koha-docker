@@ -1,0 +1,39 @@
+<acsconfig xmlns="http://openncip.org/acs-config/1.0/">
+  <error-detect enabled="true" />
+
+  <server-params
+    min_servers='1'
+    min_spare_servers='0'
+    log_file='Sys::Syslog'
+    syslog_ident='ncip_server'
+    syslog_facility='local6'
+  />
+  
+  <listeners>
+    <service
+      port="127.0.0.1:6001/tcp"
+      transport="RAW"
+      protocol="NCIP/2.00"
+      timeout="60" />
+
+<!--    <service
+      port="8023/tcp"
+      transport="RAW"
+      protocol="NCIP/2.00"
+      timeout="60" />
+-->
+  </listeners>
+
+  <agencies>
+  </agencies>
+
+  <profile>
+  </profile>
+
+  <version>
+  </version>
+
+  <ils value='NCIP::ILS::Koha' />
+  <namespace value= 'http://www.niso.org/2008/ncip' />
+  <templates value= 'templates-norway/' />
+</acsconfig>

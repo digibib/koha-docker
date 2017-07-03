@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><!DOCTYPE NCIPMessage PUBLIC "-//NISO//NCIP DTD Version 1//EN" "http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+<NCIPMessage version="http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+  <CreateUser>
+    <InitiationHeader>
+      <FromAgencyId>
+        <UniqueAgencyId>
+          <Scheme>http://www.auto-graphics.com/ncip/schemes/uniqueagencyid/agencynames.scm</Scheme>
+          <Value>CPomAG:massvc:FLO-EMERSON</Value>
+        </UniqueAgencyId>
+      </FromAgencyId>
+      <ToAgencyId>
+        <UniqueAgencyId>
+          <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+          <Value>FLO-EMERSON</Value>
+        </UniqueAgencyId>
+      </ToAgencyId>
+    </InitiationHeader>
+    <MandatedAction>
+      <DateEventOccurred>2013-09-04T09:22:00</DateEventOccurred>
+    </MandatedAction>
+    <UniqueUserId>
+      <UniqueAgencyId>
+        <Scheme>http://www.auto-graphics.com/ncip/schemes/uniqueagencyid/agencynames.scm</Scheme>
+        <Value>CPomAG:massvc:FLO-EMERSON</Value>
+      </UniqueAgencyId>
+      <UserIdentifierValue>MASSVC</UserIdentifierValue>
+    </UniqueUserId>
+    <NameInformation>
+      <OrganizationNameInformation>
+        <OrganizationNameType>
+          <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/organizationnametype/organizationnametype.scm</Scheme>
+          <Value>Official Name</Value>
+        </OrganizationNameType>
+        <OrganizationName>Massachusetts Virtual Catalog</OrganizationName>
+      </OrganizationNameInformation>
+    </NameInformation>
+    <UserPrivilege>
+      <UniqueAgencyId>
+        <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-EMERSON</Value>
+      </UniqueAgencyId>
+      <AgencyUserPrivilegeType>
+        <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/agencyuserprivilegetype/public.scm</Scheme>
+        <Value>Staff</Value>
+      </AgencyUserPrivilegeType>
+      <ValidFromDate>2013-09-04T00:00:00</ValidFromDate>
+      <UserPrivilegeStatus>
+        <UserPrivilegeStatusType>
+          <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/userprivilegestatustype/userprivilegestatustype.scm</Scheme>
+          <Value>Active</Value>
+        </UserPrivilegeStatusType>
+      </UserPrivilegeStatus>
+      <UserPrivilegeDescription>user status</UserPrivilegeDescription>
+    </UserPrivilege>
+    <UserPrivilege>
+      <UniqueAgencyId>
+        <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-EMERSON</Value>
+      </UniqueAgencyId>
+      <AgencyUserPrivilegeType>
+        <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/agencyuserprivilegetype/public.scm</Scheme>
+        <Value>Staff</Value>
+      </AgencyUserPrivilegeType>
+      <ValidFromDate>2013-09-04T00:00:00</ValidFromDate>
+      <UserPrivilegeStatus>
+        <UserPrivilegeStatusType>
+          <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/userprivilegestatustype/userprivilegestatustype.scm</Scheme>
+          <Value>ILL</Value>
+        </UserPrivilegeStatusType>
+      </UserPrivilegeStatus>
+      <UserPrivilegeDescription>patron type</UserPrivilegeDescription>
+    </UserPrivilege>
+  </CreateUser>
+</NCIPMessage>

@@ -1,0 +1,24 @@
+bin/start_server.pl
+Build.PL
+COPYING
+lib/NCIP.pm
+lib/NCIP/Configuration.pm
+lib/NCIP/Configuration/Service.pm
+lib/NCIP/Handler.pm
+lib/NCIP/Handler/LookupItem.pm
+lib/NCIP/Item.pm
+lib/NCIP/User.pm
+lib/NCIPResponder.pm
+lib/NCIPServer.pm
+LICENSE
+MANIFEST			This list of files
+README
+t/config_sample/NCIP.xml
+t/NCIP.t
+t/NCIP_Configuration.t
+t/NCIP_Handler.t
+t/NCIP_Item.t
+t/NCIP_User.t
+t/NCIPServer.t
+t/sample_data/LookupItem.xml
+t/sample_data/LookupItemWithExampleItemIdentifierType.xml

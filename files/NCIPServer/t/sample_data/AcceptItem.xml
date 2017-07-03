@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?><!DOCTYPE NCIPMessage PUBLIC "-//NISO//NCIP DTD Version 1//EN" "http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+<NCIPMessage version="http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+  <AcceptItem>
+    <InitiationHeader>
+      <FromAgencyId>
+        <UniqueAgencyId>
+          <Scheme>http://www.auto-graphics.com/ncip/schemes/uniqueagencyid/agencynames.scm</Scheme>
+          <Value>CPomAG:massvc:FLO-WHEELOCK</Value>
+        </UniqueAgencyId>
+      </FromAgencyId>
+      <ToAgencyId>
+        <UniqueAgencyId>
+          <Scheme>http://schema.flo.org/ncip/ag</Scheme>
+          <Value>FLO-WHEELOCK</Value>
+        </UniqueAgencyId>
+      </ToAgencyId>
+    </InitiationHeader>
+    <UniqueRequestId>
+      <UniqueAgencyId>
+        <Scheme>http://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-WHEELOCK</Value>
+      </UniqueAgencyId>
+      <RequestIdentifierValue>250</RequestIdentifierValue>
+    </UniqueRequestId>
+    <RequestedActionType>
+      <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/requestedactiontype/requestedactiontype.scm</Scheme>
+      <Value>Hold For Pickup And Notify</Value>
+    </RequestedActionType>
+    <UniqueUserId>
+      <UniqueAgencyId>
+        <Scheme>http://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-WHEELOCK</Value>
+      </UniqueAgencyId>
+      <UserIdentifierValue>4444</UserIdentifierValue>
+    </UniqueUserId>
+    <UniqueItemId>
+      <UniqueAgencyId>
+        <Scheme>http://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-WHEELOCK</Value>
+      </UniqueAgencyId>
+      <ItemIdentifierValue>0113801584633</ItemIdentifierValue>
+    </UniqueItemId>
+    <DateForReturn>2013-11-13T23:59:00</DateForReturn>
+    <ItemOptionalFields>
+      <BibliographicDescription>
+        <Author>Guertin, Mike.</Author>
+        <BibliographicItemId>
+          <BibliographicItemIdentifier>1561584630</BibliographicItemIdentifier>
+          <BibliographicItemIdentifierCode>
+            <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/bibliographicitemidentifiercode/bibliographicitemidentifiercode.scm</Scheme>
+            <Value>ISBN</Value>
+          </BibliographicItemIdentifierCode>
+        </BibliographicItemId>
+        <PublicationDate>c2001.</PublicationDate>
+        <Publisher>Taunton Press ; Publishers Group West [distributor]</Publisher>
+        <Title>Precision framing</Title>
+        <MediumType>
+          <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/mediumtype/mediumtype.scm</Scheme>
+          <Value>Book</Value>
+        </MediumType>
+      </BibliographicDescription>
+      <ItemDescription>
+        <CallNumber>694.2 .G84 2001</CallNumber>
+      </ItemDescription>
+    </ItemOptionalFields>
+  </AcceptItem>
+</NCIPMessage>

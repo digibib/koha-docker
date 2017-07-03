@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><!DOCTYPE NCIPMessage PUBLIC "-//NISO//NCIP DTD Version 1//EN" "http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+<NCIPMessage version="http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+  <CheckInItem>
+    <InitiationHeader>
+      <FromAgencyId>
+        <UniqueAgencyId>
+          <Scheme>http://www.auto-graphics.com/ncip/schemes/uniqueagencyid/agencynames.scm</Scheme>
+          <Value>CPomAG:massvc:FLO-WENTWORTH</Value>
+        </UniqueAgencyId>
+      </FromAgencyId>
+      <ToAgencyId>
+        <UniqueAgencyId>
+          <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+          <Value>FLO-WENTWORTH</Value>
+        </UniqueAgencyId>
+      </ToAgencyId>
+    </InitiationHeader>
+    <MandatedAction>
+      <DateEventOccurred>2013-09-19T15:23:00</DateEventOccurred>
+    </MandatedAction>
+    <UniqueItemId>
+      <UniqueAgencyId>
+        <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-WENTWORTH</Value>
+      </UniqueAgencyId>
+      <ItemIdentifierValue>0113801584633</ItemIdentifierValue>
+    </UniqueItemId>
+    <ItemElementType>
+      <Scheme>http://www.niso.org/ncip/v1_0/schemes/itemelementtype/itemelementtype.scm</Scheme>
+      <Value>Bibliographic Description</Value>
+    </ItemElementType>
+    <ItemElementType>
+      <Scheme>http://www.niso.org/ncip/v1_0/schemes/itemelementtype/itemelementtype.scm</Scheme>
+      <Value>Circulation Status</Value>
+    </ItemElementType>
+    <UserElementType>
+      <Scheme>http://www.niso.org/ncip/v1_0/schemes/userelementtype/userelementtype.scm</Scheme>
+      <Value>Name Information</Value>
+    </UserElementType>
+    <UserElementType>
+      <Scheme>http://www.niso.org/ncip/v1_0/schemes/userelementtype/userelementtype.scm</Scheme>
+      <Value>User Address Information</Value>
+    </UserElementType>
+    <UserElementType>
+      <Scheme>http://www.niso.org/ncip/v1_0/schemes/userelementtype/userelementtype.scm</Scheme>
+      <Value>User Privilege</Value>
+    </UserElementType>
+    <UserElementType>
+      <Scheme>http://www.niso.org/ncip/v1_0/schemes/userelementtype/userelementtype.scm</Scheme>
+      <Value>Block Or Trap</Value>
+    </UserElementType>
+  </CheckInItem>
+</NCIPMessage>

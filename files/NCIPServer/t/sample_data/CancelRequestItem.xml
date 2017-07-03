@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?><!DOCTYPE NCIPMessage PUBLIC "-//NISO//NCIP DTD Version 1//EN" "http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+<NCIPMessage version="http://www.niso.org/ncip/v1_0/imp1/dtd/ncip_v1_0.dtd">
+  <CancelRequestItem>
+    <InitiationHeader>
+      <FromAgencyId>
+        <UniqueAgencyId>
+          <Scheme>http://www.auto-graphics.com/ncip/schemes/uniqueagencyid/agencynames.scm</Scheme>
+          <Value>CPomAG:massvc:FLO-WENTWORTH</Value>
+        </UniqueAgencyId>
+      </FromAgencyId>
+      <ToAgencyId>
+        <UniqueAgencyId>
+          <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+          <Value>FLO-WENTWORTH</Value>
+        </UniqueAgencyId>
+      </ToAgencyId>
+    </InitiationHeader>
+    <UniqueUserId>
+      <UniqueAgencyId>
+        <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-WENTWORTH</Value>
+      </UniqueAgencyId>
+      <UserIdentifierValue>FLO-WHEELOCK</UserIdentifierValue>
+    </UniqueUserId>
+    <UniqueRequestId>
+      <UniqueAgencyId>
+        <Scheme>HTTP://schema.flo.org/ncip/ag</Scheme>
+        <Value>FLO-WENTWORTH</Value>
+      </UniqueAgencyId>
+      <RequestIdentifierValue>252</RequestIdentifierValue>
+    </UniqueRequestId>
+    <RequestType>
+      <Scheme>http://www.niso.org/ncip/v1_0/imp1/schemes/requesttype/requesttype.scm</Scheme>
+      <Value>Loan</Value>
+    </RequestType>
+  </CancelRequestItem>
+</NCIPMessage>

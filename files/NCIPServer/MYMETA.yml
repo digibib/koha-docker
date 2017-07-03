@@ -1,0 +1,15 @@
+---
+abstract: 'Main module for NCIP support'
+author:
+  - unknown
+build_requires: {}
+dynamic_config: 0
+generated_by: 'Module::Build version 0.4, CPAN::Meta::Converter version 2.120921'
+license: open_source
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: NCIP
+resources:
+  license: http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+version: 0.01

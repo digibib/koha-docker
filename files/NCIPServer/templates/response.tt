@@ -1,0 +1,11 @@
+<[% type %]>
+[% IF header;
+      INCLUDE "includes/ResponseHeader.inc";
+   END;
+   IF data;
+      INCLUDE "includes/data.inc";
+   ELSIF problem;
+      INCLUDE "includes/problem.inc";
+   END;
+-%]
+</[% type %]>
