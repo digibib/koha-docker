@@ -5,7 +5,7 @@ report="REPORT FROM TODAYS kemnersaker\n"
 add_new_items() {
   # add new lines to kemnersaker where issue is more than 35 days overdue
   local RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
-    INSERT INTO kemnersaker (issue_id,borrowernumber,itemnumber,status,TIMESTAMP)
+    INSERT INTO kemnersaker (issue_id,borrowernumber,itemnumber,status,timestamp)
     SELECT i.issue_id,
            i.borrowernumber,
            i.itemnumber,
@@ -50,17 +50,18 @@ EOF`"
 
 block_patrons() {
   local RES=`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
-    INSERT INTO borrower_debarments (borrowernumber, TYPE, COMMENT, manager_id)
+    INSERT INTO borrower_debarments (borrowernumber, type, comment, manager_id)
       (SELECT k.borrowernumber,
               'MANUAL',
               'Sendt til kemner',
               49393
        FROM kemnersaker k
+       JOIN borrowers b USING(borrowernumber)
        WHERE NOT EXISTS
            ( SELECT *
             FROM borrower_debarments
             WHERE borrowernumber=k.borrowernumber
-              AND COMMENT='Sendt til kemner' )
+              AND comment='Sendt til kemner' )
          AND k.status IN ('new',
                           'sent'));
 
