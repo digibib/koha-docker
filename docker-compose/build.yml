@@ -58,6 +58,9 @@ services:
       AUTHOR_EMAIL: "${AUTHOR_EMAIL:-john@doe.com}"
       BUGZ_USER: "${BUGZ_USER:-bugsquasher}"
       BUGZ_PASS: "${BUGZ_PASS:-bugspass}"
+      ILLENABLE: "${ILLENABLE:-0}"
+      ILLUSER: "${ILLUSER:-illuser}"
+      ILLNAME: "${ILLNAME:-Interlibrary loan}"
     ports:
       - "6001:6001"
       - "8081:8081"

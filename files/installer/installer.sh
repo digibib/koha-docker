@@ -112,6 +112,13 @@ apply_always() {
       echo $RESULT
     done
   fi
+
+  if [ -n "$ILLENABLE" ]; then
+    echo "Configuring Interlibrary Loan Module Settings ..."
+    echo -n "UPDATE systempreferences SET value = \"$ILLENABLE\" WHERE variable = 'ILLModule';" | koha-mysql $KOHA_INSTANCE
+    echo -n "UPDATE systempreferences SET value = \"$ILLUSER\" WHERE variable = 'ILLISIL';" | koha-mysql $KOHA_INSTANCE
+    EXIT_CODE=$?
+  fi
 }
 
 apply_once() {
@@ -157,19 +164,26 @@ EOF
   EXIT_CODE=$?
   fi
 
-  VERSION=17.0500000
+  VERSION=17.0501000
   if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
     if [ -n "$ILLENABLE" ]; then
-      echo "Configuring Interlibrary Loan Module Settings ..."
-      echo -n "UPDATE systempreferences SET value = \"$ILLENABLE\" WHERE variable = 'ILLModule';" | koha-mysql $KOHA_INSTANCE
-      echo -n "INSERT IGNORE INTO branches (branchcode,branchname) VALUES ('ILL', 'Fjernlån');" | koha-mysql $KOHA_INSTANCE
-      echo -n "INSERT IGNORE INTO categories (categorycode,description,enrolmentperioddate,overduenoticerequired,category_type) VALUES ('IL', 'Fjernlån', '2999-12-31', 1, 'I');" | koha-mysql $KOHA_INSTANCE
+      echo "Setting up Interlibrary Loan ..."
+      echo -n "INSERT INTO systempreferences (variable,value) VALUES = ('ILLModule', \'$ILLENABLE\') ON DUPLICATE KEY UPDATE value = \'$ILLENABLE\';" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT INTO systempreferences (variable,value,type) VALUES = ('ILLISIL', \'$ILLUSER\', 'free') ON DUPLICATE KEY UPDATE value = \'$ILLUSER\';" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT IGNORE INTO branches (branchcode,branchname) VALUES ('ILL', \'$ILLNAME\');" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT IGNORE INTO categories (categorycode,description,enrolmentperioddate,overduenoticerequired,category_type) VALUES ('IL', \'$ILLNAME\', '2999-12-31', 1, 'I');" | koha-mysql $KOHA_INSTANCE
       echo -n "INSERT IGNORE INTO borrower_attribute_types (code,description,unique_id,class) VALUES ('nncip_uri', 'NNCIP endpoint', 1, 'nncip_uri');" | koha-mysql $KOHA_INSTANCE
+      echo "Adding Fast Add framework (FA) - needed for Interlibrary loans ..."
+      if [[ "$KOHA_HOME" == /usr/share* ]] ; then
+        koha-mysql $KOHA_INSTANCE < /usr/share/koha/intranet/cgi-bin/installer/data/mysql/en/marcflavour/marc21/optional/marc21_sample_fastadd_framework.sql
+      else
+        koha-mysql $KOHA_INSTANCE < ${KOHA_HOME}installer/data/mysql/en/marcflavour/marc21/optional/marc21_sample_fastadd_framework.sql
+      fi
       EXIT_CODE=$?
     fi
   fi
 }
 
 run_webinstaller
-apply_always
 apply_once
+apply_always
