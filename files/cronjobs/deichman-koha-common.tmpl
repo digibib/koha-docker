@@ -37,9 +37,11 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # First creates stats and populates anonymous_stats table
 # then moves history in old_issues to syspref AnonymousPatron or NULL if not set
 #   --days	days to keep history
+# also anonymizes items_last_borrower
 ##############
 40 23 * * *   root koha-foreach --enabled /cronjobs/anonymous_stats.sh --days 3
 55 23 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 3 -v
+58 23 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/anonymize_last_borrower.pl --days 3 -v
 
 ##############
 # Long overdue - 02:00 every night
