@@ -101,13 +101,17 @@ apply_always() {
     echo "Patching DBIx schema files ..."
     for schema in /installer/schema/*.patch
     do
-      patch -d / -p1 -N --dry-run -i $schema > /dev/null # Dry run
+      patch -d / -R -p1 -N --dry-run -i $schema > /dev/null # Dry run reverse to test if already applied
       rv=$?
       if [ $rv -eq 0 ]; then
+          echo "-- Patch $schema already applied, ignoring..."
+      else
         RESULT="`patch -d / -p1 -N < $schema` ------------> OK"
-          else
-        RESULT="'Patch error: ${schema}'"
-        exit 1
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -ne 0 ]; then
+          RESULT="'Patch error: ${schema}'"
+          exit $EXIT_CODE
+        fi
       fi
       echo $RESULT
     done
