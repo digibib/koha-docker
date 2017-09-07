@@ -83,8 +83,9 @@ stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 
 [program:ncip_server]
-command=/usr/bin/perl -I/NCIPServer/lib /NCIPServer/bin/ncip_dancing.pl
-environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml",PERL5LIB="/usr/share/koha/lib"
+directory=/NCIPServer
+command=/usr/bin/perl -Ilib -I/usr/share/koha/lib bin/ncip_dancing.pl
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml"
 user=${KOHA_INSTANCE}-koha
 autorestart=true
 redirect_stderr=true
