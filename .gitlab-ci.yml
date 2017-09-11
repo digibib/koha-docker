@@ -1,4 +1,4 @@
-image: debian:jessie
+image: docker:git
 stages:
   - build
 
