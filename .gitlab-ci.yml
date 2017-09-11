@@ -8,7 +8,7 @@ before_script:
   - pip install docker-compose
 
 variables:
-  KOHA_PATH: $CI_PROJECT_DIR
+  KOHAPATH: $CI_PROJECT_DIR
 
 build-debian-files:
   stage: build
