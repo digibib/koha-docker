@@ -5,4 +5,4 @@ stages:
 build-debian-files:
   stage: build
   script:
-	  - KOHAENV=patched make rebuild logs-f-nocolor delete
+   - KOHAENV=patched make rebuild logs-f-nocolor delete
