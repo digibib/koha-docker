@@ -4,11 +4,12 @@ services:
   - docker:dind
 
 before_script:
-  - apk add --no-cache make
   - apk add --no-cache py-pip
   - pip install docker-compose
 
 build-debian-files:
   stage: build
   script:
-   - KOHAENV=patched make rebuild logs-f-nocolor delete
+    - source docker-compose/docker-compose.env
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml up -d --force-recreate --no-deps koha_patched
