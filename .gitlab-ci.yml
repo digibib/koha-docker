@@ -1,0 +1,9 @@
+image: debian:jessie
+stages:
+  - build
+
+build-debian-files:
+  stage: build
+  script:
+	  - KOHAENV=patched make rebuild logs-f-nocolor delete
+    # - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
