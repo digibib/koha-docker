@@ -2,7 +2,7 @@ image: docker:git
 stages:
   - build
 
-before-script:
+before_script:
   - apt-get install make
 
 build-debian-files:
