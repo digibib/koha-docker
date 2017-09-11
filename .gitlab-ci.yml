@@ -1,9 +1,12 @@
-image: docker:git
-stages:
-  - build
+image: docker
+
+services:
+  - docker:dind
 
 before_script:
-  - apt-get install make
+  - apk add --no-cache make
+  - apk add --no-cache py-pip
+  - pip install docker-compose
 
 build-debian-files:
   stage: build
