@@ -11,9 +11,8 @@ before_script:
   - docker info
   - apk update
   - apk upgrade
-  - apk add python python-dev py-pip build-base
+  - apk add git python python-dev py-pip build-base
   - pip install docker-compose
-
 
 build-debian-files:
   stage: build
