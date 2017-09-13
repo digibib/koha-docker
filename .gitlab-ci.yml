@@ -6,6 +6,7 @@ services:
 variables:
   DOCKER_DRIVER: overlay
   KOHAPATH: $CI_PROJECT_DIR
+  COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml
 
 before_script:
   - docker info
@@ -18,5 +19,10 @@ build-debian-files:
   stage: build
   script:
     - source docker-compose/docker-compose.env
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml up -d --force-recreate --no-deps koha_patched
+    - $COMPOSE_CMD build koha_patched
+    - $COMPOSE_CMD up -d --force-recreate --no-deps koha_patched
+    - $COMPOSE_CMD logs -f --no-color koha_patched
+  artifacts:
+    paths:
+      - debian
+    expire_in: 1 week
