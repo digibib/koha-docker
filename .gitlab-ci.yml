@@ -3,12 +3,17 @@ image: docker
 services:
   - docker:dind
 
+variables:
+  DOCKER_DRIVER: overlay
+  KOHAPATH: $CI_PROJECT_DIR
+
 before_script:
-  - apk add --no-cache py-pip
+  - docker info
+  - apk update
+  - apk upgrade
+  - apk add python python-dev py-pip build-base
   - pip install docker-compose
 
-variables:
-  KOHAPATH: $CI_PROJECT_DIR
 
 build-debian-files:
   stage: build
