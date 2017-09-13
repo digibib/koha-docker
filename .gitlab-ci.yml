@@ -37,7 +37,7 @@ build_debian_files:
 deploy_debian_files:
   stage: deploy
   script:
-    - echo "$STAGING_PRIVATE_KEY" | ssh-add -
+    - echo "$STAGING_PRIVATE_KEY" | ssh-add
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # drop old repo
     - ssh jenkins@datatest.deichman.no "docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
