@@ -6,7 +6,7 @@ services:
 variables:
   DOCKER_DRIVER: overlay
   KOHAPATH: $CI_PROJECT_DIR
-  COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml
+  COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha-patched/debian:debian
   DEBIAN_REPO_INCOMING: datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
   DEBIAN_REPO_DIR: /var/www/datatest.deichman.no/repositories/koha
 
