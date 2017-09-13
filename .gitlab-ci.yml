@@ -14,10 +14,9 @@ before_script:
   - docker info
   - apk update
   - apk upgrade
-  - apk add git rsync python python-dev py-pip build-base
+  - apk add git rsync openssh python python-dev py-pip build-base
   - pip install docker-compose
   # deploy settings
-  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
   - mkdir -p ~/.ssh
   - eval $(ssh-agent -s)
   - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
