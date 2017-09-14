@@ -24,7 +24,7 @@ build_debian_files:
   stage: build
   script:
     - source docker-compose/docker-compose.env
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml rm -fv koha_$(KOHAENV)
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml rm -fv koha_patched
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha_patched/debian:/debian up -d --force-recreate --no-deps koha_patched
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml logs -f --no-color koha_patched
