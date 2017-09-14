@@ -11,14 +11,7 @@ variables:
   DEBIAN_REPO_INCOMING: jenkins@datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
   DEBIAN_REPO_DIR: /var/www/datatest.deichman.no/repositories/koha
 
-cache:
-  untracked: true
-  key: "$CI_BUILD_REF_NAME"
-  paths:
-    - koha-patched/debian
-
 before_script:
-  - docker info
   - apk update
   - apk upgrade
   - apk add git rsync openssh python python-dev py-pip build-base
