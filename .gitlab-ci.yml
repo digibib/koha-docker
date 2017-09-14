@@ -23,11 +23,13 @@ before_script:
 build_debian_files:
   stage: build
   script:
-    - cd docker-compose && source docker-compose.env
-    - docker-compose -f common.yml -f patched.yml rm -fv koha_patched
-    - docker-compose -f common.yml -f patched.yml build koha_patched
-    - docker-compose -f common.yml -f patched.yml -v $CI_PROJECT_DIR/koha_patched/debian:/debian up --force-recreate --no-deps koha_patched
-    - docker logs -f koha_patched
+    - source docker-compose/docker-compose.env
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml rm -fv koha_patched
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
+    - docker ps -a
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha_patched/debian:/debian up --force-recreate --no-deps koha_patched
+    - docker ps -a
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml logs -f --no-color koha_patched
   artifacts:
     paths:
       - koha-patched/debian
