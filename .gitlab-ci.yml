@@ -8,11 +8,12 @@ variables:
   DOCKER_DRIVER: overlay
   KOHAPATH: $CI_PROJECT_DIR
   COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha-patched/debian:/debian
-  DEBIAN_REPO_INCOMING: datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
+  DEBIAN_REPO_INCOMING: jenkins@datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
   DEBIAN_REPO_DIR: /var/www/datatest.deichman.no/repositories/koha
 
 before_script:
   - docker info
+  - hostname
   - apk update
   - apk upgrade
   - apk add git rsync openssh python python-dev py-pip build-base
@@ -20,7 +21,7 @@ before_script:
   # deploy settings
   - mkdir -p ~/.ssh
   - eval $(ssh-agent -s)
-  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
 build_debian_files:
   stage: build
