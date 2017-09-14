@@ -11,10 +11,14 @@ variables:
   DEBIAN_REPO_INCOMING: jenkins@datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
   DEBIAN_REPO_DIR: /var/www/datatest.deichman.no/repositories/koha
 
+cache:
+  untracked: true
+  key: "$CI_BUILD_REF_NAME"
+  paths:
+    - koha-patched/debian
+
 before_script:
   - docker info
-  - echo "$(pwd)"
-  - echo "$CI_PROJECT_DIR"
   - apk update
   - apk upgrade
   - apk add git rsync openssh python python-dev py-pip build-base
@@ -28,7 +32,7 @@ build_debian_files:
   script:
     - source docker-compose/docker-compose.env
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha-patched/debian:/debian up -d --force-recreate --no-deps koha_patched
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha_patched/debian:/debian up -d --force-recreate --no-deps koha_patched
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml logs -f --no-color koha_patched
   artifacts:
     paths:
