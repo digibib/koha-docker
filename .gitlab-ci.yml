@@ -26,7 +26,7 @@ build_debian_files:
     - source docker-compose/docker-compose.env
     - $COMPOSE_CMD rm -fv koha_patched
     - $COMPOSE_CMD build koha_patched
-    - $COMPOSE_CMD --force-recreate --no-deps koha_patched
+    - $COMPOSE_CMD up -d --force-recreate --no-deps koha_patched
     - $COMPOSE_CMD logs -f --no-color koha_patched
   artifacts:
     paths:
