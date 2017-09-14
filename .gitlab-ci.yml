@@ -7,7 +7,7 @@ stages:
 variables:
   DOCKER_DRIVER: overlay
   KOHAPATH: $CI_PROJECT_DIR
-  COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha-patched/debian:/debian
+  COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml
   DEBIAN_REPO_INCOMING: jenkins@datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
   DEBIAN_REPO_DIR: /var/www/datatest.deichman.no/repositories/koha
 
@@ -24,12 +24,10 @@ build_debian_files:
   stage: build
   script:
     - source docker-compose/docker-compose.env
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml rm -fv koha_patched
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
-    - docker ps -a
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha_patched/debian:/debian up --force-recreate --no-deps koha_patched
-    - docker ps -a
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml logs -f --no-color koha_patched
+    - $COMPOSE_CMD rm -fv koha_patched
+    - $COMPOSE_CMD build koha_patched
+    - $COMPOSE_CMD --force-recreate --no-deps koha_patched
+    - $COMPOSE_CMD logs -f --no-color koha_patched
   artifacts:
     paths:
       - koha-patched/debian
