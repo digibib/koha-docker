@@ -30,14 +30,14 @@ build_debian_files:
     - $COMPOSE_CMD logs -f --no-color koha_patched
   artifacts:
     paths:
-      - koha-patched/debian
+      - $CI_PROJECT_DIR/koha-patched/debian
     expire_in: 1 week
 
 # Deploy to datatest.deichman.no
 deploy_debian_files:
   stage: deploy
   script:
-    - echo "$STAGING_PRIVATE_KEY" | tr -d'\r' > ~/.ssh/id_rsa
+    - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 0600 ~/.ssh/id_rsa
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # drop old repo
