@@ -17,15 +17,14 @@ before_script:
   - apk add git rsync openssh python python-dev py-pip build-base
   - pip install docker-compose
   # deploy settings
-  - eval $(ssh-agent)
   - mkdir -p ~/.ssh
   - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
 build_debian_files:
   stage: build
   script:
-    - hostname
     - source docker-compose/docker-compose.env
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml rm -fv koha_$(KOHAENV)
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha_patched/debian:/debian up -d --force-recreate --no-deps koha_patched
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml logs -f --no-color koha_patched
@@ -39,8 +38,9 @@ deploy_debian_files:
   stage: deploy
   script:
     - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod -R 0600 ~/.ssh/id_rsa
     - ssh-keygen -f ~/.ssh/id_rsa -y > ~/.ssh/id_rsa.pub
-    - chmod -R 0400 ~/.ssh
+    - chmod 0600 ~/.ssh/id_rsa.pub
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # drop old repo
     - ssh jenkins@datatest.deichman.no "docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
