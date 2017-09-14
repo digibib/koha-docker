@@ -17,6 +17,7 @@ before_script:
   - apk add git rsync openssh python python-dev py-pip build-base
   - pip install docker-compose
   # deploy settings
+  - eval $(ssh-agent)
   - mkdir -p ~/.ssh
   - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
@@ -37,6 +38,7 @@ deploy_debian_files:
   stage: deploy
   script:
     - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
+    #- ssh-keygen -f ~/.ssh/id_rsa -y > ~/.ssh/id_rsa.pub
     - chmod 0400 ~/.ssh/id_rsa
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # drop old repo
