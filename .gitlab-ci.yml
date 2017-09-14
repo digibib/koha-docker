@@ -27,7 +27,7 @@ build_debian_files:
     - docker-compose -f common.yml -f patched.yml rm -fv koha_patched
     - docker-compose -f common.yml -f patched.yml build koha_patched
     - docker-compose -f common.yml -f patched.yml -v $CI_PROJECT_DIR/koha_patched/debian:/debian up --force-recreate --no-deps koha_patched
-    - docker logs -f --no-color koha_patched
+    - docker logs -f koha_patched
   artifacts:
     paths:
       - koha-patched/debian
