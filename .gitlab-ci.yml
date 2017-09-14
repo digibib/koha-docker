@@ -13,14 +13,14 @@ variables:
 
 before_script:
   - docker info
-  - hostname
+  - echo "$(pwd)"
+  - echo "$CI_PROJECT_DIR"
   - apk update
   - apk upgrade
   - apk add git rsync openssh python python-dev py-pip build-base
   - pip install docker-compose
   # deploy settings
   - mkdir -p ~/.ssh
-  - eval $(ssh-agent -s)
   - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
 build_debian_files:
@@ -28,7 +28,7 @@ build_debian_files:
   script:
     - source docker-compose/docker-compose.env
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml build koha_patched
-    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $(pwd)/koha-patched/debian:/debian up -d --force-recreate --no-deps koha_patched
+    - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml -v $CI_PROJECT_DIR/koha-patched/debian:/debian up -d --force-recreate --no-deps koha_patched
     - docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml logs -f --no-color koha_patched
   artifacts:
     paths:
