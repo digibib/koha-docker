@@ -26,9 +26,8 @@ build_debian_files:
     - $COMPOSE_CMD up -d --force-recreate --no-deps koha_patched
     - $COMPOSE_CMD logs -f --no-color koha_patched
   artifacts:
-    untracked: true
     paths:
-    - koha-patched/
+    - koha-patched/debian
     expire_in: 2 hrs
 
 # Deploy to datatest.deichman.no
