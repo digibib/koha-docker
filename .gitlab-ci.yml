@@ -26,8 +26,9 @@ build_debian_files:
     - $COMPOSE_CMD up -d --force-recreate --no-deps koha_patched
     - $COMPOSE_CMD logs -f --no-color koha_patched
   artifacts:
+    untracked: true
     paths:
-      - ./koha-patched/debian/
+    - koha-patched/
     expire_in: 2 hrs
 
 # Deploy to datatest.deichman.no
@@ -48,13 +49,13 @@ deploy_debian_files:
       aptly publish drop wheezy"
     # drop old snapshot
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
-      aptly snapshot drop koha-patched
+      aptly snapshot drop koha-patched"
     # add packages from incoming
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly repo include -keyring=6DDE02B2 -accept-unsigned=true -repo=deichmankoha -architectures=amd64 /aptly/incoming"
     # create new repo
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
-      aptly snapshot create -architectures=amd64 koha-patched from repo deichmankoha
+      aptly snapshot create -architectures=amd64 koha-patched from repo deichmankoha"
     # publish
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
-      aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched
+      aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched"
