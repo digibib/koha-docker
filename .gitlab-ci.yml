@@ -27,12 +27,14 @@ build_debian_files:
     - $COMPOSE_CMD logs -f --no-color koha_patched
   artifacts:
     paths:
-      - $CI_PROJECT_DIR/koha-patched/debian
-    expire_in: 1 week
+      - ./koha-patched/debian/
+    expire_in: 2 hrs
 
 # Deploy to datatest.deichman.no
 deploy_debian_files:
   stage: deploy
+  dependencies:
+  - build_debian_files
   script:
     - echo $CI_PROJECT_DIR
     - ls -l $CI_PROJECT_DIR/koha-patched/debian
