@@ -34,14 +34,16 @@ build_debian_files:
 deploy_debian_files:
   stage: deploy
   script:
+    - echo $CI_PROJECT_DIR
+    - ls -l $CI_PROJECT_DIR/koha-patched/debian
     - mkdir -p ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 0600 ~/.ssh/id_rsa
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
-    # drop old repo
+    # unpublish old repo
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
-      aptly snapshot drop koha-patched"
+      aptly publish drop koha-patched"
     # drop old snapshot
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly snapshot drop koha-patched
