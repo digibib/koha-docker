@@ -7,7 +7,7 @@ stages:
 variables:
   DOCKER_DRIVER: overlay2
   KOHAPATH: $CI_PROJECT_DIR
-  COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml
+  COMPOSE_CMD: docker-compose -f docker-compose/common.yml
   DEBIAN_REPO_INCOMING: jenkins@datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
   DEBIAN_REPO_DIR: /var/www/datatest.deichman.no/repositories/koha
   DOCKERHUB_USERNAME: deichman
@@ -24,10 +24,10 @@ build_debian_files:
     - develop
   script:
     - source docker-compose/docker-compose.env
-    - $COMPOSE_CMD rm -fv koha_patched
-    - $COMPOSE_CMD build koha_patched
-    - $COMPOSE_CMD up -d --force-recreate --no-deps koha_patched
-    - $COMPOSE_CMD logs -f --no-color koha_patched
+    - $COMPOSE_CMD -f docker-compose/patched.yml rm -fv koha_patched
+    - $COMPOSE_CMD -f docker-compose/patched.yml build koha_patched
+    - $COMPOSE_CMD -f docker-compose/patched.yml up -d --force-recreate --no-deps koha_patched
+    - $COMPOSE_CMD -f docker-compose/patched.yml logs -f --no-color koha_patched
     - mkdir -p ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -87,11 +87,11 @@ build_from_master:
     - master
   script:
     - source docker-compose/docker-compose.env
-    - $COMPOSE_CMD rm -fv koha_build || true
-    - $COMPOSE_CMD build koha_build
-    - $COMPOSE_CMD up -d --force-recreate --no-deps koha_build
-    - $COMPOSE_CMD exec  koha_build ./wait_until_ready.py
-    - $COMPOSE_CMD logs -f --no-color koha_build
+    - $COMPOSE_CMD -f docker-compose/patched.yml rm -fv koha_build || true
+    - $COMPOSE_CMD -f docker-compose/patched.yml build koha_build
+    - $COMPOSE_CMD -f docker-compose/patched.yml up -d --force-recreate --no-deps koha_build
+    - $COMPOSE_CMD -f docker-compose/patched.yml exec  koha_build ./wait_until_ready.py
+    - $COMPOSE_CMD -f docker-compose/patched.yml logs -f --no-color koha_build
     - docker login --username=$DOCKERHUB_USERNAME --password=$DOCKERHUB_PASSWORD
     - docker tag -f digibib/koha digibib/koha:$(shell git rev-parse HEAD)
     - docker push digibib/koha:$(shell git rev-parse HEAD)
