@@ -10,6 +10,7 @@ variables:
   COMPOSE_CMD: docker-compose -f docker-compose/common.yml -f docker-compose/patched.yml
   DEBIAN_REPO_INCOMING: jenkins@datatest.deichman.no:/var/www/datatest.deichman.no/repositories/koha/incoming/
   DEBIAN_REPO_DIR: /var/www/datatest.deichman.no/repositories/koha
+  DOCKERHUB_USERNAME: deichman
 
 before_script:
   - apk update
@@ -19,25 +20,14 @@ before_script:
 
 build_debian_files:
   stage: build
+  only:
+    - develop
   script:
     - source docker-compose/docker-compose.env
     - $COMPOSE_CMD rm -fv koha_patched
     - $COMPOSE_CMD build koha_patched
     - $COMPOSE_CMD up -d --force-recreate --no-deps koha_patched
     - $COMPOSE_CMD logs -f --no-color koha_patched
-  artifacts:
-    paths:
-    - koha-patched/debian
-    expire_in: 2 hrs
-
-# Deploy to datatest.deichman.no
-deploy_debian_files:
-  stage: deploy
-  dependencies:
-  - build_debian_files
-  script:
-    - echo $CI_PROJECT_DIR
-    - ls -l $CI_PROJECT_DIR/koha-patched/debian
     - mkdir -p ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -58,3 +48,50 @@ deploy_debian_files:
     # publish
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched"
+
+  artifacts:
+    paths:
+    - koha-patched/debian
+    expire_in: 2 hrs
+
+# Deploy to datatest.deichman.no
+deploy_debian_files:
+  stage: deploy
+  only:
+    - develop
+  script:
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 0600 ~/.ssh/id_rsa
+    - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
+    # unpublish old repo
+    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+      aptly publish drop wheezy"
+    # drop old snapshot
+    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+      aptly snapshot drop koha-patched"
+    # add packages from incoming
+    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+      aptly repo include -keyring=6DDE02B2 -accept-unsigned=true -repo=deichmankoha -architectures=amd64 /aptly/incoming"
+    # create new repo
+    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+      aptly snapshot create -architectures=amd64 koha-patched from repo deichmankoha"
+    # publish
+    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+      aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched"
+
+build_from_master:
+  stage: deploy
+  only:
+    - master
+  script:
+    - source docker-compose/docker-compose.env
+    - $COMPOSE_CMD rm -fv koha_build
+    - $COMPOSE_CMD build koha_build
+    - $COMPOSE_CMD up -d --force-recreate --no-deps koha_build
+    - $COMPOSE_CMD exec  koha_build ./wait_until_ready.py
+    - $COMPOSE_CMD logs -f --no-color koha_build
+    - docker login --username=$DOCKERHUB_USERNAME --password=$DOCKERHUB_PASSWORD
+    - docker tag -f digibib/koha digibib/koha:$(shell git rev-parse HEAD)
+    - docker push digibib/koha:$(shell git rev-parse HEAD)
