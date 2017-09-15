@@ -101,13 +101,17 @@ apply_always() {
     echo "Patching DBIx schema files ..."
     for schema in /installer/schema/*.patch
     do
-      patch -d / -p1 -N --dry-run -i $schema > /dev/null # Dry run
+      patch -d / -R -p1 -N --dry-run -i $schema > /dev/null # Dry run reverse to test if already applied
       rv=$?
       if [ $rv -eq 0 ]; then
+          echo "-- Patch $schema already applied, ignoring..."
+      else
         RESULT="`patch -d / -p1 -N < $schema` ------------> OK"
-          else
-        RESULT="'Patch error: ${schema}'"
-        exit 1
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -ne 0 ]; then
+          RESULT="'Patch error: ${schema}'"
+          exit $EXIT_CODE
+        fi
       fi
       echo $RESULT
     done
@@ -168,8 +172,8 @@ EOF
   if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
     if [ -n "$ILLENABLE" ]; then
       echo "Setting up Interlibrary Loan ..."
-      echo -n "INSERT INTO systempreferences (variable,value) VALUES = ('ILLModule', \"$ILLENABLE\") ON DUPLICATE KEY UPDATE value = \"$ILLENABLE\";" | koha-mysql $KOHA_INSTANCE
-      echo -n "INSERT INTO systempreferences (variable,value,type) VALUES = ('ILLISIL', \"$ILLUSER\", 'free') ON DUPLICATE KEY UPDATE value = \"$ILLUSER\";" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT INTO systempreferences (variable,value) VALUES ('ILLModule', \"$ILLENABLE\") ON DUPLICATE KEY UPDATE value = \"$ILLENABLE\";" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT INTO systempreferences (variable,value,type) VALUES ('ILLISIL', \"$ILLUSER\", 'free') ON DUPLICATE KEY UPDATE value = \"$ILLUSER\";" | koha-mysql $KOHA_INSTANCE
       echo -n "INSERT IGNORE INTO branches (branchcode,branchname) VALUES ('ILL', \"$ILLNAME\");" | koha-mysql $KOHA_INSTANCE
       echo -n "INSERT IGNORE INTO categories (categorycode,description,enrolmentperioddate,overduenoticerequired,category_type) VALUES ('IL', \"$ILLNAME\", '2999-12-31', 1, 'I');" | koha-mysql $KOHA_INSTANCE
       echo -n "INSERT IGNORE INTO borrower_attribute_types (code,description,unique_id,class) VALUES ('nncip_uri', 'NNCIP endpoint', 1, 'nncip_uri');" | koha-mysql $KOHA_INSTANCE
