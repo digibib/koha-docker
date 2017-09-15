@@ -87,11 +87,11 @@ build_from_master:
     - master
   script:
     - source docker-compose/docker-compose.env
-    - $COMPOSE_CMD -f docker-compose/patched.yml rm -fv koha_build || true
-    - $COMPOSE_CMD -f docker-compose/patched.yml build koha_build
-    - $COMPOSE_CMD -f docker-compose/patched.yml up -d --force-recreate --no-deps koha_build
-    - $COMPOSE_CMD -f docker-compose/patched.yml exec  koha_build ./wait_until_ready.py
-    - $COMPOSE_CMD -f docker-compose/patched.yml logs -f --no-color koha_build
+    - $COMPOSE_CMD -f docker-compose/build.yml rm -fv koha_build || true
+    - $COMPOSE_CMD -f docker-compose/build.yml build koha_build
+    - $COMPOSE_CMD -f docker-compose/build.yml up -d --force-recreate --no-deps koha_build
+    - $COMPOSE_CMD -f docker-compose/build.yml exec  koha_build ./wait_until_ready.py
+    - $COMPOSE_CMD -f docker-compose/build.yml logs -f --no-color koha_build
     - docker login --username=$DOCKERHUB_USERNAME --password=$DOCKERHUB_PASSWORD
     - docker tag -f digibib/koha digibib/koha:$(shell git rev-parse HEAD)
     - docker push digibib/koha:$(shell git rev-parse HEAD)
