@@ -87,7 +87,7 @@ build_from_master:
     - master
   script:
     - source docker-compose/docker-compose.env
-    - $COMPOSE_CMD rm -fv koha_build
+    - $COMPOSE_CMD rm -fv koha_build || true
     - $COMPOSE_CMD build koha_build
     - $COMPOSE_CMD up -d --force-recreate --no-deps koha_build
     - $COMPOSE_CMD exec  koha_build ./wait_until_ready.py
