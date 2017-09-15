@@ -5,7 +5,6 @@ services:
   koha_build:
     container_name: koha_ci
     image: "digibib/koha:${GITREF}"
-    override_strategy: overwrite
     build:
       context: "${KOHAPATH}"
       dockerfile: Dockerfile
