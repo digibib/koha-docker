@@ -64,9 +64,6 @@ services:
       ILLENABLE: "${ILLENABLE:-0}"
       ILLUSER: "${ILLUSER:-illuser}"
       ILLNAME: "${ILLNAME:-Interlibrary loan}"
-    ports:
-      - "6001:6001"
-      - "8081:8081"
     logging:
       driver: "json-file"
       options:
