@@ -45,7 +45,7 @@ deploy_debian_files:
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # unpublish old repo
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
-      aptly publish drop koha-patched"
+      aptly publish drop wheezy"
     # drop old snapshot
     - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly snapshot drop koha-patched
