@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 # This updates with local modifications incrementally based on local version
 # If new db, do all mods
 # NB: must be run BEFORE webinstaller, as it sets new DB version
