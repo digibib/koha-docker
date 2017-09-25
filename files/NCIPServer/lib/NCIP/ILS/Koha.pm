@@ -492,8 +492,14 @@ sub itemrequested {
     $response->header($self->make_header($request));
 
     # Get the ID of library we ordered from
-    my $ordered_from = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} );
-    my $ordered_from_patron = GetMember( cardnumber => $ordered_from );
+    # Mandatory fields, check they exist first or die
+    my $ordered_from = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} ) // die "Missing valid Agency ID";
+    my $ordered_from_patron = GetMember( cardnumber => $ordered_from ) // die "Cannot find Agency Patron in DB: '$ordered_from'";
+
+    my $itemidentifiertype = $request->{$message}->{ItemId}->{ItemIdentifierType} //
+        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifierCode} // die "No valid Item Identifier Type found";
+    my $itemidentifiervalue = $request->{$message}->{ItemId}->{ItemIdentifierValue} //
+        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifier} // die "No valid Item Identifier Value found";
 
     # Create a minimal MARC record based on ItemOptionalFields
     # FIXME This could be done in a more elegant way
@@ -523,7 +529,7 @@ sub itemrequested {
     my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, 'FA' );
     warn "biblionumber $biblionumber created";
 
-    # Add an item 
+    # Add an item
     # FIXME Data should not be hardcoded
     my $item = {
         'homebranch'    => 'ILL',
@@ -557,8 +563,8 @@ sub itemrequested {
             'Publisher'           => $bibdata->{Publisher},
             'PublicationDate'     => $bibdata->{PublicationDate},
             'Language'            => $bibdata->{Language},
-            'ItemIdentifierType'  => $request->{$message}->{ItemId}->{ItemIdentifierType},
-            'ItemIdentifierValue' => $request->{$message}->{ItemId}->{ItemIdentifierValue},
+            'ItemIdentifierType'  => $itemidentifiertype,
+            'ItemIdentifierValue' => $itemidentifiervalue,
             'RequestType'         => $request->{$message}->{RequestType},
             'RequestScopeType'    => $request->{$message}->{RequestScopeType},
         },
@@ -990,9 +996,9 @@ sub cancelrequestitem_old {
 sub _isil2barcode {
 
     my ( $s ) = @_;
+    return unless $s;
     $s =~ s/^NO-//i;
     return $s;
-
 }
 
 =head2 _get_biblionumber_from_standardnumber
