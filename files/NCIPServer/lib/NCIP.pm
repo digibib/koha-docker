@@ -53,8 +53,9 @@ sub new {
 =cut
 
 sub process_request {
-    my $self           = shift;
-    my $xml            = encode_utf8( shift );
+    my $self = shift;
+    my $xml  = shift
+    #my $xml            = encode_utf8( shift ); # We shouldn't encode if we get an already encoded UTF9 string
 
     # Declare our response object:
     my $response;

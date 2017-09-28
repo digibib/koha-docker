@@ -141,7 +141,7 @@ sub itemshipped {
     my $message = $self->parse_request_type($request);
     my $response = NCIP::Response->new({type => $message . 'Response'});
     $response->header($self->make_header($request));
-    
+
     # Change the status of the request
     # Find the request
     my $Illrequests = Koha::Illrequests->new;
@@ -159,6 +159,12 @@ sub itemshipped {
         @items == 1 or die "expected only 1 entry for $biblio_id, got: ".scalar(@items);
         # There should only be one item, so we grap the first one
         my $item = $items[0];
+        if ($request->{$message}->{ItemId}->{ItemIdentifierType} eq "Barcode") {
+            my $barcode = $request->{$message}->{ItemId}->{ItemIdentifierValue};
+            # TODO: Check if barcode is already in DB
+            $item->barcode($barcode);
+            $item->store;
+        }
         # Place a hold
         my $canReserve = CanItemBeReserved( $saved_request->borrowernumber, $item->itemnumber );
         if ($canReserve eq 'OK') {
