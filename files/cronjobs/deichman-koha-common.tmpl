@@ -95,3 +95,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Remove debarments on juveniles with no more issues
 #############
 */5 8-19 * * 1-6  root koha-foreach --enabled /cronjobs/unblock_juvenile_debarments.sh
+
+####################################
+# Compute plukkliste every 2 minutes
+####################################
+*/2 * * * * root cd /cronjobs; koha-foreach --enabled perl holds.compute.pl /tmp/plukkliste.json; mv /tmp/plukkliste.json /usr/share/koha/intranet/htdocs/holdsqueue/plukkliste.json
