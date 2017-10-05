@@ -255,7 +255,7 @@ sub _compute {
 
 my %bnums;
 TX {
-    SELECT "distinct biblionumber FROM reserves WHERE reservedate < NOW() and found <> 'W' ORDER BY biblionumber" => [] => sub { $bnums{$_{biblionumber}}++; };
+    SELECT "distinct biblionumber FROM reserves WHERE reservedate < NOW() and found IS NULL ORDER BY biblionumber" => [] => sub { $bnums{$_{biblionumber}}++; };
 };
 #print "got ".scalar(keys %bnums)." distinct bibnums\n";
 
