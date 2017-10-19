@@ -113,6 +113,7 @@ sub compute {
         author => $biblio{author},
         holds => [],
         age => $oldest,
+        barcodes => [map { $_->{barcode} // () } @items],
     };
     for my $pick (@pick) {
         my $loc = $pick->{loc} or die Dumper($pick)."...";
