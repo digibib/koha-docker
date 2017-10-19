@@ -300,10 +300,10 @@ sub requestitem {
         $response->problem( $problem );
         return $response;
     }
-    
+
     my $biblionumber;
     # Find the identifier and the identifiertype from the request, if there is one
-    # We have either 
+    # We have either
     #    ItemIdentifierType + ItemIdentifierValue
     # or
     #    BibliographicRecordIdentifierCode + BibliographicRecordIdentifier
@@ -317,8 +317,17 @@ sub requestitem {
         $itemidentifiervalue = $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifier};
     }
     # my ( $barcode, $barcode_field ) = $self->find_item_barcode($request);
-    if ( $itemidentifiervalue ne '' && $itemidentifiertype eq "Barcode" ) {
-        # We have a barcode (or something passing itself off as a barcode), 
+    if ( $itemidentifiervalue eq '') {
+        my $problem = NCIP::Problem->new({
+            ProblemType    => 'Missing Item identifier',
+            ProblemDetail  => "No ItemIdentifierValue given",
+            ProblemElement => 'NULL',
+            ProblemValue   => 'NULL',
+        });
+        $response->problem($problem);
+        return $response;
+    } elsif ( $itemidentifiertype eq "Barcode" ) {
+        # We have a barcode (or something passing itself off as a barcode),
         # try to use it to get item data
         my $itemdata = GetItem( undef, $itemidentifiervalue );
         unless ( $itemdata ) {
@@ -332,7 +341,7 @@ sub requestitem {
             return $response;
         }
         $biblionumber = $itemdata->{'biblionumber'};
-    } elsif ( $itemidentifiervalue ne '' && ( $itemidentifiertype eq "OwnerLocalRecordID" || $itemidentifiertype eq "ISBN" || $itemidentifiertype eq "ISSN" || $itemidentifiertype eq "EAN" ) ) {
+    } elsif ( $itemidentifiertype eq "ISBN" || $itemidentifiertype eq "ISSN" || $itemidentifiertype eq "EAN" ) {
         $biblionumber = _get_biblionumber_from_standardnumber( lc( $itemidentifiertype ), $itemidentifiervalue );
         unless ( $biblionumber ) {
             my $problem = NCIP::Problem->new({
@@ -344,10 +353,20 @@ sub requestitem {
             $response->problem($problem);
             return $response;
         }
+    } elsif ( $itemidentifiertype eq "OwnerLocalRecordID" ) {
+        $biblionumber = $itemidentifiervalue;
+    } else {
+        my $problem = NCIP::Problem->new({
+            ProblemType    => 'Unsupported type',
+            ProblemDetail  => "Item Identifier Type $itemidentifiertype is not supported",
+            ProblemElement => 'NULL',
+            ProblemValue   => 'NULL',
+        });
+        $response->problem($problem);
+        return $response;
     }
-    warn "biblionumber $biblionumber";
-    my $bibliodata   = GetBiblioData( $biblionumber );
-    warn Dumper $bibliodata;
+
+    my $bibliodata  = GetBiblioData( $biblionumber );
 
     # Bail out if we have no data by now
     unless ( $bibliodata ) {
@@ -360,7 +379,6 @@ sub requestitem {
         $response->problem($problem);
         return $response;
     }
-
     # Save the request
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
@@ -373,8 +391,8 @@ sub requestitem {
         'attr'           => {
             'requested_by' => _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} ),
             'UserIdentifierValue'    => $request->{$message}->{UserId}->{UserIdentifierValue},
-            'ItemIdentifierType'     => $request->{$message}->{ItemId}->{ItemIdentifierType},
-            'ItemIdentifierValue'    => $request->{$message}->{ItemId}->{ItemIdentifierValue},
+            'ItemIdentifierType'     => $itemidentifiertype,
+            'ItemIdentifierValue'    => $itemidentifiervalue,
             'AgencyId'               => $request->{$message}->{RequestId}->{AgencyId},
             'RequestIdentifierValue' => $request->{$message}->{RequestId}->{RequestIdentifierValue},
             'RequestType'            => $request->{$message}->{RequestType},
@@ -384,28 +402,12 @@ sub requestitem {
     });
 
     # Check if the book (record level) can be reserved
+    # TODO: Should we add more logic here?
     my $canReserve = CanBookBeReserved( $borrower->{borrowernumber}, $biblionumber );
-    unless ($canReserve eq 'OK') {
-        my $problem = NCIP::Problem->new({
-            ProblemType    => 'No available items', # FIXME Check the wording of this problem message
-            ProblemDetail  => 'NULL',
-            ProblemElement => 'NULL',
-            ProblemValue   => 'NULL',
-        });
-        $response->problem($problem);
-        return $response;
-    }
-
-    # Locate an item that we can connect the hold to, and create the hold
-    # FIXME Possible conflict with AllowOnShelfHolds? (Which is now part of the circ rules, not a syspref.)
-    my $item;
-    my $items = GetItemsByBiblioitemnumber( $biblionumber );
-    foreach my $this_item ( @{ $items } ) {
-        my $canReserve = CanItemBeReserved( $borrower->{'borrowernumber'}, $this_item->{'itemnumber'} );
-        if ($canReserve eq 'OK') {
-            AddReserve(
+    if ($canReserve eq 'OK') {
+        AddReserve(
                 'ILL',                               # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
-                $borrower->{'borrowernumber'},       # borrowernumber
+                $borrower->{borrowernumber},         # borrowernumber
                 $biblionumber,                       # biblionumber
                 undef,                               # bibitems - Not used
                 undef,                               # priority
@@ -413,14 +415,19 @@ sub requestitem {
                 undef,                               # expdate
                 'Hold placed by NNCIPP',             # notes
                 '',                                  # title
-                $this_item->{'itemnumber'} || undef, # checkitem
+                undef,                               # checkitem
                 undef,                               # found
                 undef,                               # itemtype
             );
-            $item = $this_item;
-        } else {
-            warn "Can not place hold: $canReserve";
-        }
+    } else {
+        my $problem = NCIP::Problem->new({
+            ProblemType    => 'ERROR PLACING HOLD',
+            ProblemDetail  => 'NULL',
+            ProblemElement => 'NULL',
+            ProblemValue   => $canReserve,
+        });
+        $response->problem($problem);
+        return $response;
     }
 
     # Build the response
@@ -434,8 +441,8 @@ sub requestitem {
         }),
         ItemId => NCIP::Item::Id->new(
             {
-                ItemIdentifierValue => $item->{'barcode'},
-                ItemIdentifierType => 'Barcode',
+                ItemIdentifierValue => $biblionumber,
+                ItemIdentifierType => 'OwnerLocalRecordID',
             }
         ),
         UserId => NCIP::User::Id->new(
@@ -640,7 +647,7 @@ sub renewitem {
     #     $response->problem($problem);
     #     return $response;
     # }
-    
+
     my $itemdata;
     # Find the barcode from the request, if there is one
     my ( $barcode, $barcode_field ) = $self->find_item_barcode($request);
@@ -858,10 +865,10 @@ sub cancelrequestitem_old {
     # FIXME We can be more specific about the failure if we check the reserve
     # more in depth before we do CancelReserve, e.g. with GetReserve
 
-    # We need to figure out if this is 
+    # We need to figure out if this is
     # * the home library cancelling a request it has sent out (NNCIPP call #10)
     # * an owner library rejecting a request it has received (NNCIPP call #11)
-    
+
     my $remote_id = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
     my $Illrequests = Koha::Illrequests->new;
     my $saved_requests = $Illrequests->search({
@@ -892,7 +899,7 @@ sub cancelrequestitem_old {
         $response->problem($problem);
         return $response;
     }
-    
+
     # FIXME
     if ( $saved_request->status->getProperty('status') eq 'NEW' || $saved_request->status->getProperty('status') eq 'SHIPPED' ) {
 
