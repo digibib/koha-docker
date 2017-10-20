@@ -35,7 +35,8 @@ blue_zone() {
       AND NOT /* UNNTAK */ (/* Ting fra Lilla sone  */ (/* Eventyr */ ExtractValue(metadata,'//datafield[@tag="090"]/subfield[@code="c"]') REGEXP '^398.2')
                             OR /* Ting fra Gul sone  */ ((items.coded_location_qualifier IN ('vo',
                                                                                              'ba')
-                                                          AND LOCATION IN ('PopKult',
+                                                          AND LOCATION IS NOT NULL
+                              AND LOCATION IN ('PopKult',
                                                                            'VERKSTED',
                                                                            'FANTASTung',
                                                                            'FANTASYung',
@@ -71,7 +72,8 @@ purple_zone() {
                                                                AND ExtractValue(metadata,'//datafield[@tag="090"]/subfield[@code="c"]') REGEXP '^398.2') )
       AND NOT /* UNNTAK */ ( /* Ting fra Rød sone  */ ( /* Inkluder alt som er lettlest  (også faglitteratur), dvs. ta|tb i 090b*/ (ExtractValue(metadata,'//datafield[@tag="090"]/subfield[@code="b"]') REGEXP '[[:<:]](TA|TB)[[:>:]]') )
                     OR /* Ting fra Gul sone - implementert i hovedregel*/ (items.coded_location_qualifier IN ('ba')
-                                                                           AND LOCATION IN ('PopKult',
+                                                                           AND LOCATION IS NOT NULL
+                                       AND LOCATION IN ('PopKult',
                                                                                             'VERKSTED',
                                                                                             'FANTASTung',
                                                                                             'FANTASYung'))
@@ -97,7 +99,8 @@ red_zone() {
       AND NOT /* UNNTAK */ ( /* Ting fra Lilla sone - utgår */ /* Ting fra Gul sone  */ ( /* Location UNG og språk norske eller engelsk*/ (IF(LOCATION IS NOT NULL , LOCATION REGEXP BINARY 'UNG' , 0)
                                                                        AND ExtractValue(metadata,'//datafield[@tag="041"]/subfield[@code="a"]') REGEXP 'eng|nob|nno|nor')
                      OR /* Basert på plasseringskoder */ (items.coded_location_qualifier IN ('vo')
-                                                          AND LOCATION IN ('PopKult',
+                                                          AND LOCATION IS NOT NULL
+                              AND LOCATION IN ('PopKult',
                                                                            'VERKSTED',
                                                                            'FANTASTung',
                                                                            'FANTASYung',
@@ -108,7 +111,8 @@ red_zone() {
                                                                            'SF',
                                                                            'F'))
                      OR (items.coded_location_qualifier IN ('ba')
-                         AND LOCATION IN ('PopKult',
+                         AND LOCATION IS NOT NULL
+             AND LOCATION IN ('PopKult',
                                           'VERKSTED',
                                           'FANTASTung',
                                           'FANTASYung'))
@@ -143,7 +147,8 @@ green_zone() {
                  AND ExtractValue(metadata,'//datafield[@tag="041"]/subfield[@code="a"]') REGEXP 'eng|nob|nno|nor')
                OR /* Basert på plasseringskoder */ (items.coded_location_qualifier IN ('vo',
                                                                                        'ba')
-                                                    AND LOCATION IN ('PopKult',
+                                                    AND LOCATION IS NOT NULL
+                          AND LOCATION IN ('PopKult',
                                                                      'VERKSTED',
                                                                      'FANTASTung',
                                                                      'FANTASYung',
@@ -190,7 +195,8 @@ yellow_zone() {
                                                         AND (ExtractValue(metadata,'//datafield[@tag="090"]/subfield[@code="c"]') REGEXP '^741.5'
                                                              OR ExtractValue(metadata,'//datafield[@tag="090"]/subfield[@code="c"]') REGEXP '^79[0-5]'))
                         OR /* Basert på plasseringskoder */ (items.coded_location_qualifier IN ('vo')
-                                                             AND LOCATION IN ('PopKult',
+                                                             AND LOCATION IS NOT NULL
+                               AND LOCATION IN ('PopKult',
                                                                               'VERKSTED',
                                                                               'FANTASTung',
                                                                               'FANTASYung',
@@ -201,7 +207,8 @@ yellow_zone() {
                                                                               'SF',
                                                                               'F'))
                         OR (items.coded_location_qualifier IN ('ba')
-                            AND LOCATION IN ('PopKult',
+                            AND LOCATION IS NOT NULL
+              AND LOCATION IN ('PopKult',
                                              'VERKSTED',
                                              'FANTASTung',
                                              'FANTASYung'))
