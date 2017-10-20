@@ -176,7 +176,7 @@ EOF
       echo -n "INSERT INTO systempreferences (variable,value,type) VALUES ('ILLISIL', \"$ILLUSER\", 'free') ON DUPLICATE KEY UPDATE value = \"$ILLUSER\";" | koha-mysql $KOHA_INSTANCE
       echo -n "INSERT IGNORE INTO branches (branchcode,branchname) VALUES ('ILL', \"$ILLNAME\");" | koha-mysql $KOHA_INSTANCE
       echo -n "INSERT IGNORE INTO categories (categorycode,description,enrolmentperioddate,overduenoticerequired,category_type) VALUES ('IL', \"$ILLNAME\", '2999-12-31', 1, 'I');" | koha-mysql $KOHA_INSTANCE
-      echo -n "INSERT IGNORE INTO borrower_attribute_types (code,description,unique_id,class) VALUES ('nncip_uri', 'NNCIP endpoint', 1, 'nncip_uri');" | koha-mysql $KOHA_INSTANCE
+      echo -n "INSERT IGNORE INTO borrower_attribute_types (code,description,unique_id,class) VALUES ('nncip_uri', 'NNCIP endpoint', 0, 'nncip_uri');" | koha-mysql $KOHA_INSTANCE
       echo "Adding Fast Add framework (FA) - needed for Interlibrary loans ..."
       if [[ "$KOHA_HOME" == /usr/share* ]] ; then
         koha-mysql $KOHA_INSTANCE < /usr/share/koha/intranet/cgi-bin/installer/data/mysql/en/marcflavour/marc21/optional/marc21_sample_fastadd_framework.sql
