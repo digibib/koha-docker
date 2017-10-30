@@ -10,15 +10,15 @@ unblock_juveniles_with_kemnersak() {
     JOIN
       ( SELECT bd.*,
                COUNT(iss.issue_id) AS issuecount
-       FROM borrower_debarments bd
-       JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
-       JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
-       LEFT JOIN issues iss ON (iss.borrowernumber=bd.borrowernumber)
-       WHERE b.categorycode='B'
-         AND bd.type = 'MANUAL'
-       GROUP BY b.cardnumber HAVING issuecount = 0
-       AND bd.comment IN ('Sendt til kemner',
-                          'Regning') ) niceperson USING (borrowernumber)
+        FROM borrower_debarments bd
+        JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
+        JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
+        JOIN issues iss USING (issue_id)
+        WHERE b.categorycode='B'
+          AND bd.type = 'MANUAL'
+        GROUP BY b.cardnumber HAVING issuecount = 0
+        AND bd.comment IN ('Sendt til kemner',
+                           'Regning') ) niceperson USING (borrowernumber)
     SET b.debarred = NULL;
 
     DELETE bd
@@ -26,15 +26,15 @@ unblock_juveniles_with_kemnersak() {
     JOIN
       ( SELECT bd.*,
                COUNT(iss.issue_id) AS issuecount
-       FROM borrower_debarments bd
-       JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
-       JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
-       LEFT JOIN issues iss ON (iss.borrowernumber=bd.borrowernumber)
-       WHERE b.categorycode='B'
-         AND bd.type = 'MANUAL'
-       GROUP BY b.cardnumber HAVING issuecount = 0
-       AND bd.comment IN ('Sendt til kemner',
-                          'Regning') ) niceperson USING (borrowernumber);
+        FROM borrower_debarments bd
+        JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
+        JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
+        JOIN issues iss USING (issue_id)
+        WHERE b.categorycode='B'
+          AND bd.type = 'MANUAL'
+        GROUP BY b.cardnumber HAVING issuecount = 0
+        AND bd.comment IN ('Sendt til kemner',
+                           'Regning') ) niceperson USING (borrowernumber);
 
     SELECT ROW_COUNT();
 EOF`"
@@ -49,12 +49,13 @@ unblock_juveniles_with_overdues() {
     JOIN
       ( SELECT bd.*,
                COUNT(iss.issue_id) AS issuecount
-       FROM borrower_debarments bd
-       JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
-       LEFT JOIN issues iss ON (iss.borrowernumber=bd.borrowernumber)
-       WHERE b.categorycode='B'
-       GROUP BY b.cardnumber HAVING issuecount = 0
-       AND bd.type = 'OVERDUES' ) niceperson USING (borrowernumber)
+        FROM borrower_debarments bd
+        JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
+        JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
+        JOIN issues iss USING (issue_id)
+        WHERE b.categorycode='B'
+          AND bd.type = 'OVERDUES'
+        GROUP BY b.cardnumber HAVING issuecount = 0 ) niceperson USING (borrowernumber)
     SET b.debarred = NULL;
 
     DELETE bd
@@ -62,12 +63,13 @@ unblock_juveniles_with_overdues() {
     JOIN
       ( SELECT bd.*,
                COUNT(iss.issue_id) AS issuecount
-       FROM borrower_debarments bd
-       JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
-       LEFT JOIN issues iss ON (iss.borrowernumber=bd.borrowernumber)
-       WHERE b.categorycode='B'
-       GROUP BY b.cardnumber HAVING issuecount = 0
-       AND bd.type = 'OVERDUES' ) niceperson USING (borrowernumber);
+        FROM borrower_debarments bd
+        JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
+        JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
+        JOIN issues iss USING (issue_id)
+        WHERE b.categorycode='B'
+          AND bd.type = 'OVERDUES'
+        GROUP BY b.cardnumber HAVING issuecount = 0 ) niceperson USING (borrowernumber);
 
     SELECT ROW_COUNT();
 EOF`"
