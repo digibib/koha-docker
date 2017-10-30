@@ -22,7 +22,6 @@ use Dancer ':syntax';
 
 use C4::Biblio;
 use C4::Circulation qw { AddRenewal CanBookBeRenewed GetRenewCount };
-use C4::Members qw{ GetMember };
 use C4::Items qw { AddItem GetItem GetItemsByBiblioitemnumber };
 use C4::Reserves qw { CanBookBeReserved CanItemBeReserved AddReserve CancelReserve };
 use C4::Log;
@@ -32,6 +31,7 @@ use Koha::Illrequest::Config;
 use Koha::Libraries;
 use Koha::Biblio;
 use Koha::Biblios;
+use Koha::Patrons;
 
 use NCIP::Item::Id;
 use NCIP::Problem;
@@ -170,7 +170,7 @@ sub itemshipped {
         if ($canReserve eq 'OK') {
             AddReserve(
                 'ILL',                               # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
-                $saved_request->borrowernumber,  # borrowernumber
+                $saved_request->borrowernumber,      # borrowernumber
                 $biblio->biblionumber,               # biblionumber
                 undef,                               # bibitems - Not used
                 undef,                               # priority
@@ -178,7 +178,7 @@ sub itemshipped {
                 undef,                               # expdate
                 'Hold placed by NNCIPP',             # notes
                 '',                                  # title
-                $item->itemnumber || undef,      # checkitem
+                $item->itemnumber || undef,          # checkitem
                 undef,                               # found
                 undef,                               # itemtype
             );
@@ -274,7 +274,7 @@ sub requestitem {
     my $response = NCIP::Response->new({type => $message . 'Response'});
     $response->header($self->make_header($request));
 
-    # Find the cardnumber of the borrower
+    # Find the cardnumber of the patrons
     # my ( $cardnumber, $cardnumber_field ) = $self->find_user_barcode( $request );
     # unless( $cardnumber ) {
     #     my $problem = NCIP::Problem->new({
@@ -287,10 +287,11 @@ sub requestitem {
     #     return $response;
     # }
 
-    # Find the library (borrower) based on the FromAgencyId
+    # Find the library (patron) based on the FromAgencyId
     my $cardnumber = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} );
-    my $borrower = GetMember( 'cardnumber' => $cardnumber );
-    unless ( $borrower ) {
+    my $patron = Koha::Patrons->find({cardnumber => $cardnumber});
+
+    unless ( $patron ) {
         my $problem = NCIP::Problem->new({
             ProblemType    => 'Unknown User',
             ProblemDetail  => "User with barcode $cardnumber unknown",
@@ -383,7 +384,7 @@ sub requestitem {
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
     my $backend_result = $illrequest->backend_create({
-        'borrowernumber' => $borrower->{borrowernumber},
+        'borrowernumber' => $patron->borrowernumber,
         'biblionumber'   => $biblionumber,
         'branchcode'     => 'ILL', # FIXME
         'status'         => 'O_REQUESTITEM',
@@ -403,11 +404,11 @@ sub requestitem {
 
     # Check if the book (record level) can be reserved
     # TODO: Should we add more logic here?
-    my $canReserve = CanBookBeReserved( $borrower->{borrowernumber}, $biblionumber );
+    my $canReserve = CanBookBeReserved( $patron->borrowernumber, $biblionumber );
     if ($canReserve eq 'OK') {
         AddReserve(
                 'ILL',                               # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
-                $borrower->{borrowernumber},         # borrowernumber
+                $patron->borrowernumber,             # borrowernumber
                 $biblionumber,                       # biblionumber
                 undef,                               # bibitems - Not used
                 undef,                               # priority
@@ -507,12 +508,14 @@ sub itemrequested {
     # Get the ID of library we ordered from
     # Mandatory fields, check they exist first or die
     my $ordered_from = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} ) // die "Missing valid Agency ID";
-    my $ordered_from_patron = GetMember( cardnumber => $ordered_from ) // die "Cannot find Agency Patron in DB: '$ordered_from'";
+    my $ordered_from_patron = Koha::Patrons->find({ cardnumber => $ordered_from }) // die "Cannot find Agency Patron in DB: '$ordered_from'";
 
     my $itemidentifiertype = $request->{$message}->{ItemId}->{ItemIdentifierType} //
         $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifierCode} // die "No valid Item Identifier Type found";
     my $itemidentifiervalue = $request->{$message}->{ItemId}->{ItemIdentifierValue} //
         $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifier} // die "No valid Item Identifier Value found";
+
+    _isApprovedForRemoteReserve($itemidentifiertype, $itemidentifiertvalue) // die "Material not allowed for remote reserval";
 
     # Create a minimal MARC record based on ItemOptionalFields
     # FIXME This could be done in a more elegant way
@@ -552,15 +555,15 @@ sub itemrequested {
     my ( $x_biblionumber, $x_biblioitemnumber, $itemnumber ) = AddItem( $item, $biblionumber );
     warn "itemnumber $itemnumber created";
 
-    # Get the borrower that the request is meant for
+    # Get the patron that the request is meant for
     my $cardnumber = $request->{$message}->{UserId}->{UserIdentifierValue};
-    my $borrower = GetMember( 'cardnumber' => $cardnumber );
+    my $patron = Koha::Patrons->find({ cardnumber => $cardnumber });
 
     # Save a new request with the newly created biblionumber
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
     my $backend_result = $illrequest->backend_create({
-        'borrowernumber' => $borrower->{borrowernumber},
+        'borrowernumber' => $patron->borrowernumber,
         'biblionumber'   => $biblionumber,
         'branchcode'     => 'ILL', # FIXME
         'status'         => 'H_ITEMREQUESTED',
@@ -570,7 +573,7 @@ sub itemrequested {
             'title'        => $bibdata->{Title},
             'author'       => $bibdata->{Author},
             'ordered_from' => $ordered_from,
-            'ordered_from_borrowernumber' => $ordered_from_patron->{borrowernumber},
+            'ordered_from_borrowernumber' => $ordered_from_patron->borrowernumber,
             # 'id'           => 1,
             'PlaceOfPublication'  => $bibdata->{PlaceOfPublication},
             'Publisher'           => $bibdata->{Publisher},
@@ -622,7 +625,7 @@ sub renewitem {
     my $response = NCIP::Response->new({type => $message . 'Response'});
     $response->header($self->make_header($request));
 
-    # Find the cardnumber of the borrower
+    # Find the cardnumber of the patron
     # my ( $cardnumber, $cardnumber_field ) = $self->find_user_barcode( $request );
     # unless( $cardnumber ) {
     #     my $problem = NCIP::Problem->new({
@@ -652,7 +655,7 @@ sub renewitem {
     # Find the barcode from the request, if there is one
     my ( $barcode, $barcode_field ) = $self->find_item_barcode($request);
     if ($barcode) {
-        # We have a barcode (or something passing itself off as a barcode), 
+        # We have a barcode (or something passing itself off as a barcode)
         # try to use it to get item data
         $itemdata = GetItem( undef, $barcode );
         unless ( $itemdata ) {
@@ -668,10 +671,10 @@ sub renewitem {
     }
 
     my $cardnumber = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} );
-    my $borrower = GetMember( cardnumber => $cardnumber );
+    my $patron = Koha::Patrons->find({ cardnumber => $cardnumber });
 
     # Check if renewal is possible
-    my ($ok,$error) = CanBookBeRenewed( $borrower->{'borrowernumber'}, $itemdata->{'itemnumber'} );
+    my ($ok,$error) = CanBookBeRenewed( $patron->borrowernumber, $itemdata->{'itemnumber'} );
     unless ( $ok ) {
         my $problem = NCIP::Problem->new({
             ProblemType    => 'Item Not Renewable',
@@ -684,7 +687,7 @@ sub renewitem {
     }
 
     # Do the actual renewal
-    my $datedue = AddRenewal( $borrower->{'borrowernumber'}, $itemdata->{'itemnumber'} );
+    my $datedue = AddRenewal( $patron->borrowernumber, $itemdata->{'itemnumber'} );
     if ( $datedue ) {
 
         # The renewal was successfull, change the status of the request?
@@ -697,7 +700,7 @@ sub renewitem {
         # $saved_request->status( 'O_ITEMRECEIVED' )->store;
 
         # Check the number of remaning renewals
-        my ( $renewcount, $renewsallowed, $renewsleft ) = GetRenewCount( $borrower->{'borrowernumber'}, $itemdata->{'itemnumber'} );
+        my ( $renewcount, $renewsallowed, $renewsleft ) = GetRenewCount( $patron->borrowernumber, $itemdata->{'itemnumber'} );
         # Send the response
         my $data = {
             ItemId => NCIP::Item::Id->new(
@@ -834,7 +837,7 @@ sub cancelrequestitem_old {
     my $response = NCIP::Response->new({type => $message . 'Response'});
     $response->header($self->make_header($request));
 
-    # Find the cardnumber of the borrower
+    # Find the cardnumber of the patron
     my ( $cardnumber, $cardnumber_field ) = $self->find_user_barcode( $request );
     unless( $cardnumber ) {
         my $problem = NCIP::Problem->new({
@@ -847,9 +850,9 @@ sub cancelrequestitem_old {
         return $response;
     }
 
-    # Find the borrower based on the cardnumber
-    my $borrower = GetMember( 'cardnumber' => $cardnumber );
-    unless ( $borrower ) {
+    # Find the patron based on the cardnumber
+    my $patron = Koha::Patrons->find({ cardnumber => $cardnumber });
+    unless ( $patron ) {
         my $problem = NCIP::Problem->new({
             ProblemType    => 'Unknown User',
             ProblemDetail  => "User with barcode $cardnumber unknown",
@@ -920,7 +923,7 @@ sub cancelrequestitem_old {
                 ),
                 UserId => NCIP::User::Id->new(
                     {
-                        UserIdentifierValue => $borrower->{'cardnumber'},
+                        UserIdentifierValue => $patron->cardnumber,
                     }
                 ),
                 ItemId => NCIP::Item::Id->new(
@@ -951,7 +954,7 @@ sub cancelrequestitem_old {
                 ),
                 UserId => NCIP::User::Id->new(
                     {
-                        UserIdentifierValue => $borrower->{'cardnumber'},
+                        UserIdentifierValue => $patron->cardnumber,
                     }
                 ),
                 ItemId => NCIP::Item::Id->new(
@@ -1016,8 +1019,8 @@ sub _isil2barcode {
 
 =head2 _get_biblionumber_from_standardnumber
 
-Take an "standard number" like ISBN, ISSN or EAN, normalize it, look it up in 
-the correct column of biblioitems and return the biblionumber of the first 
+Take an "standard number" like ISBN, ISSN or EAN, normalize it, look it up in
+the correct column of biblioitems and return the biblionumber of the first
 matching record. Legal types:
 
 =back 4
@@ -1030,7 +1033,7 @@ matching record. Legal types:
 
 =back
 
-Hyphens will be removed, both from the input standard number and from the 
+Hyphens will be removed, both from the input standard number and from the
 numbers stored in the Koha database.
 
 =cut
@@ -1050,7 +1053,7 @@ sub _get_biblionumber_from_standardnumber {
 
 }
 
-=head2 _get_langcode_from_bibliodata 
+=head2 _get_langcode_from_bibliodata
 
 Take a record and pick ut the language code in controlfield 008, position 35-37.
 
@@ -1075,12 +1078,42 @@ sub _get_langcode_from_bibliodata {
 
 }
 
+=head2 _isApprovedForRemoteReserve
+
+Check if material is reservable given various conditions
+
+=cut
+
+sub _isApprovedForRemoteReserve {
+    my ($itemidentifiertype, $itemidentifiertvalue) = @_;
+    if ($itemidentifiertype = 'OwnerLocalRecordID') {
+        my $biblio = Koha::Biblios->find($itemidentifiertvalue);
+        my $xml = GetXmlBiblio($itemidentifiertvalue);
+        my $rec = MARC::Record->new_from_xml( $xml, "UTF-8" );
+
+        my $mtype  = $rec->field("337")->subfield("a");
+        my $format = $rec->field("338")->subfield("a");
+        my $datecreated = $biblio->datecreated;
+
+        # Conditions
+        if (int((time()-str2time($datecreated))/86400) < 90) {                      # Material less than 3 months old
+            return 0;
+        } elsif ($mtype eq "Realia" || $mtype eq "Periodika") {                     # Mediatypes Realia and Periodika (except format=CD-ROM)
+            return 0 unless $format eq "CD-ROM";
+        } elsif ($format ~= /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {   # Formats Brettspill, kortspill, Vinylplate
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+    return 1;
+}
 =head2 log_to_ils
 
     $self->{ils}->log_to_ils( $xml );
 
 We want to keep a log of all NCIP messages in one place - in the ILS. This
-function will do that for us. 
+function will do that for us.
 
 =cut
 

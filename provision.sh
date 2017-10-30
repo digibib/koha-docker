@@ -7,26 +7,26 @@ export KOHAENV=$1
 export KOHAPATH=$2
 echo -e "\n Provisioning for $KOHAENV env, KOHAENV=$KOHAENV, KOHAPATH=$KOHAPATH\n"
 if [[ `uname -s` == 'Linux' && "$LSENV" != 'prod' ]]; then
-  echo -e "\n1) Installing Docker\n"
-  VERSION="17.03.0~ce-0~ubuntu-$(lsb_release -c -s)"
+echo -e "\n1) Installing Docker\n"
+  VERSION="17.09.0~ce-0~ubuntu"
   INSTALLED=`dpkg -l | grep docker-engine | awk '{print $3}'`
   if [ $VERSION = "$INSTALLED" ] ; then
     echo "docker version $VERSION already installed";
   else
     echo "Installing docker version $VERSION ...";
-    sudo apt-get purge --assume-yes --quiet docker-engine >/dev/null 2>&1 || true
-    sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-    echo "deb https://apt.dockerproject.org/repo ubuntu-$(lsb_release -c -s) main" | sudo tee /etc/apt/sources.list.d/docker.list
+    sudo apt-get purge --assume-yes --quiet docker-engine docker-ce docker.io >/dev/null 2>&1 || true
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
     sudo apt-get update
     sudo apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
-      install linux-image-extra-$(uname -r) make git docker-engine=$VERSION
+      install linux-image-extra-$(uname -r) linux-image-extra-virtual make git docker-ce=$VERSION
     sudo echo 'DOCKER_OPTS="--storage-driver=aufs"' > /etc/default/docker
     sudo service docker restart
     echo "docker installed."
   fi
 
   echo -e "\n2) Installing Docker-compose\n"
-  COMPOSEVERSION=1.11.2
+  COMPOSEVERSION=1.16.1
   INSTALLED=`docker-compose -v | cut -d',' -f1 | cut -d' ' -f3`
   if [ $COMPOSEVERSION = "$INSTALLED" ] ; then
     echo "docker-compose version $COMPOSEVERSION already installed"

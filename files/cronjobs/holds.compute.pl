@@ -92,7 +92,7 @@ sub compute {
     };
 
     my $oldest = 0;
-    my @holds = SELECT "biblionumber, reserve_id, branchcode, itemnumber, found, priority, reservedate FROM reserves WHERE biblionumber = ?"
+    my @holds = SELECT "biblionumber, reserve_id, branchcode, itemnumber, found, priority, reservedate, suspend FROM reserves WHERE biblionumber = ?"
     => [$bnum] => sub {
         my $age = int((time()-str2time($_{reservedate}))/86400);
         $oldest = $age if $age > $oldest;
@@ -214,6 +214,7 @@ sub _compute {
     }
 
     for my $hold (sort { $a->{priority} <=> $b->{priority} } @$holds) {
+        next if $hold->{suspend};
         my $rid = $hold->{reserve_id};
         my $to = $hold->{branchcode};
         my $age = eval { no warnings; str2time($hold->{reservedate}) } // 0;
