@@ -508,12 +508,14 @@ sub itemrequested {
     # Get the ID of library we ordered from
     # Mandatory fields, check they exist first or die
     my $ordered_from = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} ) // die "Missing valid Agency ID";
-    my $ordered_from_patron = GetMember( cardnumber => $ordered_from ) // die "Cannot find Agency Patron in DB: '$ordered_from'";
+    my $ordered_from_patron = Koha::Patrons->find({ cardnumber => $ordered_from }) // die "Cannot find Agency Patron in DB: '$ordered_from'";
 
     my $itemidentifiertype = $request->{$message}->{ItemId}->{ItemIdentifierType} //
         $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifierCode} // die "No valid Item Identifier Type found";
     my $itemidentifiervalue = $request->{$message}->{ItemId}->{ItemIdentifierValue} //
         $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifier} // die "No valid Item Identifier Value found";
+
+    _isApprovedForRemoteReserve($itemidentifiertype, $itemidentifiertvalue) // die "Material not allowed for remote reserval";
 
     # Create a minimal MARC record based on ItemOptionalFields
     # FIXME This could be done in a more elegant way
@@ -1076,12 +1078,42 @@ sub _get_langcode_from_bibliodata {
 
 }
 
+=head2 _isApprovedForRemoteReserve
+
+Check if material is reservable given various conditions
+
+=cut
+
+sub _isApprovedForRemoteReserve {
+    my ($itemidentifiertype, $itemidentifiertvalue) = @_;
+    if ($itemidentifiertype = 'OwnerLocalRecordID') {
+        my $biblio = Koha::Biblios->find($itemidentifiertvalue);
+        my $xml = GetXmlBiblio($itemidentifiertvalue);
+        my $rec = MARC::Record->new_from_xml( $xml, "UTF-8" );
+
+        my $mtype  = $rec->field("337")->subfield("a");
+        my $format = $rec->field("338")->subfield("a");
+        my $datecreated = $biblio->datecreated;
+
+        # Conditions
+        if (int((time()-str2time($datecreated))/86400) < 90) {                      # Material less than 3 months old
+            return 0;
+        } elsif ($mtype eq "Realia" || $mtype eq "Periodika") {                     # Mediatypes Realia and Periodika (except format=CD-ROM)
+            return 0 unless $format eq "CD-ROM";
+        } elsif ($format ~= /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {   # Formats Brettspill, kortspill, Vinylplate
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+    return 1;
+}
 =head2 log_to_ils
 
     $self->{ils}->log_to_ils( $xml );
 
 We want to keep a log of all NCIP messages in one place - in the ILS. This
-function will do that for us. 
+function will do that for us.
 
 =cut
 
