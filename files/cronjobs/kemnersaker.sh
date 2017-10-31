@@ -3,24 +3,26 @@
 report="REPORT FROM TODAYS kemnersaker\n"
 
 add_new_items() {
-  # add new lines to kemnersaker where issue is more than 35 days overdue
+  # add new lines to kemnersaker where issue is between 35 and 90 days overdue and it hasn't been registered before
   local RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
     INSERT INTO kemnersaker (issue_id,borrowernumber,itemnumber,status,timestamp)
-    SELECT i.issue_id,
-           i.borrowernumber,
-           i.itemnumber,
-           'new',
-           TIMESTAMP(NOW())
-    FROM issues i
-    JOIN items it ON (it.itemnumber=i.itemnumber)
-    JOIN borrowers b ON (b.borrowernumber=i.borrowernumber)
-    WHERE (TO_DAYS(now()) - TO_DAYS(i.date_due)) = '36'
-      AND it.itemlost = '12'
-      AND b.categorycode IN ('V',
-                             'B',
-                             'I')
-      AND NOT (b.categorycode = 'B'
-               AND b.branchcode = 'fsme');
+    ( SELECT i.issue_id,
+             i.borrowernumber,
+             i.itemnumber,
+             'new',
+             TIMESTAMP(NOW())
+      FROM issues i
+      JOIN items it ON (it.itemnumber=i.itemnumber)
+      JOIN borrowers b ON (b.borrowernumber=i.borrowernumber)
+ LEFT JOIN kemnersaker k ON (i.issue_id=k.issue_id)
+     WHERE (TO_DAYS(now()) - TO_DAYS(i.date_due)) BETWEEN 35 AND 90
+       AND k.issue_id IS NULL
+       AND it.itemlost = '12'
+       AND b.categorycode IN ('V',
+                               'B',
+                               'I')
+       AND NOT (b.categorycode = 'B'
+           AND b.branchcode = 'fsme'));
 
     SELECT ROW_COUNT();
 EOF`"
