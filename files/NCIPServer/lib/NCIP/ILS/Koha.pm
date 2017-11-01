@@ -18,6 +18,7 @@ package NCIP::ILS::Koha;
 
 use Modern::Perl;
 use Data::Dumper; # FIXME Debug
+use Date::Parse qw( str2time );
 use Dancer ':syntax';
 
 use C4::Biblio;
@@ -505,17 +506,47 @@ sub itemrequested {
     my $response = NCIP::Response->new({type => $message . 'Response'});
     $response->header($self->make_header($request));
 
+    my $ok = 1;
+    my ($error_type, $error_detail);
     # Get the ID of library we ordered from
-    # Mandatory fields, check they exist first or die
-    my $ordered_from = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} ) // die "Missing valid Agency ID";
-    my $ordered_from_patron = Koha::Patrons->find({ cardnumber => $ordered_from }) // die "Cannot find Agency Patron in DB: '$ordered_from'";
+    my $ordered_from = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} );
+    my $ordered_from_patron = Koha::Patrons->find({ cardnumber => $ordered_from });
+    unless ($ordered_from && $ordered_from_patron) {
+        $ok = 0;
+        $error_type   = "Missing Agency Info";
+        $error_detail = "Missing valid Agency ID" unless $ordered_from;
+        $error_detail = "Cannot find Agency Patron in DB: '$ordered_from'" unless $ordered_from_patron;
+    }
 
     my $itemidentifiertype = $request->{$message}->{ItemId}->{ItemIdentifierType} //
-        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifierCode} // die "No valid Item Identifier Type found";
+        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifierCode};
     my $itemidentifiervalue = $request->{$message}->{ItemId}->{ItemIdentifierValue} //
-        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifier} // die "No valid Item Identifier Value found";
+        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifier};
 
-    _isApprovedForRemoteReserve($itemidentifiertype, $itemidentifiertvalue) // die "Material not allowed for remote reserval";
+    unless ($itemidentifiertype && $itemidentifiervalue) {
+        $ok = 0;
+        $error_type   = "Missing Identifier";
+        $error_detail = "No valid Item Identifier Type found" unless $itemidentifiertype;
+        $error_detail = "No valid Item Identifier Value found" unless $itemidentifiervalue;
+    }
+
+    my $approved = _isApprovedForRemoteReserve($itemidentifiertype, $itemidentifiervalue);
+    unless ($approved) {
+        $ok = 0;
+        $error_type   = "Not approved";
+        $error_detail = "Material not approved for remote reserval";
+    }
+
+    unless ( $ok ) {
+        my $problem = NCIP::Problem->new({
+            ProblemType    => $error_type,
+            ProblemDetail  => $error_detail,
+            ProblemElement => $itemidentifiertype,
+            ProblemValue   => $itemidentifiervalue,
+        });
+        $response->problem($problem);
+        return $response;
+    }
 
     # Create a minimal MARC record based on ItemOptionalFields
     # FIXME This could be done in a more elegant way
@@ -559,32 +590,38 @@ sub itemrequested {
     my $cardnumber = $request->{$message}->{UserId}->{UserIdentifierValue};
     my $patron = Koha::Patrons->find({ cardnumber => $cardnumber });
 
+    # TODO: Delete empty objects from hash, don't know where they come from...
+    # for ( keys %${bibdata} ) {
+    #     if (ref($bibdata->{$_}) eq 'HASH' && print keys(%{$_}) == 0) {
+    #       delete $bibdata->{$_}
+    #     }
+    # };
+
     # Save a new request with the newly created biblionumber
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
     my $backend_result = $illrequest->backend_create({
-        'borrowernumber' => $patron->borrowernumber,
-        'biblionumber'   => $biblionumber,
-        'branchcode'     => 'ILL', # FIXME
-        'status'         => 'H_ITEMREQUESTED',
-        'medium'         => $bibdata->{MediumType},
-        'backend'        => 'NNCIPP',
-        'attr'           => {
-            'title'        => $bibdata->{Title},
-            'author'       => $bibdata->{Author},
-            'ordered_from' => $ordered_from,
-            'ordered_from_borrowernumber' => $ordered_from_patron->borrowernumber,
-            # 'id'           => 1,
-            'PlaceOfPublication'  => $bibdata->{PlaceOfPublication},
-            'Publisher'           => $bibdata->{Publisher},
-            'PublicationDate'     => $bibdata->{PublicationDate},
-            'Language'            => $bibdata->{Language},
-            'ItemIdentifierType'  => $itemidentifiertype,
-            'ItemIdentifierValue' => $itemidentifiervalue,
-            'RequestType'         => $request->{$message}->{RequestType},
-            'RequestScopeType'    => $request->{$message}->{RequestScopeType},
+        borrowernumber => $patron->borrowernumber,
+        biblionumber   => $biblionumber,
+        branchcode     => 'ILL', # FIXME
+        status         => 'H_ITEMREQUESTED',
+        medium         => $bibdata->{MediumType},
+        backend        => 'NNCIPP',
+        attr           => {
+            title        => $bibdata->{Title},
+            author       => $bibdata->{Author},
+            ordered_from => $ordered_from,
+            ordered_from_borrowernumber => $ordered_from_patron->borrowernumber,
+            PlaceOfPublication  => $bibdata->{PlaceOfPublication},
+            Publisher           => $bibdata->{Publisher},
+            PublicationDate     => $bibdata->{PublicationDate},
+            Language            => $bibdata->{Language},
+            ItemIdentifierType  => $itemidentifiertype,
+            ItemIdentifierValue => $itemidentifiervalue,
+            RequestType         => $request->{$message}->{RequestType},
+            RequestScopeType    => $request->{$message}->{RequestScopeType},
         },
-        'stage'          => 'commit',
+        stage          => 'commit',
     });
     warn Dumper $backend_result;
 
@@ -1085,22 +1122,28 @@ Check if material is reservable given various conditions
 =cut
 
 sub _isApprovedForRemoteReserve {
-    my ($itemidentifiertype, $itemidentifiertvalue) = @_;
-    if ($itemidentifiertype = 'OwnerLocalRecordID') {
-        my $biblio = Koha::Biblios->find($itemidentifiertvalue);
-        my $xml = GetXmlBiblio($itemidentifiertvalue);
+    my ($itemidentifiertype, $itemidentifiervalue) = @_;
+
+    if ($itemidentifiertype eq 'OwnerLocalRecordID') {
+        my $biblio = Koha::Biblios->find($itemidentifiervalue);
+        my $xml = GetXmlBiblio($itemidentifiervalue);
         my $rec = MARC::Record->new_from_xml( $xml, "UTF-8" );
 
-        my $mtype  = $rec->field("337")->subfield("a");
-        my $format = $rec->field("338")->subfield("a");
+        my ( $mtype, $format );
+        if ($rec->field("337")) {
+            $mtype = $rec->field("337")->subfield("a");
+        }
+        if ($rec->field("338")) {
+            $format = $rec->field("338")->subfield("a");
+        }
         my $datecreated = $biblio->datecreated;
 
         # Conditions
-        if (int((time()-str2time($datecreated))/86400) < 90) {                      # Material less than 3 months old
+        if ($datecreated && int((time()-str2time($datecreated))/86400) < 90) {                      # Material less than 3 months old
             return 0;
-        } elsif ($mtype eq "Realia" || $mtype eq "Periodika") {                     # Mediatypes Realia and Periodika (except format=CD-ROM)
+        } elsif ($mtype && $mtype eq "Realia" || $mtype eq "Periodika") {                     # Mediatypes Realia and Periodika (except format=CD-ROM)
             return 0 unless $format eq "CD-ROM";
-        } elsif ($format ~= /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {   # Formats Brettspill, kortspill, Vinylplate
+        } elsif ($format && $format =~ /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {   # Formats Brettspill, kortspill, Vinylplate
             return 0;
         } else {
             return 1;
