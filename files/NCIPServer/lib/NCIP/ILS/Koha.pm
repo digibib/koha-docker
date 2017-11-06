@@ -1139,11 +1139,11 @@ sub _isApprovedForRemoteReserve {
         my $datecreated = $biblio->datecreated;
 
         # Conditions
-        if ($datecreated && int((time()-str2time($datecreated))/86400) < 90) {                      # Material less than 3 months old
+        if ($datecreated && int((time()-str2time($datecreated))/86400) < 90) {                  # Material less than 3 months old
             return 0;
-        } elsif ($mtype && $mtype eq "Realia" || $mtype eq "Periodika") {                     # Mediatypes Realia and Periodika (except format=CD-ROM)
+        } elsif ($mtype && $mtype eq "Realia" || $mtype eq "Periodika" || $mtype eq "Andre") {  # Mediatypes Realia and Periodika (except format=CD-ROM)
             return 0 unless $format eq "CD-ROM";
-        } elsif ($format && $format =~ /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {   # Formats Brettspill, kortspill, Vinylplate
+        } elsif ($format && $format =~ /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {    # Formats Brettspill, kortspill, Vinylplate
             return 0;
         } else {
             return 1;
@@ -1151,6 +1151,7 @@ sub _isApprovedForRemoteReserve {
     }
     return 1;
 }
+
 =head2 log_to_ils
 
     $self->{ils}->log_to_ils( $xml );
