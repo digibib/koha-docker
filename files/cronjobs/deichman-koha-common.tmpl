@@ -81,14 +81,18 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #   -e   email to receive report (can be multiple)
 #   -s   store results in koha
 ##############
-
 00 07 * * *   root koha-foreach --enabled /cronjobs/kemnersaker.sh
 45 07 * * *   root koha-foreach --enabled /cronjobs/send_reports.sh -s -e benjamin.rokseth@kul.oslo.kommune.no -e kirsten.partapuoli@kem.oslo.kommune.no -e raakel.rosenborg@kul.oslo.kommune.no -e cecilie.bergh@kul.oslo.kommune.no
 
 ##############
+# Send hold waiting reminder
+#   --days    days waiting hold has been waiting
+##############
+0 9 * * *  root koha-foreach --enabled perl /cronjobs/holds_reminder.pl --days 4
+
+##############
 # Reset pickupnumber counter at 00:10
 ##############
-
 10 0 * * * root echo "TRUNCATE TABLE pickup_counter;" | koha-mysql $(koha-list --enabled)
 
 ##############

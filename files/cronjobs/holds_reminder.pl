@@ -14,74 +14,71 @@ BEGIN {
     eval { require "$FindBin::Bin/usr/share/koha/bin/kohalib.pl" };
 }
 
+use C4::Members::Messaging;
 use C4::Context;
 use C4::Letters;
 use Template;
 
 use C4::Log qw( cronlogaction );
 use utf8;
+binmode( STDOUT, ":utf8" );
 
-# http://github.com/ohait/perl-dbi-sugar.git
-use lib 'perl-dbi-sugar/lib';
-use DBI::Sugar;
 use Getopt::Long;
 
 my $from_address = C4::Context->preference('KohaAdminEmailAddress');
-my $lettercode = 'HOLD_REMINDER';
-my $tt = Template->new;
+my $tt = Template->new({ENCODING => 'utf8'});
 
-my ( $days, $mtt, $verbose );
+my $days = 4;
+my ( $verbose, $test );
 GetOptions(
-    'days=s'        => \$days     || '4',     # days since waiting
-    'mtt=s'         => \$mtt      || 'email', # message transport
-    'v|verbose'     => \$verbose,             # verbose output
+    'd|days=s'      => \$days,    # days since waiting
+    'v|verbose'     => \$verbose, # verbose output
+    't|test'        => \$test,    # don't send messages, just print results
 );
 
-DBI::Sugar::factory {
- my $dbh = C4::Context->dbh();
- return $dbh;
-};
-
-# Borrowers with pickups in waiting for 4 days (after waitingdate)
-my $reservesByPatrons;
-TX {
-  my @reserves = SELECT "b.*, r.*, i.barcode, bib.*
+my $dbh = C4::Context->dbh();
+my $query = "SELECT b.*, bib.title, br.branchname, r.pickupnumber,
+      DATE_FORMAT(r.expirationdate, '%d.%m.%Y') AS expdate
     FROM reserves r
     JOIN borrowers b USING(borrowernumber)
-    JOIN items i USING(itemnumber)
     JOIN biblio bib ON (bib.biblionumber=r.biblionumber)
+    JOIN branches br ON (br.branchcode=r.branchcode)
     WHERE r.found = 'W'
     AND b.categorycode IN ('B', 'V')
-    AND TO_DAYS(NOW())-TO_DAYS(r.waitingdate) = ? LIMIT 50" => [$days] => sub {
-      return \%_;
-    };
-  $reservesByPatrons = groupByPatrons(\@reserves);
-};
+    AND TO_DAYS(NOW())-TO_DAYS(r.waitingdate) = ? LIMIT 50";
+my $sth = C4::Context->dbh->prepare($query);
+$sth->execute($days) or die "Error running query: $sth";
 
 my $template = <<EOF;
-Heisann [% meta.firstname %]!
-Lånernummer: [% meta.cardnumber %]
+Hei [% result.firstname %]!
+Vi vil bare minne deg på å hente "[% result.title %]" på [% result.branchname %] innen hentefristen, som er [% result.expdate %].
 
-Du har fortsatt ting til avhenting:
-[% FOREACH item IN items %]
-  [% item.author %]: [% item.title %] - hentenummer: [% item.pickupnumber %] - hentefrist [% item.expirationdate %]
-[% END %]
-Vennlig hilsen
-Deichmanske bibliotek
+Hentenummer er [% result.pickupnumber %].
+
+Lån gjerne mer når du er innom!
+Mvh. Deichmanske bibliotek
 EOF
 
-# Now loop patrons and compose digest email
-while(my($k, $v) = each %{$reservesByPatrons}) {
-  next unless $v->[0]->{email};
-  my %meta = (
-    borrowernumber => $k,
-    cardnumber     => $v->[0]->{cardnumber},
-    email          => $v->[0]->{email},
-    surname        => $v->[0]->{surname},
-    firstname      => $v->[0]->{firstname},
-  );
+my $sms = 0;
+my $email = 0;
 
-  my $notice = generate_reminder_notice({ meta => \%meta, items => $v });
+# Now loop reserves and compose email
+while ( my $res = $sth->fetchrow_hashref() ) {
+  next unless $res->{email} || $res->{smsalertnumber};
+  # TODO: get messageprefs in previous query?
+  my $mtp = C4::Members::Messaging::GetMessagingPreferences( { borrowernumber => $res->{borrowernumber}, message_name => 'Hold_Filled' } )->{transports};
+  next unless $mtp;
+  if ($mtp->{sms} && $res->{smsalertnumber}) { # patron wants hold sms and has smsalertnumber
+    $res->{preferred_mtt} = "sms";
+    $sms++;
+  } elsif ($mtp->{email} && $res->{email}) {   # patron wants hold email and has email
+    $res->{preferred_mtt} = "email";
+    $email++;
+  } else {
+    next;
+  }
+
+  my $notice = generate_reminder_notice({ result => $res });
   $verbose && print $notice;
 
   my %letter = (
@@ -90,30 +87,23 @@ while(my($k, $v) = each %{$reservesByPatrons}) {
   );
 
   # put letter in message_queue
-  C4::Letters::EnqueueLetter(
-      {   letter                 => \%letter,
-          borrowernumber         => $meta{borrowernumber},
-          message_transport_type => 'email',
-          from_address           => $from_address,
-          to_address             => $meta{email},
-      }
-  );
+  unless ($test) {
+    C4::Letters::EnqueueLetter(
+        {   letter                 => \%letter,
+            borrowernumber         => $res->{borrowernumber},
+            message_transport_type => $res->{preferred_mtt},
+            from_address           => $from_address,
+            to_address             => $res->{email},
+        }
+    );
+  }
 }
 
-$verbose && print "\n\nSUMMARY: Patrons Notified:\t " . scalar (keys %{$reservesByPatrons}) . "\n";
+print "\n\nHOLDS REMINDER SUMMARY:\nSMS hold reminders sent:\t$sms\nEmail hold reminders sent:\t$email\n";
 
 sub generate_reminder_notice {
   my ( $params ) = @_;
   my $notice = '';
-  $tt->process(\$template, { meta => $params->{meta}, items => $params->{items} }, \$notice) || die $tt->error;
+  $tt->process(\$template, { result => $params->{result} }, \$notice, {binmode => ':utf8'}) || die $tt->error;
   return $notice;
-}
-
-sub groupByPatrons {
-  my $reserves = shift;
-  my %grouped;
-  for (@{$reserves} ) {
-     push @{ $grouped{$_->{borrowernumber}} }, $_;
-  }
-  return \%grouped;
 }
