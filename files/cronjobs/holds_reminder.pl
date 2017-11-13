@@ -45,7 +45,7 @@ my $query = "SELECT b.*, bib.title, br.branchname, r.pickupnumber,
     JOIN branches br ON (br.branchcode=r.branchcode)
     WHERE r.found = 'W'
     AND b.categorycode IN ('B', 'V')
-    AND TO_DAYS(NOW())-TO_DAYS(r.waitingdate) = ? LIMIT 50";
+    AND TO_DAYS(NOW())-TO_DAYS(r.waitingdate) = ?";
 my $sth = C4::Context->dbh->prepare($query);
 $sth->execute($days) or die "Error running query: $sth";
 
