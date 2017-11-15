@@ -29,8 +29,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Build Holds Queue
 # run every 5/min between 8-11, 15/min between 11-19 mon-sat
 ##############
-*/5  8-10  * * 1-6  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/build_holds_queue.pl
-*/15 11-18 * * 1-6  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/build_holds_queue.pl
+*/5  7-10  * * 1-6  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/build_holds_queue.pl
+*/15 11-19 * * 1-6  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/build_holds_queue.pl
 
 ##############
 # Anonymize patron history
