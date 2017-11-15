@@ -16,7 +16,7 @@ our $VERSION           = '0.01';
 our $strict_validation = 0;        # move to config file
 
 =head1 NAME
-  
+
     NCIP
 
 =head1 SYNOPSIS
@@ -92,7 +92,9 @@ sub process_request {
     }
 
     my $rendered_output = $self->render_output($response);
-
+my $log = Log::Log4perl->get_logger("NCIP");
+$log->info($xml);
+$log->info($rendered_output);
     # Log the XML messages to the ILS
     $self->{ils}->log_to_ils( $type, $xml );
     $self->{ils}->log_to_ils( $type . 'Response', $rendered_output );

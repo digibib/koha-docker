@@ -25,7 +25,7 @@ use Socket qw(:DEFAULT :crlf);
 use base qw(Net::Server::PreFork);
 
 =head1 NAME
-  
+
     NCIPServer
 
 =head1 SYNOPSIS

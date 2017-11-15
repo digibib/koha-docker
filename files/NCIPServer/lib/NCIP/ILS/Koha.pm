@@ -381,6 +381,20 @@ sub requestitem {
         $response->problem($problem);
         return $response;
     }
+
+    # We might get requestitem directly, so need to check if remote reserve is allowed for this item
+    my $approved = _isApprovedForRemoteReserve($biblionumber);
+    unless ($approved) {
+        my $problem = NCIP::Problem->new({
+            ProblemType    => 'Not approved',
+            ProblemDetail  => "Material not approved for remote reserval",
+            ProblemElement => 'NULL',
+            ProblemValue   => 'NULL',
+        });
+        $response->problem($problem);
+        return $response;
+    }
+
     # Save the request
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
@@ -528,13 +542,6 @@ sub itemrequested {
         $error_type   = "Missing Identifier";
         $error_detail = "No valid Item Identifier Type found" unless $itemidentifiertype;
         $error_detail = "No valid Item Identifier Value found" unless $itemidentifiervalue;
-    }
-
-    my $approved = _isApprovedForRemoteReserve($itemidentifiertype, $itemidentifiervalue);
-    unless ($approved) {
-        $ok = 0;
-        $error_type   = "Not approved";
-        $error_detail = "Material not approved for remote reserval";
     }
 
     unless ( $ok ) {
@@ -1122,34 +1129,32 @@ Check if material is reservable given various conditions
 =cut
 
 sub _isApprovedForRemoteReserve {
-    my ($itemidentifiertype, $itemidentifiervalue) = @_;
+    my ($biblionumber) = @_;
+    $biblionumber or die "Missing biblionumber";
+    my $biblio = Koha::Biblios->find($biblionumber) or die "Missing biblio";
+    my $datecreated = $biblio->datecreated;
 
-    if ($itemidentifiertype eq 'OwnerLocalRecordID') {
-        my $biblio = Koha::Biblios->find($itemidentifiervalue);
-        my $xml = GetXmlBiblio($itemidentifiervalue);
-        my $rec = MARC::Record->new_from_xml( $xml, "UTF-8" );
+    my $xml = GetXmlBiblio($biblionumber) or die "Missing XML";
+    my $rec = MARC::Record->new_from_xml( $xml, "UTF-8" );
 
-        my ( $mtype, $format );
-        if ($rec->field("337")) {
-            $mtype = $rec->field("337")->subfield("a");
-        }
-        if ($rec->field("338")) {
-            $format = $rec->field("338")->subfield("a");
-        }
-        my $datecreated = $biblio->datecreated;
-
-        # Conditions
-        if ($datecreated && int((time()-str2time($datecreated))/86400) < 90) {                  # Material less than 3 months old
-            return 0;
-        } elsif ($mtype && $mtype eq "Realia" || $mtype eq "Periodika" || $mtype eq "Andre") {  # Mediatypes Realia and Periodika (except format=CD-ROM)
-            return 0 unless $format eq "CD-ROM";
-        } elsif ($format && $format =~ /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {    # Formats Brettspill, kortspill, Vinylplate
-            return 0;
-        } else {
-            return 1;
-        }
+    my ( $mtype, $format );
+    if ($rec->field("337")) {
+        $mtype = $rec->field("337")->subfield("a");
     }
-    return 1;
+    if ($rec->field("338")) {
+        $format = $rec->field("338")->subfield("a");
+    }
+
+    # Conditions
+    if ($datecreated && int((time()-str2time($datecreated))/86400) < 90) {                  # Material less than 3 months old
+        return 0;
+    } elsif ($mtype && $mtype eq "Realia" || $mtype eq "Periodika" || $mtype eq "Andre") {  # Mediatypes Realia and Periodika (except format=CD-ROM)
+        return 0 unless $format eq "CD-ROM";
+    } elsif ($format && $format =~ /Kortspill|Brettspill|Musikkinstrument|Vinylplate/) {    # Formats Brettspill, kortspill, Vinylplate
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 =head2 log_to_ils
