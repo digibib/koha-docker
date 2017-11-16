@@ -106,6 +106,21 @@ $log->info($rendered_output);
 
 =cut
 
+sub _removeEmptyHashes {
+    my ($in) = @_;
+    if ('HASH' eq ref($in)) {
+        return undef unless keys %$in;
+        for my $k (keys %$in) {
+            $in->{$k} = _removeEmptyHashes($in->{$k});
+        }
+        return $in;
+    }
+    if ('ARRAY' eq ref($in)) {
+        return [map { _removeEmptyHashes($_) } @$in];
+    }
+    return $in;
+}
+
 sub handle_initiation {
     my $self = shift;
     my $xml  = shift;
@@ -128,7 +143,8 @@ sub handle_initiation {
             # throw/log error
             return;
         }
-        return XMLin( $dom, NsStrip => 1, NormaliseSpace => 2 );
+        my $out = XMLin( $dom, NsStrip => 1, NormaliseSpace => 2 );
+        return _removeEmptyHashes($out); # We need to clean up empty hashes and arrays since XML::Simple is bad
     }
     else {
         $log->info("We have no DOM");
