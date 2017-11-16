@@ -569,28 +569,61 @@ sub itemrequested {
     # Create a minimal MARC record based on ItemOptionalFields
     # FIXME This could be done in a more elegant way
     my $bibdata = $request->{$message}->{ItemOptionalFields}->{BibliographicDescription};
-    my $xml = '<record>
-    <datafield tag="100" ind1=" " ind2=" ">
-        <subfield code="a">' . $bibdata->{Author} . '</subfield>
-    </datafield>
-    <datafield tag="245" ind1=" " ind2=" ">
-        <subfield code="a">' . $bibdata->{Title} . '</subfield>
-    </datafield>';
-    if ( $bibdata->{PlaceOfPublication} || $bibdata->{Publisher} || $bibdata->{PublicationDate} ) {
-        $xml .= '<datafield tag="260" ind1=" " ind2=" ">';
-            if ( $bibdata->{PlaceOfPublication} ) {
-                $xml .= '<subfield code="a">' . $bibdata->{PlaceOfPublication} . '</subfield>';
-            }
-            if ( $bibdata->{PlaceOfPublication} ) {
-                $xml .= '<subfield code="b">' . $bibdata->{Publisher} .          '</subfield>';
-            }
-            if ( $bibdata->{PlaceOfPublication} ) {
-                $xml .= '<subfield code="c">' . $bibdata->{PublicationDate} .    '</subfield>';
-            }
-        $xml .= '</datafield>';
+
+    my $doc = XML::LibXML::Document->new('1.0', 'UTF-8');
+    $doc->setStandalone(1);
+    my $root = $doc->createElement('record');
+    $doc->setDocumentElement($root);
+    {
+        my $datafield = $doc->createElement('datafield');
+        $datafield->setAttribute(tag => '100');
+        $datafield->setAttribute(ind1 => ' ');
+        $datafield->setAttribute(ind2 => ' ');
+        my $subfield = $doc->createElement('subfield');
+        $subfield->setAttribute(code => 'a');
+        $subfield->appendText($bibdata->{Author} // '');
+        $root->appendChild($datafield);
+        $datafield->appendChild($subfield);
     }
-    $xml .= '</record>';
-    my $record = MARC::Record->new_from_xml( $xml, 'UTF-8' );
+    {
+        my $datafield = $doc->createElement('datafield');
+        $datafield->setAttribute(tag => '245');
+        $datafield->setAttribute(ind1 => ' ');
+        $datafield->setAttribute(ind2 => ' ');
+        my $subfield = $doc->createElement('subfield');
+        $subfield->setAttribute(code => 'a');
+        $subfield->appendText($bibdata->{Title} // '');
+        $root->appendChild($datafield);
+        $datafield->appendChild($subfield);
+    }
+
+    if ( $bibdata->{PlaceOfPublication} || $bibdata->{Publisher} || $bibdata->{PublicationDate} ) {
+        my $datafield = $doc->createElement('datafield');
+        $datafield->setAttribute(tag => '260');
+        $datafield->setAttribute(ind1 => ' ');
+        $datafield->setAttribute(ind2 => ' ');
+        if ( $bibdata->{PlaceOfPublication} ) {
+            my $subfield = $doc->createElement('subfield');
+            $subfield->setAttribute(code => 'a');
+            $subfield->appendText($bibdata->{PlaceOfPublication});
+            $datafield->appendChild($subfield);
+        }
+        if ( $bibdata->{Publisher} ) {
+            my $subfield = $doc->createElement('subfield');
+            $subfield->setAttribute(code => 'b');
+            $subfield->appendText($bibdata->{Publisher});
+            $datafield->appendChild($subfield);
+        }
+        if ( $bibdata->{PublicationDate} ) {
+            my $subfield = $doc->createElement('subfield');
+            $subfield->setAttribute(code => 'c');
+            $subfield->appendText($bibdata->{PublicationDate});
+            $datafield->appendChild($subfield);
+        }
+        $root->appendChild($datafield);
+    }
+
+    my $record = MARC::Record->new_from_xml( $doc->toString(), 'UTF-8' );
     my ( $biblionumber, $biblioitemnumber ) = AddBiblio( $record, 'FA' );
     warn "biblionumber $biblionumber created";
 
