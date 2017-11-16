@@ -146,9 +146,20 @@ sub itemshipped {
     # Change the status of the request
     # Find the request
     my $Illrequests = Koha::Illrequests->new;
-    my $saved_request = $Illrequests->find({
-        'orderid' => $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue},
-    });
+    my $request_id = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
+    my $saved_request = $Illrequests->find($request_id);
+
+    unless ( $saved_request ) {
+        my $problem = NCIP::Problem->new({
+            ProblemType    => 'Unknown Request ID',
+            ProblemDetail  => "Request ID $request_id not found",
+            ProblemElement => 'RequestId',
+            ProblemValue   => 'NULL',
+        });
+        $response->problem( $problem );
+        return $response;
+    }
+
     # Check if we are the Home Library or not
     if ( $saved_request->status eq 'H_REQUESTITEM' ) {
         # We are the Home Library and we are being told that the Owner Library
