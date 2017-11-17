@@ -45,7 +45,6 @@ COPY ./files/local-apt-repo /etc/apt/preferences.d/local-apt-repo
 RUN echo "search deich.folkebibl.no guest.oslo.kommune.no\nnameserver 10.172.2.1\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf && \
     echo "deb http://datatest.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
-    echo "deb http://debian.koha-community.org/koha unstable main" > /etc/apt/sources.list.d/koha-unstable.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
     apt-get update && apt-get install -y --force-yes koha-common=$KOHA_BUILD && apt-get clean
 
@@ -58,8 +57,12 @@ RUN apt-get install -y python-requests && apt-get clean
 RUN apt-get update && apt-get install -y \
     libhtml-strip-perl libipc-run3-perl paps \
     libyaml-libyaml-perl && \
-    libmojolicious-plugin-openapi-perl && \
     apt-get clean
+
+# Install Mojolicious openapi plugin from koha unstable until it is released
+RUN echo "deb http://debian.koha-community.org/koha unstable main" > /etc/apt/sources.list.d/koha-unstable.list && \
+    wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
+    apt-get update && apt-get install -y --force-yes libmojolicious-plugin-openapi-perl && apt-get clean
 
 # NCIP Server and dependencies
 ADD ./files/NCIPServer /NCIPServer
