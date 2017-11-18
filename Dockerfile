@@ -54,10 +54,15 @@ COPY docker-wait_until_ready.py /root/wait_until_ready.py
 RUN apt-get install -y python-requests && apt-get clean
 
 # Missing perl dependencies
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     libhtml-strip-perl libipc-run3-perl paps \
     libyaml-libyaml-perl && \
     apt-get clean
+
+# Install Mojolicious openapi plugin from koha unstable until it is released
+RUN echo "deb http://debian.koha-community.org/koha unstable main" > /etc/apt/sources.list.d/koha-unstable.list && \
+    wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
+    apt-get update && apt-get install -y --force-yes libmojolicious-plugin-openapi-perl && apt-get clean
 
 # NCIP Server and dependencies
 ADD ./files/NCIPServer /NCIPServer
