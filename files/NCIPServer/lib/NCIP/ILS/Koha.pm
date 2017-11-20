@@ -24,15 +24,17 @@ use Dancer ':syntax';
 use C4::Biblio;
 use C4::Circulation qw { AddRenewal CanBookBeRenewed GetRenewCount };
 use C4::Items qw { AddItem GetItem GetItemsByBiblioitemnumber };
-use C4::Reserves qw { CanBookBeReserved CanItemBeReserved AddReserve CancelReserve };
+use C4::Reserves qw { CanBookBeReserved CanItemBeReserved AddReserve };
 use C4::Log;
 
+use Koha::DateUtils qw { dt_from_string };
 use Koha::Illrequests;
 use Koha::Illrequest::Config;
 use Koha::Libraries;
 use Koha::Biblio;
 use Koha::Biblios;
 use Koha::Patrons;
+use Koha::Hold;
 
 use NCIP::Item::Id;
 use NCIP::Problem;
@@ -180,20 +182,25 @@ sub itemshipped {
         # Place a hold
         my $canReserve = CanItemBeReserved( $saved_request->borrowernumber, $item->itemnumber );
         if ($canReserve eq 'OK') {
-            AddReserve(
-                'ILL',                               # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
-                $saved_request->borrowernumber,      # borrowernumber
-                $biblio->biblionumber,               # biblionumber
-                undef,                               # bibitems - Not used
-                undef,                               # priority
-                undef,                               # resdate
-                undef,                               # expdate
-                'Hold placed by NNCIPP',             # notes
-                '',                                  # title
-                $item->itemnumber || undef,          # checkitem
-                undef,                               # found
-                undef,                               # itemtype
-            );
+            try {
+                my $hold = Koha::Hold->new(
+                    {
+                        branchcode     => 'ILL',                            # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
+                        borrowernumber => $saved_request->borrowernumber,
+                        biblionumber   => $biblio->biblionumber,
+                        reservedate    => dt_from_string()->ymd,
+                        lowestPriority => 1,                                # Ill Requests always keep lowest priority
+                        reservenotes   => 'Hold placed by NNCIPP',
+                        itemnumber     => $item->itemnumber || undef,       # Itemnumber when specific barcode is selected
+                    }
+                )->store();
+            } catch {
+                if ( $_->isa('DBIx::Class::Exception') ) {
+                    die "ERROR PLACING HOLD: $_->{msg}";
+                } else {
+                    die "Can not place hold, pleace check the logs.";
+                }
+            }
         } else {
             warn "Can not place hold: $canReserve";
         }
@@ -432,23 +439,37 @@ sub requestitem {
     # TODO: Should we add more logic here?
     my $canReserve = CanBookBeReserved( $patron->borrowernumber, $biblionumber );
     if ($canReserve eq 'OK') {
-        AddReserve(
-                'ILL',                               # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
-                $patron->borrowernumber,             # borrowernumber
-                $biblionumber,                       # biblionumber
-                undef,                               # bibitems - Not used
-                undef,                               # priority
-                undef,                               # resdate
-                undef,                               # expdate
-                'Hold placed by NNCIPP',             # notes
-                '',                                  # title
-                undef,                               # checkitem
-                undef,                               # found
-                undef,                               # itemtype
-            );
+        try {
+            my $hold = Koha::Hold->new(
+                {
+                    branchcode     => 'ILL',                            # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
+                    borrowernumber => $patron->borrowernumber,
+                    biblionumber   => $biblionumber,
+                    reservedate    => dt_from_string()->ymd,
+                    lowestPriority => 1,                                # Ill Requests always keep lowest priority
+                    reservenotes   => 'Hold placed by NNCIPP',
+                }
+            )->store();
+        } catch {
+            my $errmsg;
+            if ( $_->isa('DBIx::Class::Exception') ) {
+                $errmsg = "ERROR PLACING HOLD: $_->{msg}";
+            } else {
+                $errmsg = "Cannot place hold, pleace check the logs.";
+            }
+
+            my $problem = NCIP::Problem->new({
+                ProblemType    => 'ERROR PLACING HOLD',
+                ProblemDetail  => $errmsg,
+                ProblemElement => 'NULL',
+                ProblemValue   => $canReserve,
+            });
+            $response->problem($problem);
+            return $response;
+        }
     } else {
         my $problem = NCIP::Problem->new({
-            ProblemType    => 'ERROR PLACING HOLD',
+            ProblemType    => 'CANNOT PLACE HOLD',
             ProblemDetail  => 'NULL',
             ProblemElement => 'NULL',
             ProblemValue   => $canReserve,
