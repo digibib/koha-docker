@@ -22,22 +22,12 @@ finish() {
     fi
 }
 
-run_webinstaller() {
-  if [[ -n "$KOHAVERSION" ]] ; then
-    MARCTAGSTRUCTURE=`echo -n "SELECT COUNT(*) FROM koha_$KOHA_INSTANCE.marc_tag_structure where tagfield = 008;" | koha-mysql $KOHA_INSTANCE | tail -1`
-
-    if [[ $CURRENTDBVERSION = $KOHAVERSION ]] && \
-       [[ $MARCTAGSTRUCTURE > "0" ]] ; then
-      # Koha DB already up to date!
-      echo "Koha DB is already up-to-date (version $KOHAVERSION) and MARC tag structure is nominally in place"
-    else
-    RESULT=`/usr/bin/perl -e "require('/installer/KohaWebInstallAutomation.pl') ; \
-        KohaWebInstallAutomation->new( uri => \"http://127.0.0.1:8081/\", user => \"${KOHA_ADMINUSER}\", pass => \"${KOHA_ADMINPASS}\" );"`
-      EXIT_CODE=$?
-    fi
-  else
-    RESULT="MISSING INSTANCENAME OR NO KOHAVERSION!"
-    exit 1
+run_db_install_or_update() {
+  echo "Running DB populate or upgrade"
+  koha-foreach --enabled perl /installer/populate_db.pl --verbose
+  EXIT_CODE=$?
+  if [ $EXIT_CODE -ne 0 ]; then
+    exit "ERROR WHEN POPULATING DB!"
   fi
 }
 
@@ -188,6 +178,6 @@ EOF
   fi
 }
 
-run_webinstaller
+run_db_install_or_update
 apply_always
 apply_once

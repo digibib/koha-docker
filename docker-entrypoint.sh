@@ -60,7 +60,7 @@ echo "Restarting apache to activate local changes..."
 service apache2 restart
 
 sleep 1 # waiting for apache restart to finish
-echo "Running webinstaller and applying local deichman mods - please be patient ..."
+echo "Running db installer and applying local deichman mods - please be patient ..."
 cd /usr/share/koha/lib && /installer/installer.sh
 
 echo "Fixing bug in translated member search template in Norwegian..."
