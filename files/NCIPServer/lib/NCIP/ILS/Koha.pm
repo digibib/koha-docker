@@ -20,6 +20,7 @@ use Modern::Perl;
 use Data::Dumper; # FIXME Debug
 use Date::Parse qw( str2time );
 use Dancer ':syntax';
+use Try::Tiny;
 
 use C4::Biblio;
 use C4::Circulation qw { AddRenewal CanBookBeRenewed GetRenewCount };
@@ -98,7 +99,6 @@ sub lookupagency {
     my $response = NCIP::Response->new({type => $message . 'Response'});
     $response->header($self->make_header($request));
 
-    # my $library = GetBranchDetail( config->{'isilmap'}->{ $request->{$message}->{InitiationHeader}->{ToAgencyId}->{AgencyId} } );
     my $library = Koha::Libraries->find({ 'branchcode' => config->{'isilmap'}->{ $request->{$message}->{InitiationHeader}->{ToAgencyId}->{AgencyId} } });
 
     my $data = {
@@ -147,16 +147,15 @@ sub itemshipped {
 
     # Change the status of the request
     # Find the request
-    my $Illrequests = Koha::Illrequests->new;
     my $request_id = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
-    my $saved_request = $Illrequests->find($request_id);
+    my $saved_request = Koha::Illrequests->find($request_id);
 
     unless ( $saved_request ) {
         my $problem = NCIP::Problem->new({
             ProblemType    => 'Unknown Request ID',
             ProblemDetail  => "Request ID $request_id not found",
             ProblemElement => 'RequestId',
-            ProblemValue   => 'NULL',
+            ProblemValue   => $request_id,
         });
         $response->problem( $problem );
         return $response;
@@ -185,7 +184,7 @@ sub itemshipped {
             try {
                 my $hold = Koha::Hold->new(
                     {
-                        branchcode     => 'ILL',                            # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
+                        branchcode     => $saved_request->branchcode,       # Place hold on branchcode of ordering agency
                         borrowernumber => $saved_request->borrowernumber,
                         biblionumber   => $biblio->biblionumber,
                         reservedate    => dt_from_string()->ymd,
@@ -292,19 +291,6 @@ sub requestitem {
     my $message = $self->parse_request_type($request);
     my $response = NCIP::Response->new({type => $message . 'Response'});
     $response->header($self->make_header($request));
-
-    # Find the cardnumber of the patrons
-    # my ( $cardnumber, $cardnumber_field ) = $self->find_user_barcode( $request );
-    # unless( $cardnumber ) {
-    #     my $problem = NCIP::Problem->new({
-    #         ProblemType    => 'Needed Data Missing',
-    #         ProblemDetail  => 'Cannot find user barcode in message',
-    #         ProblemElement => $cardnumber_field,
-    #         ProblemValue   => 'NULL',
-    #     });
-    #     $response->problem($problem);
-    #     return $response;
-    # }
 
     # Find the library (patron) based on the FromAgencyId
     my $cardnumber = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} );
@@ -449,7 +435,8 @@ sub requestitem {
                     lowestPriority => 1,                                # Ill Requests always keep lowest priority
                     reservenotes   => 'Hold placed by NNCIPP',
                 }
-            )->store();
+            );
+            $hold->store();
         } catch {
             my $errmsg;
             if ( $_->isa('DBIx::Class::Exception') ) {
@@ -462,7 +449,7 @@ sub requestitem {
                 ProblemType    => 'ERROR PLACING HOLD',
                 ProblemDetail  => $errmsg,
                 ProblemElement => 'NULL',
-                ProblemValue   => $canReserve,
+                ProblemValue   => 'NULL',
             });
             $response->problem($problem);
             return $response;
@@ -537,6 +524,9 @@ sub requestitem {
     $response = $ils->itemrequested($request);
 
 Handle the NCIP ItemRequested message.
+We are ordering agency and receive info needed to place the request on the owning library.
+  - saves Illrequest with status H_ITEMREQUESTED
+  - creates tmp biblio and item with branchcode 'ILL'
 
 =cut
 
@@ -554,6 +544,7 @@ sub itemrequested {
 
     my $ok = 1;
     my ($error_type, $error_detail);
+
     # Get the ID of library we ordered from
     my $ordered_from = _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} );
     my $ordered_from_patron = Koha::Patrons->find({ cardnumber => $ordered_from });
@@ -561,7 +552,16 @@ sub itemrequested {
         $ok = 0;
         $error_type   = "Missing Agency Info";
         $error_detail = "Missing valid Agency ID" unless $ordered_from;
-        $error_detail = "Cannot find Agency Patron in DB: '$ordered_from'" unless $ordered_from_patron;
+        $error_detail = "Cannot find Agency Patron in DB: $ordered_from" unless $ordered_from_patron;
+    }
+
+    my $ordering_agency = _isil2barcode( $request->{$message}->{InitiationHeader}->{ToAgencyId}->{AgencyId} );
+    my $ordering_agency_patron = Koha::Patrons->find({ cardnumber => $ordering_agency });
+    unless ($ordering_agency && $ordering_agency_patron) {
+        $ok = 0;
+        $error_type   = "Missing Ordering Agency Info";
+        $error_detail = "Missing valid Ordering Agency ID" unless $ordering_agency;
+        $error_detail = "Cannot find Ordering Agency Patron in DB: $ordering_agency_patron" unless $ordering_agency_patron;
     }
 
     my $itemidentifiertype = $request->{$message}->{ItemId}->{ItemIdentifierType} //
@@ -662,20 +662,13 @@ sub itemrequested {
     my $cardnumber = $request->{$message}->{UserId}->{UserIdentifierValue};
     my $patron = Koha::Patrons->find({ cardnumber => $cardnumber });
 
-    # TODO: Delete empty objects from hash, don't know where they come from...
-    # for ( keys %${bibdata} ) {
-    #     if (ref($bibdata->{$_}) eq 'HASH' && print keys(%{$_}) == 0) {
-    #       delete $bibdata->{$_}
-    #     }
-    # };
-
     # Save a new request with the newly created biblionumber
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
     my $backend_result = $illrequest->backend_create({
         borrowernumber => $patron->borrowernumber,
         biblionumber   => $biblionumber,
-        branchcode     => 'ILL', # FIXME
+        branchcode     => $ordering_agency_patron->branchcode, # Save branchcode for ordering agency
         status         => 'H_ITEMREQUESTED',
         medium         => $bibdata->{MediumType},
         backend        => 'NNCIPP',
