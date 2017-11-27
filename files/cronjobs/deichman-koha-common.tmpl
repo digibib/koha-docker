@@ -104,3 +104,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Compute plukkliste every 2 minutes
 ####################################
 */2 * * * * root cd /cronjobs; koha-foreach --enabled perl holds.compute.pl /tmp/plukkliste.json; mkdir -p /usr/share/koha/intranet/htdocs/holdsqueue; mv /tmp/plukkliste.json /usr/share/koha/intranet/htdocs/holdsqueue/plukkliste.json
+
+####################################
+# Send any pending Ill request every 3 minutes
+####################################
+*/3 7-21 * * * root koha-foreach --enabled perl /usr/share/koha/lib/Koha/Illbackends/NNCIPP/cronjobs/return_itemrequested.pl
