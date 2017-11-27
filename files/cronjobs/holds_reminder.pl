@@ -37,7 +37,7 @@ GetOptions(
 );
 
 my $dbh = C4::Context->dbh();
-my $query = "SELECT b.*, bib.title, br.branchname, r.pickupnumber,
+my $query = "SELECT b.*, bib.title, bib.author, br.branchname, r.pickupnumber,
       DATE_FORMAT(r.expirationdate, '%d.%m.%Y') AS expdate
     FROM reserves r
     JOIN borrowers b USING(borrowernumber)
@@ -51,11 +51,15 @@ $sth->execute($days) or die "Error running query: $sth";
 
 my $template = <<EOF;
 Hei [% result.firstname %]!
-Vi vil bare minne deg på å hente "[% result.title %]" på [% result.branchname %] innen hentefristen, som er [% result.expdate %].
+
+Husk å hente "[% result.title %]"[% IF (result.author) %] av "[% result.author %]"[% END %] på [% result.branchname %] innen [% result.expdate %].
 
 Hentenummer er [% result.pickupnumber %].
 
+Husk å avbestille på https://sok.deichman.no/profile hvis bestillingen ikke lenger er aktuell.
+
 Lån gjerne mer når du er innom!
+
 Mvh. Deichmanske bibliotek
 EOF
 
