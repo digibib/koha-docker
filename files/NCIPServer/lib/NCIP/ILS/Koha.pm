@@ -148,7 +148,7 @@ sub itemshipped {
     # Change the status of the request
     # Find the request
     my $request_id = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
-    my $saved_request = Koha::Illrequests->find($request_id);
+    my $saved_request = Koha::Illrequests->find({ orderid => $request_id });
 
     unless ( $saved_request ) {
         my $problem = NCIP::Problem->new({
