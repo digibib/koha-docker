@@ -193,6 +193,7 @@ sub itemshipped {
                         itemnumber     => $item->itemnumber || undef,       # Itemnumber when specific barcode is selected
                     }
                 )->store();
+                C4::Reserves::_FixPriority({ biblionumber => $hold->biblionumber });
             } catch {
                 if ( $_->isa('DBIx::Class::Exception') ) {
                     die "ERROR PLACING HOLD: $_->{msg}";
@@ -437,6 +438,7 @@ sub requestitem {
                 }
             );
             $hold->store();
+            C4::Reserves::_FixPriority({ biblionumber => $hold->biblionumber });
         } catch {
             my $errmsg;
             if ( $_->isa('DBIx::Class::Exception') ) {
