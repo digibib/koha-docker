@@ -170,14 +170,17 @@ sub itemshipped {
         my $biblio = Koha::Biblios->find({ 'biblionumber' => $biblio_id });
         my @items = $biblio->items();
         @items == 1 or die "expected only 1 entry for $biblio_id, got: ".scalar(@items);
-        # There should only be one item, so we grap the first one
         my $item = $items[0];
+        # To guard against barcode clashes we always set it to NULL, and
+        # instead store it as an illrequestattribute.
+        $item->barcode(undef);
+        $item->itemnotes("ILL barcode: " .$barcode);
         if ($request->{$message}->{ItemId}->{ItemIdentifierType} eq "Barcode") {
             my $barcode = $request->{$message}->{ItemId}->{ItemIdentifierValue};
-            # TODO: Check if barcode is already in DB
-            $item->barcode($barcode);
-            $item->store;
+            $saved_request->illrequestattributes->find({ type => 'ItemIdentifierType' })->value('Barcode')->store();
+            $saved_request->illrequestattributes->find({ type => 'ItemIdentifierValue' })->value($barcode)->store();
         }
+        $item->store;
         # Place a hold
         my $canReserve = CanItemBeReserved( $saved_request->borrowernumber, $item->itemnumber );
         if ($canReserve eq 'OK') {
