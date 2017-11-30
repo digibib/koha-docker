@@ -174,11 +174,11 @@ sub itemshipped {
         # To guard against barcode clashes we always set it to NULL, and
         # instead store it as an illrequestattribute.
         $item->barcode(undef);
-        $item->itemnotes("ILL barcode: " .$barcode);
         if ($request->{$message}->{ItemId}->{ItemIdentifierType} eq "Barcode") {
             my $barcode = $request->{$message}->{ItemId}->{ItemIdentifierValue};
             $saved_request->illrequestattributes->find({ type => 'ItemIdentifierType' })->value('Barcode')->store();
             $saved_request->illrequestattributes->find({ type => 'ItemIdentifierValue' })->value($barcode)->store();
+            $item->itemnotes("ILL barcode: " . $barcode);
         }
         $item->store;
         # Place a hold
