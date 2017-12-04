@@ -49,14 +49,14 @@
 			<ns1:BibliographicDescription>
 				<!-- The following elements is mandatory, populate the elements according to MARC21 codes -->
 				<ns1:Author>[% data.ItemOptionalFields.Author | xml %]</ns1:Author>
-				<ns1:PlaceOfPublication>[% data.ItemOptionalFields.PlaceOfPublication %]</ns1:PlaceOfPublication>
-				<ns1:PublicationDate>[% data.ItemOptionalFields.PublicationDate %]</ns1:PublicationDate>
-				<ns1:Publisher>[% data.ItemOptionalFields.Publisher %]</ns1:Publisher>
-				<ns1:Title>[% data.ItemOptionalFields.Title %]</ns1:Title>
+				<ns1:PlaceOfPublication>[% data.ItemOptionalFields.PlaceOfPublication | xml %]</ns1:PlaceOfPublication>
+				<ns1:PublicationDate>[% data.ItemOptionalFields.PublicationDate | xml %]</ns1:PublicationDate>
+				<ns1:Publisher>[% data.ItemOptionalFields.Publisher | xml %]</ns1:Publisher>
+				<ns1:Title>[% data.ItemOptionalFields.Title | xml  %]</ns1:Title>
 				<!-- The following line is required by Alma. -->
-				<ns1:BibliographicLevel>[% data.ItemOptionalFields.BibliographicLevel %]</ns1:BibliographicLevel>
-				<ns1:Language>[% data.ItemOptionalFields.Language %]</ns1:Language>
-				<ns1:MediumType>[% data.ItemOptionalFields.MediumType %]</ns1:MediumType>
+				<ns1:BibliographicLevel>[% data.ItemOptionalFields.BibliographicLevel | xml %]</ns1:BibliographicLevel>
+				<ns1:Language>[% data.ItemOptionalFields.Language | xml %]</ns1:Language>
+				<ns1:MediumType>[% data.ItemOptionalFields.MediumType | xml %]</ns1:MediumType>
 			</ns1:BibliographicDescription>
 		</ns1:ItemOptionalFields>
 	</ns1:RequestItemResponse>
