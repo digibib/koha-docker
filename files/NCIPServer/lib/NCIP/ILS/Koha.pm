@@ -261,6 +261,16 @@ sub itemreceived {
     } elsif ( $saved_request->status eq 'H_RETURNED' ) {
         # We are the Home Library, so this is #7
         $saved_request->status( 'DONE' )->store;
+        # The transaction is now complete, so we can safely delete
+        # the temproary biblio and associated item.
+        if (my $biblio_id = $saved_request->biblio_id) {
+            my $biblio = Koha::Biblios->find({ 'biblionumber' => $biblio_id });
+            my $items = $biblio->items;
+            while (my $item = $items->next ) {
+                C4::Items::DelItem({itemnumber => $item->itemnumber, biblionumber => $biblio_id});
+            }
+            C4::Biblio::DelBiblio($biblio_id);
+        }
     }
 
     my $data = {
