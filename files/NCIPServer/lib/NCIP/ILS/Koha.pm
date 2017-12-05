@@ -197,6 +197,7 @@ sub itemshipped {
                     }
                 )->store();
                 C4::Reserves::_FixPriority({ biblionumber => $hold->biblionumber });
+                $saved_request->illrequestattributes->find({ type => 'KohaReserveId' })->value($hold->id())->store();
             } catch {
                 if ( $_->isa('DBIx::Class::Exception') ) {
                     die "ERROR PLACING HOLD: $_->{msg}";
@@ -431,6 +432,7 @@ sub requestitem {
             'RequestIdentifierValue' => $request->{$message}->{RequestId}->{RequestIdentifierValue},
             'RequestType'            => $request->{$message}->{RequestType},
             'RequestScopeType'       => $request->{$message}->{RequestScopeType},
+            'KohaReserveId'          => undef,
         },
         'stage'          => 'commit',
     });
@@ -452,6 +454,7 @@ sub requestitem {
             );
             $hold->store();
             C4::Reserves::_FixPriority({ biblionumber => $hold->biblionumber });
+            $illrequest->illrequestattributes->find({ type => 'KohaReserveId' })->value($hold->id())->store();
         } catch {
             my $errmsg;
             if ( $_->isa('DBIx::Class::Exception') ) {
@@ -700,6 +703,7 @@ sub itemrequested {
             ItemIdentifierValue => $itemidentifiervalue,
             RequestType         => $request->{$message}->{RequestType},
             RequestScopeType    => $request->{$message}->{RequestScopeType},
+            'KohaReserveId'     => undef,
         },
         stage          => 'commit',
     });
@@ -927,6 +931,11 @@ sub cancelrequestitem {
         });
         $response->problem($problem);
         return $response;
+    }
+
+    if (my $hold_id = $saved_request->illrequestattributes->find({ type => 'KohaReserveId' })->value()) {
+        my $hold = Koha::Hold->find($hold_id);
+        $hold and $hold->delete(); # silently delete it (should I ->cancel instead?)
     }
 
     my $data = {
