@@ -34,19 +34,19 @@ build_debian_files:
     - chmod 0600 ~/.ssh/id_rsa
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # unpublish old repo
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly publish drop wheezy"
     # drop old snapshot
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly snapshot drop koha-patched"
     # add packages from incoming
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly repo include -keyring=6DDE02B2 -accept-unsigned=true -repo=deichmankoha -architectures=amd64 /aptly/incoming"
     # create new repo
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly snapshot create -architectures=amd64 koha-patched from repo deichmankoha"
     # publish
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched"
 
   artifacts:
@@ -54,7 +54,7 @@ build_debian_files:
     - koha-patched/debian
     expire_in: 2 hrs
 
-# Deploy to datatest.deichman.no
+# Deploy to static.deichman.no
 deploy_debian_files:
   stage: deploy
   only:
@@ -66,19 +66,19 @@ deploy_debian_files:
     - chmod 0600 ~/.ssh/id_rsa
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # unpublish old repo
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly publish drop wheezy"
     # drop old snapshot
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly snapshot drop koha-patched"
     # add packages from incoming
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly repo include -keyring=6DDE02B2 -accept-unsigned=true -repo=deichmankoha -architectures=amd64 /aptly/incoming"
     # create new repo
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly snapshot create -architectures=amd64 koha-patched from repo deichmankoha"
     # publish
-    - ssh jenkins@datatest.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
+    - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched"
 
 build_from_master:
