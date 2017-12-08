@@ -417,6 +417,10 @@ sub requestitem {
     # Save the request
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
+    my $comment;
+    if ($request->{$message}->{Ext} and $request->{$message}->{Ext}->{ItemNote}) {
+        $comment = $request->{$message}->{Ext}->{ItemNote};
+    }
     my $backend_result = $illrequest->backend_create({
         'borrowernumber' => $patron->borrowernumber,
         'biblionumber'   => $biblionumber,
@@ -433,6 +437,7 @@ sub requestitem {
             'RequestType'            => $request->{$message}->{RequestType},
             'RequestScopeType'       => $request->{$message}->{RequestScopeType},
             'KohaReserveId'          => undef,
+            'Comment'                => $comment,
         },
         'stage'          => 'commit',
     });
@@ -516,6 +521,9 @@ sub requestitem {
                 MediumType         => 'Book', # FIXME
             }
         ),
+        Ext => {
+            ItemNote => $comment,
+        }
     };
 
         # Look for UserElements requested and add it to the response:
@@ -683,6 +691,10 @@ sub itemrequested {
     # Save a new request with the newly created biblionumber
     my $illrequest = Koha::Illrequest->new;
     $illrequest->load_backend( 'NNCIPP' );
+    my $comment;
+    if ( $request->{$message}->{Ext} and $request->{$message}->{Ext}->{ItemNote} ) {
+        $comment = $request->{$message}->{Ext}->{ItemNote};
+    }
     my $backend_result = $illrequest->backend_create({
         borrowernumber => $patron->borrowernumber,
         biblionumber   => $biblionumber,
@@ -704,6 +716,7 @@ sub itemrequested {
             RequestType         => $request->{$message}->{RequestType},
             RequestScopeType    => $request->{$message}->{RequestScopeType},
             'KohaReserveId'     => undef,
+            Comment             => $comment,
         },
         stage          => 'commit',
     });
