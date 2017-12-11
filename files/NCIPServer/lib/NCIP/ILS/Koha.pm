@@ -414,78 +414,83 @@ sub requestitem {
         return $response;
     }
 
-    # Save the request
-    my $illrequest = Koha::Illrequest->new;
-    $illrequest->load_backend( 'NNCIPP' );
-    my $comment;
-    if ($request->{$message}->{Ext} and $request->{$message}->{Ext}->{ItemNote}) {
-        $comment = $request->{$message}->{Ext}->{ItemNote};
-    }
-    my $backend_result = $illrequest->backend_create({
-        'borrowernumber' => $patron->borrowernumber,
-        'biblionumber'   => $biblionumber,
-        'branchcode'     => 'ILL', # FIXME
-        'status'         => 'O_REQUESTITEM',
-        'backend'        => 'NNCIPP',
-        'attr'           => {
-            'requested_by' => _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} ),
-            'UserIdentifierValue'    => $request->{$message}->{UserId}->{UserIdentifierValue},
-            'ItemIdentifierType'     => $itemidentifiertype,
-            'ItemIdentifierValue'    => $itemidentifiervalue,
-            'AgencyId'               => $request->{$message}->{RequestId}->{AgencyId},
-            'RequestIdentifierValue' => $request->{$message}->{RequestId}->{RequestIdentifierValue},
-            'RequestType'            => $request->{$message}->{RequestType},
-            'RequestScopeType'       => $request->{$message}->{RequestScopeType},
-            'KohaReserveId'          => undef,
-            'Comment'                => $comment,
-        },
-        'stage'          => 'commit',
-    });
+    # Check if the order is allready stored:
+    my $orderid = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
+    my $existing_illrequest = $Koha::Illrequest->find( {orderid => $orderid} );
+    if (not $existing_illrequest) {
+        # Save the request
+        my $illrequest = Koha::Illrequest->new;
+        $illrequest->load_backend( 'NNCIPP' );
+        my $comment;
+        if ($request->{$message}->{Ext} and $request->{$message}->{Ext}->{ItemNote}) {
+            $comment = $request->{$message}->{Ext}->{ItemNote};
+        }
+        $illrequest->backend_create({
+            'borrowernumber' => $patron->borrowernumber,
+            'biblionumber'   => $biblionumber,
+            'branchcode'     => 'ILL', # FIXME
+            'status'         => 'O_REQUESTITEM',
+            'backend'        => 'NNCIPP',
+            'attr'           => {
+                'requested_by' => _isil2barcode( $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId} ),
+                'UserIdentifierValue'    => $request->{$message}->{UserId}->{UserIdentifierValue},
+                'ItemIdentifierType'     => $itemidentifiertype,
+                'ItemIdentifierValue'    => $itemidentifiervalue,
+                'AgencyId'               => $request->{$message}->{RequestId}->{AgencyId},
+                'RequestIdentifierValue' => $request->{$message}->{RequestId}->{RequestIdentifierValue},
+                'RequestType'            => $request->{$message}->{RequestType},
+                'RequestScopeType'       => $request->{$message}->{RequestScopeType},
+                'KohaReserveId'          => undef,
+                'Comment'                => $comment,
+            },
+            'stage'          => 'commit',
+        });
 
-    # Check if the book (record level) can be reserved
-    # TODO: Should we add more logic here?
-    my $canReserve = CanBookBeReserved( $patron->borrowernumber, $biblionumber );
-    if ($canReserve eq 'OK') {
-        try {
-            my $hold = Koha::Hold->new(
-                {
-                    branchcode     => 'ILL',                            # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
-                    borrowernumber => $patron->borrowernumber,
-                    biblionumber   => $biblionumber,
-                    reservedate    => dt_from_string()->ymd,
-                    lowestPriority => 1,                                # Ill Requests always keep lowest priority
-                    reservenotes   => 'Hold placed by NNCIPP',
+        # Check if the book (record level) can be reserved
+        # TODO: Should we add more logic here?
+        my $canReserve = CanBookBeReserved( $patron->borrowernumber, $biblionumber );
+        if ($canReserve eq 'OK') {
+            try {
+                my $hold = Koha::Hold->new(
+                    {
+                        branchcode     => 'ILL',                            # branch FIXME Should this be not hardcoded? Should it be the branch the book belongs to?
+                        borrowernumber => $patron->borrowernumber,
+                        biblionumber   => $biblionumber,
+                        reservedate    => dt_from_string()->ymd,
+                        lowestPriority => 1,                                # Ill Requests always keep lowest priority
+                        reservenotes   => 'Hold placed by NNCIPP',
+                    }
+                );
+                $hold->store();
+                C4::Reserves::_FixPriority({ biblionumber => $hold->biblionumber });
+                $illrequest->illrequestattributes->find({ type => 'KohaReserveId' })->value($hold->id())->store();
+            } catch {
+                my $errmsg;
+                if ( $_->isa('DBIx::Class::Exception') ) {
+                    $errmsg = "ERROR PLACING HOLD: $_->{msg}";
+                } else {
+                    $errmsg = "Cannot place hold, pleace check the logs.";
                 }
-            );
-            $hold->store();
-            C4::Reserves::_FixPriority({ biblionumber => $hold->biblionumber });
-            $illrequest->illrequestattributes->find({ type => 'KohaReserveId' })->value($hold->id())->store();
-        } catch {
-            my $errmsg;
-            if ( $_->isa('DBIx::Class::Exception') ) {
-                $errmsg = "ERROR PLACING HOLD: $_->{msg}";
-            } else {
-                $errmsg = "Cannot place hold, pleace check the logs.";
-            }
 
+                my $problem = NCIP::Problem->new({
+                    ProblemType    => 'ERROR PLACING HOLD',
+                    ProblemDetail  => $errmsg,
+                    ProblemElement => 'NULL',
+                    ProblemValue   => 'NULL',
+                });
+                $response->problem($problem);
+                return $response;
+            }
+        } else {
             my $problem = NCIP::Problem->new({
-                ProblemType    => 'ERROR PLACING HOLD',
-                ProblemDetail  => $errmsg,
+                ProblemType    => 'CANNOT PLACE HOLD',
+                ProblemDetail  => 'NULL',
                 ProblemElement => 'NULL',
-                ProblemValue   => 'NULL',
+                ProblemValue   => $canReserve,
             });
             $response->problem($problem);
             return $response;
         }
-    } else {
-        my $problem = NCIP::Problem->new({
-            ProblemType    => 'CANNOT PLACE HOLD',
-            ProblemDetail  => 'NULL',
-            ProblemElement => 'NULL',
-            ProblemValue   => $canReserve,
-        });
-        $response->problem($problem);
-        return $response;
     }
 
     # Build the response
