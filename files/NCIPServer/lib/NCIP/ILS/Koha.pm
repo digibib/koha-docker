@@ -694,6 +694,7 @@ sub itemrequested {
     warn "itemnumber $itemnumber created";
     my $item = Koha::Item->find($itemnumber);
     $item->barcode(undef);
+    $item->store();
 
     # Get the patron that the request is meant for
     my $cardnumber = $request->{$message}->{UserId}->{UserIdentifierValue};
