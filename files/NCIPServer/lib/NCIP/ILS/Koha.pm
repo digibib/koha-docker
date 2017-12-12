@@ -686,13 +686,14 @@ sub itemrequested {
 
     # Add an item
     # FIXME Data should not be hardcoded
-    my $item = {
-        'homebranch'    => 'ILL',
-        'holdingbranch' => 'ILL',
-        'itype'         => 'ILL',
-    };
-    my ( $x_biblionumber, $x_biblioitemnumber, $itemnumber ) = AddItem( $item, $biblionumber );
+    my ( $x_biblionumber, $x_biblioitemnumber, $itemnumber ) = AddItem({
+            'homebranch'    => 'ILL',
+            'holdingbranch' => 'ILL',
+            'itype'         => 'ILL',
+        }, $biblionumber );
     warn "itemnumber $itemnumber created";
+    my $item = Koha::Item->find($itemnumber);
+    $item->barcode(undef);
 
     # Get the patron that the request is meant for
     my $cardnumber = $request->{$message}->{UserId}->{UserIdentifierValue};
