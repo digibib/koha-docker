@@ -717,6 +717,7 @@ sub itemrequested {
         attr           => {
             title        => $bibdata->{Title},
             author       => $bibdata->{Author},
+            ownerLabel   => $patron->surname,
             ordered_from => $ordered_from,
             ordered_from_borrowernumber => $ordered_from_patron->borrowernumber,
             PlaceOfPublication  => $bibdata->{PlaceOfPublication},
