@@ -416,7 +416,8 @@ sub requestitem {
 
     # Check if the order is allready stored:
     my $orderid = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
-    my $existing_illrequest = $Koha::Illrequest->find( {orderid => $orderid} );
+    my $existing_illrequest = Koha::Illrequests->find( { orderid => $orderid} );
+    my $comment;
 
     if ($existing_illrequest) {
         # no-op:
@@ -426,7 +427,6 @@ sub requestitem {
         # Save the request
         my $illrequest = Koha::Illrequest->new;
         $illrequest->load_backend( 'NNCIPP' );
-        my $comment;
         if ($request->{$message}->{Ext} and $request->{$message}->{Ext}->{ItemNote}) {
             $comment = $request->{$message}->{Ext}->{ItemNote};
         }
