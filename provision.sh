@@ -26,7 +26,7 @@ echo -e "\n1) Installing Docker\n"
   fi
 
   echo -e "\n2) Installing Docker-compose\n"
-  COMPOSEVERSION=1.16.1
+  COMPOSEVERSION=1.18.0-rc2
   INSTALLED=`docker-compose -v | cut -d',' -f1 | cut -d' ' -f3`
   if [ $COMPOSEVERSION = "$INSTALLED" ] ; then
     echo "docker-compose version $COMPOSEVERSION already installed"
