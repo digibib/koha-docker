@@ -960,7 +960,7 @@ sub cancelrequestitem {
     }
 
     if (my $hold_id = $saved_request->illrequestattributes->find({ type => 'KohaReserveId' })->value()) {
-        my $hold = Koha::Hold->find($hold_id);
+        my $hold = Koha::Holds->find($hold_id);
         $hold and $hold->delete(); # silently delete it (should I ->cancel instead?)
     }
 
