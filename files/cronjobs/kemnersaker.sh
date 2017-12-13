@@ -6,16 +6,16 @@ add_new_items() {
   # add new lines to kemnersaker where issue is between 35 and 90 days overdue and it hasn't been registered before
   local RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
     INSERT INTO kemnersaker (issue_id,borrowernumber,itemnumber,status,timestamp)
-    ( SELECT i.issue_id,
-             i.borrowernumber,
-             i.itemnumber,
+    ( SELECT oi.issue_id,
+             oi.borrowernumber,
+             oi.itemnumber,
              'new',
              TIMESTAMP(NOW())
-      FROM issues i
-      JOIN items it ON (it.itemnumber=i.itemnumber)
-      JOIN borrowers b ON (b.borrowernumber=i.borrowernumber)
- LEFT JOIN kemnersaker k ON (i.issue_id=k.issue_id)
-     WHERE (TO_DAYS(now()) - TO_DAYS(i.date_due)) BETWEEN 35 AND 90
+      FROM old_issues oi
+      JOIN items it ON (it.itemnumber=oi.itemnumber)
+      JOIN borrowers b ON (b.borrowernumber=oi.borrowernumber)
+ LEFT JOIN kemnersaker k ON (oi.issue_id=k.issue_id)
+     WHERE (TO_DAYS(now()) - TO_DAYS(oi.date_due)) BETWEEN 35 AND 90
        AND k.issue_id IS NULL
        AND it.itemlost = '12'
        AND b.categorycode IN ('V',
