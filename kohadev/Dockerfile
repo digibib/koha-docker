@@ -29,7 +29,6 @@ ENV AUTHOR_EMAIL john@doe.com
 ENV BUGZ_USER    bugsquasher
 ENV BUGZ_PASS    bugspass
 ENV KOHA_REPO    https://github.com/Koha-Community/Koha.git
-ENV MY_REPO      https://github.com/digibib/koha-work
 ENV GITBZ_REPO   https://github.com/digibib/git-bz.git
 ENV QATOOLS_REPO https://github.com/Koha-Community/qa-test-tools.git
 
@@ -43,7 +42,7 @@ RUN mkdir -p /kohadev && cd /kohadev && \
 # kohadev dependencies
 RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl libwww-csrf-perl \
     libdbix-connector-perl make libtest-warnings-perl libplack-middleware-debug-perl \
-    libsereal-encoder-perl libsereal-decoder-perl && \
+    libsereal-encoder-perl libsereal-decoder-perl libmojolicious-plugin-openapi-perl && \
     apt-get clean
 
 # Git bz
