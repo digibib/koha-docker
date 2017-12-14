@@ -528,7 +528,7 @@ sub requestitem {
                 Title              => $bibliodata->{'title'},
                 BibliographicLevel => 'Book', # FIXME
                 Language           => _get_langcode_from_bibliodata( $bibliodata ),
-                MediumType         => 'Book', # FIXME
+                MediumType         => undef, # FIXME: not used for now
             }
         ),
         Ext => {
