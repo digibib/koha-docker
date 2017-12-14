@@ -692,7 +692,8 @@ sub itemrequested {
             'itype'         => 'ILL',
         }, $biblionumber );
     warn "itemnumber $itemnumber created";
-    my $item = Koha::Item->find($itemnumber);
+
+    my $item = Koha::Items->find($itemnumber);
     $item->barcode(undef);
     $item->store();
 
