@@ -940,13 +940,29 @@ sub cancelrequestitem {
         return $response;
     }
 
+    # Delete hold if there is one
+    if (my $hold_id = $saved_request->illrequestattributes->find({ type => 'KohaReserveId' })->value()) {
+        my $hold = Koha::Holds->find($hold_id);
+        $hold and $hold->delete(); # silently delete it (should I ->cancel instead?)
+    }
+
     # Check if we are the Owner Library or not
     if ( $saved_request->status eq 'O_REQUESTITEM' ) {
         # We are the Owner Library, so this is #10
+        # Set status to DONE and delete hold
         $saved_request->status( 'DONE' )->store;
     } elsif ( $saved_request->status eq 'H_REQUESTITEM' ) {
         # We are the Home Library, so this is #11
+        # Set status to H_CANCELLED, delete temporary biblio and item, and delete hold
         $saved_request->status( 'H_CANCELLED' )->store;
+        if (my $biblio_id = $saved_request->biblio_id) {
+            my $biblio = Koha::Biblios->find({ 'biblionumber' => $biblio_id });
+            my $items = $biblio->items;
+            while (my $item = $items->next ) {
+                C4::Items::DelItem({itemnumber => $item->itemnumber, biblionumber => $biblio_id});
+            }
+            C4::Biblio::DelBiblio($biblio_id);
+        }
     } else {
         # We have some status where the RequestItem can not be cancelled,
         # most likely the request is already shipped from the Owner Library.
@@ -958,11 +974,6 @@ sub cancelrequestitem {
         });
         $response->problem($problem);
         return $response;
-    }
-
-    if (my $hold_id = $saved_request->illrequestattributes->find({ type => 'KohaReserveId' })->value()) {
-        my $hold = Koha::Holds->find($hold_id);
-        $hold and $hold->delete(); # silently delete it (should I ->cancel instead?)
     }
 
     my $data = {
