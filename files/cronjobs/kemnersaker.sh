@@ -6,16 +6,16 @@ add_new_items() {
   # add new lines to kemnersaker where issue is between 35 and 90 days overdue and it hasn't been registered before
   local RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
     INSERT INTO kemnersaker (issue_id,borrowernumber,itemnumber,status,timestamp)
-    ( SELECT oi.issue_id,
-             oi.borrowernumber,
-             oi.itemnumber,
+    ( SELECT iss.issue_id,
+             iss.borrowernumber,
+             iss.itemnumber,
              'new',
              TIMESTAMP(NOW())
-      FROM old_issues oi
-      JOIN items it ON (it.itemnumber=oi.itemnumber)
-      JOIN borrowers b ON (b.borrowernumber=oi.borrowernumber)
- LEFT JOIN kemnersaker k ON (oi.issue_id=k.issue_id)
-     WHERE (TO_DAYS(now()) - TO_DAYS(oi.date_due)) BETWEEN 35 AND 90
+      FROM issues iss
+      JOIN items it ON (it.itemnumber=iss.itemnumber)
+      JOIN borrowers b ON (b.borrowernumber=iss.borrowernumber)
+ LEFT JOIN kemnersaker k ON (iss.issue_id=k.issue_id)
+     WHERE (TO_DAYS(now()) - TO_DAYS(iss.date_due)) BETWEEN 35 AND 90
        AND k.issue_id IS NULL
        AND it.itemlost = '12'
        AND b.categorycode IN ('V',
@@ -33,7 +33,7 @@ update_returned_items() {
   # sets status to 'returned' for yesterdays returns, or 'lost_paid' if item is marked with itemlost=8
   local RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
     UPDATE kemnersaker k
-    JOIN old_issues oi ON (oi.itemnumber=k.itemnumber)
+    JOIN old_issues oi USING (issue_id)
     JOIN items i ON (i.itemnumber=k.itemnumber)
     SET k.status=
       ( SELECT CASE i.itemlost
