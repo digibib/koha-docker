@@ -26,7 +26,7 @@ RUN apt-get update && \
 # Add Koha repos and install Koha deps
 RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     echo "deb http://debian.koha-community.org/koha unstable main" > /etc/apt/sources.list.d/koha-unstable.list && \
-    wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
+    curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
     apt-get update && apt-get install -y koha-perldeps koha-deps make build-essential libwww-csrf-perl && apt-get clean
 
 ARG KOHA_RELEASE

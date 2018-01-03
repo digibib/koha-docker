@@ -55,7 +55,7 @@ build_debian_files:
     expire_in: 2 hrs
 
 build_docker_image:
-  stage: build
+  stage: deploy
   only:
     - tags
   script:
