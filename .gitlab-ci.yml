@@ -49,8 +49,6 @@ build_debian_files:
     # publish
     - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched"
-  tags:
-    - build
   artifacts:
     paths:
       - koha-patched/debian
@@ -72,5 +70,3 @@ build_docker_image:
     # push to docker hub
     - docker login --username=$DOCKERHUB_USERNAME --password=$DOCKERHUB_PASSWORD
     - docker push digibib/koha:$CI_COMMIT_SHA
-  tags:
-    - deploy
