@@ -1,8 +1,8 @@
 #######
-# Debian Jessie build of Koha
+# Debian Wheezy build of Koha
 #######
 
-FROM debian:jessie
+FROM debian:wheezy
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 

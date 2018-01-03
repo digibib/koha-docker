@@ -23,21 +23,17 @@ RUN apt-get update && \
 # KOHA SOURCES AND DEPS
 #######################
 
-# Add Koha Stable repo
-RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list
-RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
+# Add Koha repos and install Koha deps
+RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
+    echo "deb http://debian.koha-community.org/koha unstable main" > /etc/apt/sources.list.d/koha-unstable.list && \
+    wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
+    apt-get update && apt-get install -y koha-perldeps koha-deps make build-essential libwww-csrf-perl && apt-get clean
 
 ARG KOHA_RELEASE
 
 # Pull/Download Koha from GITREF or KOHA:RELEASE tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
 RUN /root/pull.sh
-
-# Install Koha deps
-
-RUN apt-get update && \
-    apt-get install -y koha-perldeps koha-deps make build-essential && \
-    apt-get clean
 
 ##########
 # WORKAROUNDS - REMOVE WHEN OBSOLETE
@@ -47,10 +43,6 @@ RUN apt-get update && \
 # probably due to user permissions in the docker build-container.
 RUN rm /koha/t/Logger.t
 
-# Missing perl dependencies
-
-RUN apt-get update && apt-get install -y libwww-csrf-perl && \
-    apt-get clean
 
 ##########
 # GIT-BZ, PATCHLIBS AND BUILDSCRIPT
