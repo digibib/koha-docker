@@ -28,21 +28,11 @@ build_debian_files:
     - $COMPOSE_CMD -f docker-compose/patched.yml build koha_patched
     - $COMPOSE_CMD -f docker-compose/patched.yml up -d --force-recreate --no-deps koha_patched
     - $COMPOSE_CMD -f docker-compose/patched.yml logs -f --no-color koha_patched
-  artifacts:
-    paths:
-      - koha-patched/debian
-    expire_in: 2 hrs
-
-# Deploy to debian repo at static.deichman.no
-push_debian_files:
-  stage: build
-  only:
-    - tags
-  script:
     - mkdir -p ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     - echo "$STAGING_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 0600 ~/.ssh/id_rsa
+    # Deploy to debian repo at static.deichman.no
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # unpublish old repo
     - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
@@ -59,6 +49,12 @@ push_debian_files:
     # publish
     - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly publish snapshot -architectures=i386,amd64 -skip-signing=true koha-patched"
+  tags:
+    - build
+  artifacts:
+    paths:
+      - koha-patched/debian
+    expire_in: 2 hrs
 
 build_docker_image:
   stage: build
@@ -73,11 +69,8 @@ build_docker_image:
     - $COMPOSE_CMD -f docker-compose/ci.yml stop koha_ci || true
     - $COMPOSE_CMD -f docker-compose/ci.yml rm -fv koha_ci || true
     - $COMPOSE_CMD -f docker-compose/ci.yml logs --no-color koha_ci
-
-push_docker_image:
-  stage: deploy
-  only:
-    - tags
-  script:
+    # push to docker hub
     - docker login --username=$DOCKERHUB_USERNAME --password=$DOCKERHUB_PASSWORD
     - docker push digibib/koha:$CI_COMMIT_SHA
+  tags:
+    - deploy
