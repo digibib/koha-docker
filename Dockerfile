@@ -11,13 +11,13 @@ ENV REFRESHED_AT 2017-11-01
 RUN echo "APT::Acquire::Retries \"3\";" > /etc/apt/apt.conf.d/80-retries
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get upgrade --yes && \
-    apt-get install -y wget less curl git nmap socat netcat tree htop \ 
+    apt-get install -y wget less curl git nmap socat netcat tree htop \
                        unzip python-software-properties libswitch-perl \
                        libnet-ssleay-perl libcrypt-ssleay-perl apache2 \
                        supervisor inetutils-syslogd && \
     apt-get clean
 
-ARG KOHA_BUILD
+ARG KOHA_RELEASE
 
 ENV KOHA_ADMINUSER admin
 ENV KOHA_ADMINPASS secret
@@ -46,7 +46,7 @@ RUN echo "search deich.folkebibl.no guest.oslo.kommune.no\nnameserver 10.172.2.1
     echo "deb http://static.deichman.no/repositories/koha/public/ wheezy main" > /etc/apt/sources.list.d/deichman.list && \
     echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sources.list.d/koha.list && \
     wget -q -O- http://debian.koha-community.org/koha/gpg.asc | apt-key add - && \
-    apt-get update && apt-get install -y --force-yes koha-common=$KOHA_BUILD && apt-get clean
+    apt-get update && apt-get install -y --force-yes koha-common=$KOHA_RELEASE && apt-get clean
 
 
 # Script and deps for checking if koha is up & ready (to be executed using docker exec)

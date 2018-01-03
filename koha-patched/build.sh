@@ -36,27 +36,8 @@ echo "Configuring bugzilla..." && \
   git config --global core.whitespace trailing-space,space-before-tab && \
   git config --global apply.whitespace fix
 
-##########
-# PATCHING
-##########
-
-echo "Patching..."
 echo "KOHA_RELEASE: $KOHA_RELEASE"
 echo "GITREF: $GITREF"
-
-# Patch from bugzilla
-for bugid in ${KOHABUGS}; do \
-  echo "Patching from bugzilla bug $bugid"
-  /root/applypatch.sh --bugid $bugid /koha ; \
-done
-
-# Patch with custom patches
-for patch in $(find /patches -name *.patch | sort -n); do \
-  if [ -f "$patch" ]; then \
-    echo "Patching local patch $patch"
-    /root/applypatch.sh --patch $patch /koha ; \
-  fi \
-done
 
 ############
 # CHANGELOG AND BUILD DEPS
@@ -65,15 +46,9 @@ done
 if [ -z "$SKIP_BUILD" ]; then
   mk-build-deps -t "apt-get -y --no-install-recommends --fix-missing" -i "debian/control"
 
-  dch --force-distribution -D "jessie" \
-      --newversion "${KOHA_RELEASE}+$(date +%Y%m%d%H%M)" \
-      "Patched version of koha ${KOHA_RELEASE} - Bugpatches included: ${KOHABUGS}"
-  dch --append "Local patches:"
-  for patch in $(find /patches -name *.patch); do \
-    if [ -f "$patch" ]; then \
-      dch --append "${patch##/*/}"    # strip path of patch
-    fi \
-  done
+  dch --force-distribution -D "wheezy" \
+      --newversion "${KOHA_RELEASE}" \
+      "Patched version of koha ${KOHA_RELEASE}"
   dch --release "Patched version of koha ${KOHA_RELEASE}"
 
   # Build

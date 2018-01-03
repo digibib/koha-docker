@@ -5,7 +5,7 @@
 # applys patches, runs tests and builds debian packages
 ###########################
 
-FROM debian:jessie
+FROM debian:wheezy
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
@@ -28,7 +28,6 @@ RUN echo "deb http://debian.koha-community.org/koha stable main" > /etc/apt/sour
 RUN curl -L http://debian.koha-community.org/koha/gpg.asc | apt-key add -
 
 ARG KOHA_RELEASE
-#ENV GITREF b161c80d01dacc654b1f1b811e52cae07e58e55a
 
 # Pull/Download Koha from GITREF or KOHA:RELEASE tarball, try old_releases if not existing
 ADD ./pull.sh /root/pull.sh
@@ -74,9 +73,8 @@ ENV TEST_QA      0
 
 RUN mkdir -p /debian
 WORKDIR /koha
-VOLUME ["/patches", "/debian"]
+VOLUME ["/debian"]
 
-ADD ./applypatch.sh /root/applypatch.sh
 ADD ./build.sh /root/build.sh
 
 CMD ["/root/build.sh"]

@@ -48,7 +48,7 @@ rebuild:			## Build and start Koha
 
 build_debianfiles:		## Build from local debianfiles (koha-patched/debian)
 	@echo "======= BUILDING KOHA CONTAINER FROM LOCAL DEBIANFILES ======\n"
-	$(CMD) -c 'sudo docker build --build-arg KOHA_BUILD=$(KOHA_BUILD) \
+	$(CMD) -c 'sudo docker build --build-arg KOHA_RELEASE=$(KOHA_RELEASE) \
 	-f $(KOHAPATH)/Dockerfile.debianfiles -t digibib/koha $(KOHAPATH)'
 
 run: delete 			## Start Koha container
