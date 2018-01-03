@@ -5,7 +5,7 @@
 # applys patches, runs tests and builds debian packages
 ###########################
 
-FROM debian:wheezy
+FROM debian:jessie
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
