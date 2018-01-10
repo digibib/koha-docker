@@ -76,9 +76,8 @@ REPO must point to koha code repo
 * --entrypoint ( override entry point , e.g /bin/bash for a simple shell with no services running )
 
 ```
-source docker-compose.env && \
-  KOHAPATH=.. REPO=/home/benjab/github/digibib/koha \
-  docker-compose -f common.yml -f dev.yml run --rm --volume=$REPO:/kohadev/kohaclone --publish=8081:8081 koha_dev
+source docker-compose.env && KOHAPATH=..  \
+  docker-compose -f common.yml -f dev.yml run --rm --volume=/home/to/koha/repo:/kohadev/kohaclone --publish=8081:8081 koha_dev
 ```
 
 # 4. Enter container
