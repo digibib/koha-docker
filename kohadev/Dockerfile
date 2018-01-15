@@ -33,7 +33,7 @@ ENV GITBZ_REPO   https://github.com/digibib/git-bz.git
 ENV QATOOLS_REPO https://github.com/Koha-Community/qa-test-tools.git
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    sudo apt-get install -q -y cpanminus vim git-email telnet screen wget less curl htop && \
+    sudo apt-get install -q -y cpanminus vim net-tools git-email telnet screen wget less curl htop && \
     apt-get clean
 
 RUN mkdir -p /kohadev && cd /kohadev && \
@@ -41,6 +41,7 @@ RUN mkdir -p /kohadev && cd /kohadev && \
 
 # kohadev dependencies
 RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl libwww-csrf-perl \
+    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl \
     libdbix-connector-perl make libtest-warnings-perl libplack-middleware-debug-perl \
     libsereal-encoder-perl libsereal-decoder-perl libmojolicious-plugin-openapi-perl && \
     apt-get clean
@@ -74,3 +75,5 @@ VOLUME ["/kohadev"]
 # Script and deps for checking if koha is up & ready (to be executed using docker exec)
 RUN apt-get install -y python-requests && apt-get clean
 COPY docker-wait_until_ready.py /root/wait_until_ready.py
+
+RUN ln -s /kohadev/kohadocker/files/NCIPServer/ / || true

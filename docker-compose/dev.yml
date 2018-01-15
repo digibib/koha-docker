@@ -18,6 +18,9 @@ services:
       - SYS_NICE
       - DAC_READ_SEARCH
       - MKNOD
+    volumes:
+      - "/mnt/work/deichman/Koha/:/kohadev/kohaclone"
+      - "/mnt/work/deichman/koha-docker/:/kohadev/kohadocker"
     environment:
       KOHA_HOME: "${KOHA_HOME:-/kohadev/kohaclone/}"
       KOHA_ADMINPASS: "${KOHA_ADMINPASS:-secret}"
@@ -62,6 +65,7 @@ services:
       ILLUSER: "${ILLUSER:-illuser}"
       ILLNAME: "${ILLNAME:-Interlibrary loan}"
     ports:
+      - "3000:3000"
       - "6001:6001"
       - "8081:8081"
     logging:

@@ -81,3 +81,14 @@ autorestart=true
 redirect_stderr=true
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
+
+[program:ncip_server]
+directory=/NCIPServer
+command=/usr/bin/perl -Ilib -I/kohadev/kohaclone/ bin/ncip_dancing.pl
+environment=KOHA_CONF="/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml"
+user=${KOHA_INSTANCE}-koha
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+
