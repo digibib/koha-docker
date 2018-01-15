@@ -171,9 +171,6 @@ sub itemshipped {
         my @items = $biblio->items();
         @items == 1 or die "expected only 1 entry for $biblio_id, got: ".scalar(@items);
         my $item = $items[0];
-        # To guard against barcode clashes we always set it to NULL, and
-        # instead store it as an illrequestattribute.
-        $item->barcode(undef);
         if ($request->{$message}->{ItemId}->{ItemIdentifierType} eq "Barcode") {
             my $barcode = $request->{$message}->{ItemId}->{ItemIdentifierValue};
             $saved_request->illrequestattributes->find({ type => 'ItemIdentifierType' })->value('Barcode')->store();
@@ -181,33 +178,6 @@ sub itemshipped {
             $item->itemnotes("ILL barcode: " . $barcode);
         }
         $item->store;
-        # Place a hold
-        my $canReserve = CanItemBeReserved( $saved_request->borrowernumber, $item->itemnumber );
-        if ($canReserve eq 'OK') {
-            try {
-                my $hold = Koha::Hold->new(
-                    {
-                        branchcode     => $saved_request->branchcode,       # Place hold on branchcode of ordering agency
-                        borrowernumber => $saved_request->borrowernumber,
-                        biblionumber   => $biblio->biblionumber,
-                        reservedate    => dt_from_string()->ymd,
-                        lowestPriority => 1,                                # Ill Requests always keep lowest priority
-                        reservenotes   => 'Hold placed by NNCIPP',
-                        itemnumber     => $item->itemnumber || undef,       # Itemnumber when specific barcode is selected
-                    }
-                )->store();
-                C4::Reserves::_FixPriority({ biblionumber => $hold->biblionumber });
-                $saved_request->illrequestattributes->find({ type => 'KohaReserveId' })->value($hold->id())->store();
-            } catch {
-                if ( $_->isa('DBIx::Class::Exception') ) {
-                    die "ERROR PLACING HOLD: $_->{msg}";
-                } else {
-                    die "Can not place hold, pleace check the logs.";
-                }
-            }
-        } else {
-            warn "Can not place hold: $canReserve";
-        }
         warn "Setting status to H_ITEMSHIPPED";
         $saved_request->status( 'H_ITEMSHIPPED' )->store;
     } elsif ( $saved_request->status eq 'O_ITEMRECEIVED' ) {
@@ -708,6 +678,35 @@ sub itemrequested {
     if ( $request->{$message}->{Ext} and $request->{$message}->{Ext}->{ItemNote} ) {
         $comment = $request->{$message}->{Ext}->{ItemNote};
     }
+
+    # Place a hold
+    my $canReserve = CanItemBeReserved( $illrequest->borrowernumber, $item->itemnumber );
+    if ($canReserve eq 'OK') {
+        try {
+            my $hold = Koha::Hold->new(
+                    {
+                    branchcode     => $illrequest->branchcode,       # Place hold on branchcode of ordering agency
+                    borrowernumber => $illrequest->borrowernumber,
+                    biblionumber   => $item->biblionumber,
+                    reservedate    => dt_from_string()->ymd,
+                    lowestPriority => 1,                                # Ill Requests always keep lowest priority
+                    reservenotes   => 'Hold placed by NNCIPP',
+                    itemnumber     => $item->itemnumber,       # Itemnumber when specific barcode is selected
+                    }
+                    )->store();
+            C4::Reserves::_FixPriority({ biblionumber => $item->biblionumber });
+            $illrequest->illrequestattributes->find({ type => 'KohaReserveId' })->value($hold->id())->store();
+        } catch {
+            if ( $_->isa('DBIx::Class::Exception') ) {
+                die "ERROR PLACING HOLD: $_->{msg}";
+            } else {
+                die "Can not place hold, pleace check the logs.";
+            }
+        }
+    } else {
+        warn "Can not place hold: $canReserve";
+    }
+
     my $backend_result = $illrequest->backend_create({
         borrowernumber => $patron->borrowernumber,
         biblionumber   => $biblionumber,
