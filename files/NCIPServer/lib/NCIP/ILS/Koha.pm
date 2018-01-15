@@ -680,13 +680,14 @@ sub itemrequested {
     }
 
     # Place a hold
-    my $canReserve = CanItemBeReserved( $illrequest->borrowernumber, $item->itemnumber );
+    my $canReserve = CanItemBeReserved( $patron->borrowernumber, $item->itemnumber );
+    my $hold;
     if ($canReserve eq 'OK') {
         try {
-            my $hold = Koha::Hold->new(
+            $hold = Koha::Hold->new(
                     {
-                    branchcode     => $illrequest->branchcode,       # Place hold on branchcode of ordering agency
-                    borrowernumber => $illrequest->borrowernumber,
+                    branchcode     => $patron->branchcode,       # Place hold on branchcode of ordering agency
+                    borrowernumber => $patron->borrowernumber,
                     biblionumber   => $item->biblionumber,
                     reservedate    => dt_from_string()->ymd,
                     lowestPriority => 1,                                # Ill Requests always keep lowest priority
@@ -695,7 +696,6 @@ sub itemrequested {
                     }
                     )->store();
             C4::Reserves::_FixPriority({ biblionumber => $item->biblionumber });
-            $illrequest->illrequestattributes->find({ type => 'KohaReserveId' })->value($hold->id())->store();
         } catch {
             if ( $_->isa('DBIx::Class::Exception') ) {
                 die "ERROR PLACING HOLD: $_->{msg}";
@@ -728,7 +728,7 @@ sub itemrequested {
             ItemIdentifierValue => $itemidentifiervalue,
             RequestType         => $request->{$message}->{RequestType},
             RequestScopeType    => $request->{$message}->{RequestScopeType},
-            'KohaReserveId'     => undef,
+            'KohaReserveId'     => $hold->id(),
             Comment             => $comment,
         },
         stage          => 'commit',
