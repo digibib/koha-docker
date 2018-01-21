@@ -18,9 +18,9 @@ services:
       - SYS_NICE
       - DAC_READ_SEARCH
       - MKNOD
-    volumes:
-      - "/mnt/work/deichman/Koha/:/kohadev/kohaclone"
-      - "/mnt/work/deichman/koha-docker/:/kohadev/kohadocker"
+    #volumes:
+      #- "../Koha:/kohadev/kohaclone"
+      #- "./:/kohadev/kohadocker"
     environment:
       KOHA_HOME: "${KOHA_HOME:-/kohadev/kohaclone/}"
       KOHA_ADMINPASS: "${KOHA_ADMINPASS:-secret}"
