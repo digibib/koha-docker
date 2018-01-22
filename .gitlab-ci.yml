@@ -36,10 +36,10 @@ build_debian_files:
     - rsync -av --delete $CI_PROJECT_DIR/koha-patched/debian/ $DEBIAN_REPO_INCOMING
     # unpublish old repo
     - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
-      aptly publish drop wheezy"
+      aptly publish drop wheezy" || true
     # drop old snapshot
     - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
-      aptly snapshot drop koha-patched"
+      aptly snapshot drop koha-patched" || true
     # add packages from incoming
     - ssh jenkins@static.deichman.no "sudo docker run --rm --name aptly_docker -v $DEBIAN_REPO_DIR:/aptly digibib/aptly:latest
       aptly repo include -keyring=6DDE02B2 -accept-unsigned=true -repo=deichmankoha -architectures=amd64 /aptly/incoming"
