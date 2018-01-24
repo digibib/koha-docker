@@ -71,7 +71,14 @@ envsubst < /templates/instance/log4perl.conf.tmpl > /etc/koha/sites/$KOHA_INSTAN
 envsubst < /templates/instance/zebra.passwd.tmpl > /etc/koha/sites/$KOHA_INSTANCE/zebra.passwd
 
 envsubst < /templates/instance/apache.tmpl > /etc/apache2/sites-available/$KOHA_INSTANCE.conf
-envsubst < /templates/instance/SIPconfig.xml.tmpl > /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml
+
+echo "Configuring SIPconfig.xml from templates and data from csv ..."
+door=`awk -f /templates/instance/SIPconfig.template_account_dooraccess.awk /templates/instance/SIPconfig.dooraccess.csv` ; \
+logins=`awk -f /templates/instance/SIPconfig.template_account.awk /templates/instance/SIPconfig.logins.csv` ; \
+inst=`awk -f /templates/instance/SIPconfig.template_institution.awk /templates/instance/SIPconfig.institutions.csv` ; \
+awk -v door="$door" -v logins="$logins" -v inst="$inst" \
+  '{gsub(/__TEMPLATE_DOOR_ACCOUNTS__/, door); gsub(/__TEMPLATE_LOGIN_ACCOUNTS__/, logins); gsub(/__TEMPLATE_INSTITUTIONS__/, inst) };1' \
+  /templates/instance/SIPconfig.xml.tmpl | envsubst > /etc/koha/sites/$KOHA_INSTANCE/SIPconfig.xml
 
 echo "Configuring languages ..."
 # Install languages in Koha

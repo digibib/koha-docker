@@ -1,0 +1,56 @@
+101-schema-pickupnumber-dev.patch
+
+patch Koha DBIx Schema files to add pickupnumber column in reserves and old_reserves
+
+diff --git a/kohadev/kohaclone/Koha/Schema/Result/Reserve.pm b/kohadev/kohaclone/Koha/Schema/Result/Reserve.pm
+index 4d56006..2f25a6f 100644
+--- a/kohadev/kohaclone/Koha/Schema/Result/Reserve.pm
++++ b/kohadev/kohaclone/Koha/Schema/Result/Reserve.pm
+@@ -140,6 +140,12 @@ __PACKAGE__->table("reserves");
+   is_nullable: 1
+   size: 10
+ 
++=head2 pickupnumber
++
++  data_type: 'varchar'
++  is_nullable: 1
++  size: 10
++
+ =cut
+ 
+ __PACKAGE__->add_columns(
+@@ -200,6 +206,8 @@ __PACKAGE__->add_columns(
+   },
+   "itemtype",
+   { data_type => "varchar", is_foreign_key => 1, is_nullable => 1, size => 10 },
++  "pickupnumber",
++  { data_type => "varchar", is_nullable => 1, size => 10 },
+ );
+ 
+ =head1 PRIMARY KEY
+diff --git a/kohadev/kohaclone/Koha/Schema/Result/OldReserve.pm b/kohadev/kohaclone/Koha/Schema/Result/OldReserve.pm
+index 0265e28..ad2a850 100644
+--- a/kohadev/kohaclone/Koha/Schema/Result/OldReserve.pm
++++ b/kohadev/kohaclone/Koha/Schema/Result/OldReserve.pm
+@@ -136,6 +136,12 @@ __PACKAGE__->table("old_reserves");
+   is_nullable: 1
+   size: 10
+ 
++=head2 pickupnumber
++
++  data_type: 'varchar'
++  is_nullable: 1
++  size: 10
++
+ =cut
+ 
+ __PACKAGE__->add_columns(
+@@ -186,6 +192,8 @@ __PACKAGE__->add_columns(
+   },
+   "itemtype",
+   { data_type => "varchar", is_foreign_key => 1, is_nullable => 1, size => 10 },
++  "pickupnumber",
++  { data_type => "varchar", is_nullable => 1, size => 10 },
+ );
+ 
+ =head1 PRIMARY KEY

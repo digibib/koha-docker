@@ -6,7 +6,6 @@
 
 trap "finish" INT TERM EXIT
 
-KOHAVERSION=`perl -I/usr/share/koha/lib -e "use Koha; print Koha::version;" 2> /dev/null | awk -F. '{ print $1"."$2$3$4 }'`
 CURRENTDBVERSION=`echo -n "SELECT value FROM systempreferences WHERE Variable='Version';" | koha-mysql $KOHA_INSTANCE | tail -n+2`
 RESULT=''
 EXIT_CODE=0
@@ -89,7 +88,12 @@ apply_always() {
 
   if [ -n "$ENABLE_MYSQL_SCHEMA" ]; then
     echo "Patching DBIx schema files ..."
-    for schema in /installer/schema/*.patch
+    if [[ "$KOHA_HOME" == /usr/share* ]] ; then
+        PATCHES=/installer/schema/prod-*.patch
+      else
+        PATCHES=/installer/schema/dev-*.patch
+      fi
+    for schema in $PATCHES
     do
       patch -d / -R -p1 -N --dry-run -i $schema > /dev/null # Dry run reverse to test if already applied
       rv=$?
