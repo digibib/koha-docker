@@ -54,15 +54,13 @@ unblock_juveniles_with_overdues() {
       ( SELECT b.cardnumber,bd.*, COUNT(iss.issue_id) AS issuecount
         FROM borrower_debarments bd
         JOIN borrowers b USING (borrowernumber)
-        LEFT JOIN issues iss ON (
-          iss.borrowernumber=b.borrowernumber
+        LEFT JOIN issues iss ON ( iss.borrowernumber=b.borrowernumber
               AND DATE(NOW()) > DATE_ADD(iss.date_due, INTERVAL 10 DAY)
         )
-        LEFT JOIN kemnersaker k ON (k.borrowernumber=b.borrowernumber)
-        WHERE b.categorycode IN ('B',
-                                 'SKO',
-                                 'BHG')
-          AND k.issue_id IS NULL
+        LEFT JOIN kemnersaker k ON ( k.borrowernumber=b.borrowernumber
+              AND k.status IN ('new', 'sent') )
+        WHERE b.categorycode IN ('V','B','SKO','BHG')
+          AND k.borrowernumber IS NULL
           AND bd.type = 'OVERDUES'
         GROUP BY b.cardnumber HAVING issuecount = 0
       ) niceperson USING (borrower_debarment_id);
@@ -74,14 +72,12 @@ unblock_juveniles_with_overdues() {
         LEFT JOIN borrower_debarments bd USING(borrowernumber)
         LEFT JOIN issues iss ON ( iss.borrowernumber=b.borrowernumber
               AND DATE(NOW()) > DATE_ADD(iss.date_due, INTERVAL 10 DAY) )
-        LEFT JOIN kemnersaker k ON (k.borrowernumber=b.borrowernumber)
-        WHERE b.categorycode IN ('B',
-                                 'SKO',
-                                 'BHG')
+        LEFT JOIN kemnersaker k ON ( k.borrowernumber=b.borrowernumber
+              AND k.status IN ('new', 'sent') )
+        WHERE b.categorycode IN ('V','B','SKO','BHG')
           AND bd.borrowernumber IS NULL
-          AND k.issue_id IS NULL
-          AND (b.debarred IS NOT NULL
-               OR b.debarred != "")
+          AND k.borrowernumber IS NULL
+          AND b.debarred IS NOT NULL
           AND b.debarredcomment LIKE 'OVERDUES_PROCESS%'
         GROUP BY b.cardnumber HAVING issuecount = 0
       ) niceperson USING (borrowernumber)
