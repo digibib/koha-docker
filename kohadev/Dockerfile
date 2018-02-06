@@ -4,11 +4,11 @@
 # USES a docker image built from GITREF from koha-salt-docker
 #######
 
-FROM digibib/koha:844259af2eebd935b6b6fd6e14fd18dd5d0b9304
+FROM digibib/koha:cf3164d8ccce3cdb4a078b9b70160ce30cb9c5b2
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
-ENV REFRESHED_AT 2018-01-05
+ENV REFRESHED_AT 2018-01-23
 
 #########################
 # KOHA INSTANCE VARIABLES
@@ -41,7 +41,7 @@ RUN mkdir -p /kohadev && cd /kohadev && \
 
 # kohadev dependencies
 RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl libwww-csrf-perl \
-    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl \
+    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl libnet-cups-perl \
     libdbix-connector-perl make libtest-warnings-perl libplack-middleware-debug-perl \
     libsereal-encoder-perl libsereal-decoder-perl libmojolicious-plugin-openapi-perl && \
     apt-get clean

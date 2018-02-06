@@ -56,7 +56,7 @@ RUN apt-get install -y python-requests && apt-get clean
 # Missing perl dependencies
 RUN apt-get update && apt-get install -y \
     libhtml-strip-perl libipc-run3-perl paps \
-    libyaml-libyaml-perl && \
+    libyaml-libyaml-perl libnet-cups-perl && \
     apt-get clean
 
 # Install Mojolicious openapi plugin from koha unstable until it is released
