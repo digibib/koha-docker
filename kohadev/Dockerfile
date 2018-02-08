@@ -41,7 +41,7 @@ RUN mkdir -p /kohadev && cd /kohadev && \
 
 # kohadev dependencies
 RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl libwww-csrf-perl \
-    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl libnet-cups-perl \
+    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl \
     libdbix-connector-perl make libtest-warnings-perl libplack-middleware-debug-perl \
     libsereal-encoder-perl libsereal-decoder-perl libmojolicious-plugin-openapi-perl && \
     apt-get clean
