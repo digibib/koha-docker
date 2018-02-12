@@ -42,6 +42,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 40 23 * * *   root koha-foreach --enabled /cronjobs/anonymous_stats.sh --days 3
 55 23 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/batch_anonymise.pl --days 3 -v
 58 23 * * *   root koha-foreach --enabled /usr/share/koha/bin/cronjobs/anonymize_last_borrower.sh --days 3 -v
+# 59 23 * * * root koha-foreach --enabled /usr/share/koha/bin/cronjobs/delete_borrower_messages.sh --days 30 -v
 
 ##############
 # Long overdue - 02:00 every night
