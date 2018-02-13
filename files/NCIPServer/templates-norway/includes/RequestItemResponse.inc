@@ -13,15 +13,26 @@
 			<ns1:AgencyId>[% data.RequestId.AgencyId %]</ns1:AgencyId>
 			<ns1:RequestIdentifierValue>[% data.RequestId.RequestIdentifierValue %]</ns1:RequestIdentifierValue>
 		</ns1:RequestId>
-		<ns1:ItemId>
-			<ns1:ItemIdentifierType>[% data.ItemId.ItemIdentifierType %]</ns1:ItemIdentifierType>
-			<ns1:ItemIdentifierValue>[% data.ItemId.ItemIdentifierValue %]</ns1:ItemIdentifierValue>
-		</ns1:ItemId>
+		[% IF data.ItemId %]
+			<ns1:ItemId>
+				<ns1:ItemIdentifierType>[% data.ItemId.ItemIdentifierType %]</ns1:ItemIdentifierType>
+				<ns1:ItemIdentifierValue>[% data.ItemId.ItemIdentifierValue %]</ns1:ItemIdentifierValue>
+			</ns1:ItemId>
+		[% END %]
+		[% IF data.BibliographicId %]
+			<ns1:BibliographicId>
+				<ns1:BibliographicRecordId>
+					<ns1:BibliographicRecordIdentifierCode>[% data.BibliographicId.BibliographicRecordIdentifierCode %]</ns1:BibliographicRecordIdentifierCode>
+					<ns1:BibliographicRecordIdentifier>[% data.BibliographicId.BibliographicRecordIdentifier %]</ns1:BibliographicRecordIdentifier>
+				</ns1:BibliographicRecordId>
+			</ns1:BibliographicId>
+		[% END %]
 		<ns1:UserId>
 			<ns1:UserIdentifierValue>[% data.UserId.UserIdentifierValue %]</ns1:UserIdentifierValue>
 		</ns1:UserId>
 		<ns1:RequestType>[% data.RequestType %]</ns1:RequestType>
 		<ns1:RequestScopeType>Title</ns1:RequestScopeType>
+		[% IF data.ItemOptionalFields %]
 		<ns1:ItemOptionalFields>
 			<ns1:BibliographicDescription>
 				<ns1:Author>[% data.ItemOptionalFields.Author | xml %]</ns1:Author>
@@ -35,6 +46,7 @@
 				<ns1:MediumType>[% data.ItemOptionalFields.MediumType | xml %]</ns1:MediumType>
 			</ns1:BibliographicDescription>
 		</ns1:ItemOptionalFields>
+		[% END %]
 	</ns1:RequestItemResponse>
 </ns1:NCIPMessage>
 

@@ -477,12 +477,6 @@ sub requestitem {
             AgencyId => $request->{$message}->{RequestId}->{AgencyId},
             RequestIdentifierValue => $request->{$message}->{RequestId}->{RequestIdentifierValue},
         }),
-        ItemId => NCIP::Item::Id->new(
-            {
-                ItemIdentifierValue => $biblionumber,
-                ItemIdentifierType => 'OwnerLocalRecordID',
-            }
-        ),
         UserId => NCIP::User::Id->new(
             {
                 UserIdentifierValue => $request->{$message}->{UserId}->{UserIdentifierValue},
@@ -506,19 +500,22 @@ sub requestitem {
         }
     };
 
-        # Look for UserElements requested and add it to the response:
-        # my $elements = $request->{$message}->{UserElementType};
-        # if ($elements) {
-        #     $elements = [$elements] unless (ref $elements eq 'ARRAY');
-        #     my $optionalfields = $self->handle_user_elements($user, $elements);
-        #     $data->{UserOptionalFields} = $optionalfields;
-        # }
-        # $elements = $request->{$message}->{ItemElementType};
-        # if ($elements) {
-        #     $elements = [$elements] unless (ref($elements) eq 'ARRAY');
-        #     my $optionalfields = $self->handle_item_elements($copy_details->{copy}, $elements);
-        #     $data->{ItemOptionalFields} = $optionalfields;
-        # }
+    # Add proper Item Identifier in response
+    if (keys %{$request->{$message}->{ItemId}}) {
+        $data->{ItemId} = NCIP::Item::Id->new(
+            {
+                ItemIdentifierType => $itemidentifiertype,
+                ItemIdentifierValue => $itemidentifiervalue,
+            }
+        );
+    } elsif (keys %{$request->{$message}->{BibliographicId}}) {
+        $data->{BibliographicId} = NCIP::Item::BibliographicRecordId->new(
+            {
+                BibliographicRecordIdentifierCode => $itemidentifiertype,
+                BibliographicRecordIdentifier => $itemidentifiervalue,
+            }
+        );
+    }
 
     $response->data($data);
     return $response;
@@ -733,7 +730,6 @@ sub itemrequested {
         },
         stage          => 'commit',
     });
-    warn Dumper $backend_result;
 
     # Data for ItemRequestedResponse
     my $data = {
@@ -741,9 +737,35 @@ sub itemrequested {
         ToAgencyId   => $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId},
         FromAgencyId => $request->{$message}->{InitiationHeader}->{ToAgencyId}->{AgencyId},
         UserId       => $request->{$message}->{UserId}->{UserIdentifierValue},
-        ItemId       => $request->{$message}->{ItemId}->{ItemIdentifierValue},
+        ItemOptionalFields => NCIP::Item::BibliographicDescription->new(
+            {
+                Author             => $bibdata->{Author},
+                PlaceOfPublication => $bibdata->{PlaceOfPublication},
+                PublicationDate    => $bibdata->{PublicationDate},
+                Publisher          => $bibdata->{Publisher},
+                Title              => $bibdata->{Title},
+                Language           => $bibdata->{Language},
+                MediumType         => $bibdata->{MediumType},
+            }
+        ),
     };
 
+    # Add proper Item Identifier in response
+    if (keys %{$request->{$message}->{ItemId}}) {
+        $data->{ItemId} = NCIP::Item::Id->new(
+            {
+                ItemIdentifierType => $itemidentifiertype,
+                ItemIdentifierValue => $itemidentifiervalue,
+            }
+        );
+    } elsif (keys %{$request->{$message}->{BibliographicId}}) {
+        $data->{BibliographicId} = NCIP::Item::BibliographicRecordId->new(
+            {
+                BibliographicRecordIdentifierCode => $itemidentifiertype,
+                BibliographicRecordIdentifier => $itemidentifiervalue,
+            }
+        );
+    }
     $response->data($data);
     return $response;
 

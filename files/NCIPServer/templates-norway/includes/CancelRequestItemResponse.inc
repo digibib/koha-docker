@@ -20,10 +20,6 @@
             <ns1:AgencyId>[% data.RequestId.AgencyId | xml %]</ns1:AgencyId>
             <ns1:RequestIdentifierValue>[% data.RequestId.RequestIdentifierValue | xml %]</ns1:RequestIdentifierValue>
         </ns1:RequestId>
-        <ns1:ItemId>
-            <ns1:ItemIdentifierType>[%  data.ItemId.ItemIdentifierType  | xml %]</ns1:ItemIdentifierType>
-            <ns1:ItemIdentifierValue>[% data.ItemId.ItemIdentifierValue | xml %]</ns1:ItemIdentifierValue>
-        </ns1:ItemId>
         <ns1:UserId>
             <ns1:UserIdentifierValue>[% data.UserId.UserIdentifierValue %]</ns1:UserIdentifierValue>
         </ns1:UserId>
