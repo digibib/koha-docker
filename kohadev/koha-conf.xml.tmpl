@@ -329,6 +329,23 @@
     <font type="HBO">/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-BoldOblique.ttf</font>
  </ttf>
 
+ <!-- Path to the config file for SMS::Send -->
+ <sms_send_config>/etc/koha/sms_send/</sms_send_config>
+
+ <!-- Configuration for Plack -->
+ <!--
+   <plack_max_requests>50</plack_max_requests>
+   <plack_workers>2</plack_workers>
+-->
+
+<!-- Configuration for Elasticsearch -->
+<!--
+ <elasticsearch>
+     <server>localhost:9200</server>
+     <index_name>koha_$KOHA_INSTANCE</index_name>
+ </elasticsearch>
+-->
+
  <interlibrary_loans>
      <!-- Path to where Illbackends are located on the system
           - This setting should normally not be touched -->
