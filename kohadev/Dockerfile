@@ -40,10 +40,10 @@ RUN mkdir -p /kohadev && cd /kohadev && \
     git clone --depth=1 $KOHA_REPO kohaclone
 
 # kohadev dependencies
-RUN apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl libwww-csrf-perl \
+RUN apt-get update && apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl libwww-csrf-perl \
     libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl \
     libdbix-connector-perl make libtest-warnings-perl libplack-middleware-debug-perl \
-    libsereal-encoder-perl libsereal-decoder-perl libmojolicious-plugin-openapi-perl && \
+    libsereal-encoder-perl libsereal-decoder-perl libmojolicious-plugin-openapi-perl \
     libsearch-elasticsearch-perl && \
     apt-get clean
 
