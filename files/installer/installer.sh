@@ -115,6 +115,18 @@ apply_always() {
     echo "Configuring Interlibrary Loan Module Settings ..."
     echo -n "UPDATE systempreferences SET value = \"$ILLENABLE\" WHERE variable = 'ILLModule';" | koha-mysql $KOHA_INSTANCE
     echo -n "UPDATE systempreferences SET value = \"$ILLUSER\" WHERE variable = 'ILLISIL';" | koha-mysql $KOHA_INSTANCE
+    echo -n "ALTER TABLE illrequests MODIFY orderid VARCHAR(265) DEFAULT NULL;" | koha-mysql $KOHA_INSTANCE
+    echo "Fixing illrequestattributes index..."
+    cat <<-EOF | koha-mysql $KOHA_INSTANCE
+    SELECT IF (
+      EXISTS (
+        SELECT COUNT(1) indexExists FROM INFORMATION_SCHEMA.STATISTICS
+        WHERE table_schema=DATABASE() AND table_name='illrequestattributes' AND index_name='illrequestattributes_type_value'
+      ),'SELECT ''index exists'' ;','CREATE INDEX illrequestattributes_type_value ON illrequestattributes(type,value(32));') into @a;
+    PREPARE stmt1 FROM @a;
+    EXECUTE stmt1;
+    DEALLOCATE PREPARE stmt1;
+EOF
     EXIT_CODE=$?
   fi
 }
