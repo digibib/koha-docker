@@ -69,7 +69,7 @@ sub INSERT_tag {
 }
 
 my $query = "SELECT * FROM biblio_metadata";
-$query .= " WHERE timestamp > NOW() - INTERVAL $age SECOND";
+$age and $query .= " WHERE timestamp > NOW() - INTERVAL $age SECOND";
 $dbg and print STDERR "$query\n";
 
 my $sth = $dbh->prepare($query);
