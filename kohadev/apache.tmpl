@@ -35,6 +35,8 @@
   RewriteRule ^/bib/([^\/]*)/?$ /cgi-bin/koha/opac-detail\.pl?bib=$1 [PT]
   RewriteRule ^/isbn/([^\/]*)/?$ /search?q=isbn:$1 [PT]
   RewriteRule ^/issn/([^\/]*)/?$ /search?q=issn:$1 [PT]
+  RewriteRule ^(.*)_(.*).js$ $1.js [N,L]
+  RewriteRule ^(.*)_(.*).css$ $1.css [N,L]
 
    ErrorLog    /var/log/koha/${KOHA_INSTANCE}/opac-error.log
 #  TransferLog /var/log/koha/${KOHA_INSTANCE}/opac-access.log
@@ -106,11 +108,11 @@
   </IfModule>
 
   <IfModule mod_expires.c>
-      ExpiresActive on
-      ExpiresByType text/css "access plus 12 hours"
-      ExpiresByType application/javascript "access plus 12 hours"
-      ExpiresByType image/png "access plus 12 hours"
-      ExpiresByType image/gif "access plus 12 hours"
+    ExpiresActive on
+    ExpiresByType text/css "access plus 60 days"
+    ExpiresByType application/javascript "access plus 60 days"
+    ExpiresByType image/png "access plus 12 hours"
+    ExpiresByType image/gif "access plus 12 hours"
   </IfModule>
 
   <IfModule mod_headers.c>
@@ -142,6 +144,8 @@
   RewriteRule ^/bib/([^\/]*)/?$ /cgi-bin/koha/detail\.pl?bib=$1 [PT]
   RewriteRule ^/isbn/([^\/]*)/?$ /search?q=isbn:$1 [PT]
   RewriteRule ^/issn/([^\/]*)/?$ /search?q=issn:$1 [PT]
+  RewriteRule ^(.*)_(.*).js$ $1.js [N,L]
+  RewriteRule ^(.*)_(.*).css$ $1.css [N,L]
 
    ErrorLog    /var/log/koha/${KOHA_INSTANCE}/intranet-error.log
 #  TransferLog /var/log/koha/${KOHA_INSTANCE}/intranet-access.log
