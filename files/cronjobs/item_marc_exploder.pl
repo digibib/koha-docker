@@ -48,13 +48,21 @@ GetOptions(
 
 my $expire = $ttl ? time() + $ttl : 0;
 
-my $dbh = DBI->connect(
-    "dbi:$driver:$db".($host?";hostname=$host":""), $user, $pass, {
-        RaiseError => 1,
-        mysql_enable_utf8mb4 => 1,
-        mysql_enable_utf8 => 1,
-    },
-);
+my $dbh;
+if ($host) {
+    $dbh = DBI->connect(
+        "dbi:$driver:$db".($host?";hostname=$host":""), $user, $pass, {
+            RaiseError => 1,
+            mysql_enable_utf8mb4 => 1,
+            mysql_enable_utf8 => 1,
+        },
+    );
+} else {
+    eval 'use C4::Context;';
+    $dbh = C4::Context->dbh;
+    #$dbh->{mysql_enable_utf8mb4}=1;
+    #$dbh->{mysql_enable_utf8}=1;
+}
 #$dbh->{mysql_use_result} = 1; # force using data while it's coming, instead of storing the whole results (WARN: this makes sth non-reentrant)
 
 sub DELETE_tags {
