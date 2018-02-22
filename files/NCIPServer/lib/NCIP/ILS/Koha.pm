@@ -133,6 +133,16 @@ changes from O_ITEMRECEIVED to O_RETURNED. This is NNCIPP call number 6.
 
 =cut
 
+# Ideally we should trust RequestId in message, but RequestId->AgencyId might be missing or wrong...
+sub _getRequestByOrderId {
+    my $msg = shift;
+    my $req;
+    $req = Koha::Illrequests->find({ orderid => $msg->{RequestId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} });
+    $req or Koha::Illrequests->find({ orderid => $msg->{InitiationHeader}->{FromAgencyId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} });
+    $req or Koha::Illrequests->find({ orderid => $msg->{InitiationHeader}->{ToAgencyId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} });
+    return $req;
+}
+
 sub itemshipped {
 
     my $self = shift;
@@ -147,15 +157,14 @@ sub itemshipped {
 
     # Change the status of the request
     # Find the request
-    my $request_id = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
-    my $saved_request = Koha::Illrequests->find({ orderid => $request_id });
+    my $saved_request = _getRequestByOrderId($request->{$message});
 
     unless ( $saved_request ) {
         my $problem = NCIP::Problem->new({
             ProblemType    => 'Unknown Request ID',
-            ProblemDetail  => "Request ID $request_id not found",
+            ProblemDetail  => "Request ID with value " . $request->{$message}->{RequestId}->{RequestIdentifierValue} . "not found",
             ProblemElement => 'RequestId',
-            ProblemValue   => $request_id,
+            ProblemValue   => $request->{$message}->{RequestId}->{RequestIdentifierValue},
         });
         $response->problem( $problem );
         return $response;
@@ -221,10 +230,8 @@ sub itemreceived {
 
     # Change the status of the request
     # Find the request
-    my $Illrequests = Koha::Illrequests->new;
-    my $saved_request = $Illrequests->find({
-        'orderid' => $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue},
-    });
+    my $saved_request = _getRequestByOrderId($request->{$message});
+
     # Check if we are the Owner Library or not
     if ( $saved_request->status eq 'O_ITEMSHIPPED' ) {
         # We are the Owner Library, so this is #5
@@ -384,16 +391,11 @@ sub requestitem {
         return $response;
     }
 
-    # Check if the order is allready stored:
-    my $orderid = $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue};
-    my $existing_illrequest = Koha::Illrequests->find( { orderid => $orderid} );
+    # Check if the order is already stored:
+    my $saved_request = _getRequestByOrderId($request->{$message});
     my $comment;
 
-    if ($existing_illrequest) {
-        # no-op:
-        # The illreqeust is allready stored and does not need to be saved;
-        # continue with normal response
-    } else {
+    unless ($saved_request) {
         # Save the request
         my $illrequest = Koha::Illrequest->new;
         $illrequest->load_backend( 'NNCIPP' );
@@ -859,15 +861,6 @@ sub renewitem {
     my $datedue = AddRenewal( $patron->borrowernumber, $itemdata->{'itemnumber'} );
     if ( $datedue ) {
 
-        # The renewal was successfull, change the status of the request?
-
-        # Find the request - nah, we don't really need it for anything?
-        # my $Illrequests = Koha::Illrequests->new;
-        # my $saved_request = $Illrequests->find({
-        #     'orderid' => $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue},
-        # });
-        # $saved_request->status( 'O_ITEMRECEIVED' )->store;
-
         # Check the number of remaning renewals
         my ( $renewcount, $renewsallowed, $renewsleft ) = GetRenewCount( $patron->borrowernumber, $itemdata->{'itemnumber'} );
         # Send the response
@@ -943,13 +936,8 @@ sub cancelrequestitem {
     $response->header($self->make_header($request));
 
     # Find the request
-    my $Illrequests = Koha::Illrequests->new;
-    my $saved_request = $Illrequests->find({
-        'orderid' => $request->{$message}->{RequestId}->{AgencyId} . ':' . $request->{$message}->{RequestId}->{RequestIdentifierValue},
-    });
+    my $saved_request = _getRequestByOrderId($request->{$message});
 
-    # Unknown request
-    # FIXME This should probably be a sub, called from all the NCIP-verb subs
     unless ( $saved_request ) {
         my $problem = NCIP::Problem->new({
             ProblemType    => 'RequestItem can not be cancelled',
