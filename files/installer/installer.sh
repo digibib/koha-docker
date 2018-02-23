@@ -192,6 +192,13 @@ EOF
       EXIT_CODE=$?
     fi
   fi
+
+  VERSION=17.1102000
+  if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
+    echo "Inserting new borrower attribute type"
+    echo -n "INSERT IGNORE INTO borrower_attribute_types (code,description,repeatable,unique_id,class) VALUES ('hist_cons', 'Samtykke lagre historikk', 1, 0, 'history_consent');" | koha-mysql $KOHA_INSTANCE
+    EXIT_CODE=$?
+  fi
 }
 
 run_db_install_or_update
