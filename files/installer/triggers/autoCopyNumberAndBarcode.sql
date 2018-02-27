@@ -6,8 +6,12 @@ DELIMITER $$
 CREATE TRIGGER autoCopyNumberAndBarcode BEFORE INSERT ON items
 FOR EACH ROW
 BEGIN
-  SET NEW.copynumber = (SELECT COALESCE((MAX(CAST(copynumber AS SIGNED)) + 1), 1) FROM items WHERE biblionumber = NEW.biblionumber);
-  SET NEW.barcode = (SELECT COALESCE(MAX(CAST(barcode AS UNSIGNED)) + 1, 1) FROM items);
+    IF (NEW.copynumber IS NULL) THEN
+        SET NEW.copynumber = (SELECT COALESCE((MAX(CAST(copynumber AS SIGNED)) + 1), 1) FROM items WHERE biblionumber = NEW.biblionumber);
+    END IF;
+    IF (NEW.barcode IS NULL) THEN
+        SET NEW.barcode = (SELECT COALESCE(MAX(CAST(barcode AS UNSIGNED)) + 1, 1) FROM items);
+    END IF;
 END;
 $$
 DELIMITER ;
