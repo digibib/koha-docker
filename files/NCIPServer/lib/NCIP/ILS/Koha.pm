@@ -138,8 +138,8 @@ sub _getRequestByOrderId {
     my $msg = shift;
     my $req;
     $req = Koha::Illrequests->find({ orderid => $msg->{RequestId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} });
-    $req or Koha::Illrequests->find({ orderid => $msg->{InitiationHeader}->{FromAgencyId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} });
-    $req or Koha::Illrequests->find({ orderid => $msg->{InitiationHeader}->{ToAgencyId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} });
+    $req = Koha::Illrequests->find({ orderid => $msg->{InitiationHeader}->{FromAgencyId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} }) unless $req;
+    $req = Koha::Illrequests->find({ orderid => $msg->{InitiationHeader}->{ToAgencyId}->{AgencyId} . ":" . $msg->{RequestId}->{RequestIdentifierValue} }) unless $req;
     return $req;
 }
 
