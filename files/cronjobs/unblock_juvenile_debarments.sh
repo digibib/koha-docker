@@ -13,7 +13,7 @@ unblock_juveniles_with_kemnersak() {
         FROM borrower_debarments bd
         JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
         JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
-        JOIN issues iss USING (issue_id)
+        LEFT JOIN issues iss USING (issue_id)
         WHERE b.categorycode IN ('B','SKO','BHG')
           AND bd.type = 'MANUAL'
         GROUP BY b.cardnumber HAVING issuecount = 0
@@ -29,7 +29,7 @@ unblock_juveniles_with_kemnersak() {
         FROM borrower_debarments bd
         JOIN borrowers b ON (b.borrowernumber=bd.borrowernumber)
         JOIN kemnersaker k ON (k.borrowernumber=bd.borrowernumber)
-        JOIN issues iss USING (issue_id)
+        LEFT JOIN issues iss USING (issue_id)
         WHERE b.categorycode IN ('B','SKO','BHG')
           AND bd.type = 'MANUAL'
         GROUP BY b.cardnumber HAVING issuecount = 0
