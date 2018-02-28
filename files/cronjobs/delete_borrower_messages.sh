@@ -12,9 +12,9 @@ delete_messages() {
     local DAYS=$1
     echo "deleting messages sent to borrowers older than $DAYS days ..."
     QUERY="DELETE from message_queue
-            WHERE (TO_DAYS(now()) - TO_DAYS(time_queued)) >= $DAYS AND status='sent'"
+            WHERE (TO_DAYS(now()) - TO_DAYS(time_queued)) >= $DAYS AND status in ('sent', 'failed')"
     RES=`echo $QUERY | koha-mysql $(koha-list --enabled) -vv`
-    echo "$RES"  
+    echo "$RES"
 }
 
 case "$1" in
