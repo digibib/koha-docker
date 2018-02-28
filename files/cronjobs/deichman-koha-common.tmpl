@@ -115,7 +115,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Explode Marc XML records into biblio_marc_tags
 ####################################
 # every minute, partial
-* 3-24 * * * root koha-foreach --enabled perl /cronjobs/item_marc_exploder.pl --age=70 --ttl=40
+# TODO fix the broken cron expression before enabling this:
+#* 3-24 * * * root koha-foreach --enabled perl /cronjobs/item_marc_exploder.pl --age=70 --ttl=40
 
 # every day, full
 7 0 * * * root koha-foreach --enabled perl /cronjobs/item_marc_exploder.pl --ttl=7200
