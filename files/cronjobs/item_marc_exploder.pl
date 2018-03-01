@@ -79,6 +79,9 @@ sub INSERT_tag {
 
 my $query = "SELECT * FROM biblio_metadata";
 $age and $query .= " WHERE timestamp > NOW() - INTERVAL $age SECOND";
+$query .= " UNION ALL SELECT * FROM deletedbiblio_metadata";
+$age and $query .= " WHERE timestamp > NOW() - INTERVAL $age SECOND";
+
 $dbg and print STDERR "$query\n";
 
 my $sth = $dbh->prepare($query);
