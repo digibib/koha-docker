@@ -4,11 +4,11 @@
 # USES a docker image built from GITREF from koha-salt-docker
 #######
 
-FROM digibib/koha:cf3164d8ccce3cdb4a078b9b70160ce30cb9c5b2
+FROM digibib/koha:c2735642135d7df4d5d14e01e6f9023055d294a0
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
-ENV REFRESHED_AT 2018-01-23
+ENV REFRESHED_AT 2018-03-05
 
 #########################
 # KOHA INSTANCE VARIABLES
