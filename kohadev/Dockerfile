@@ -76,5 +76,3 @@ VOLUME ["/kohadev"]
 # Script and deps for checking if koha is up & ready (to be executed using docker exec)
 RUN apt-get install -y python-requests && apt-get clean
 COPY docker-wait_until_ready.py /root/wait_until_ready.py
-
-RUN ln -s /kohadev/kohadocker/files/NCIPServer/ / || true
