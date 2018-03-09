@@ -36,9 +36,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     sudo apt-get install -q -y cpanminus vim net-tools git-email telnet screen wget less curl htop && \
     apt-get clean
 
-RUN mkdir -p /kohadev && cd /kohadev && \
-    git clone --depth=1 $KOHA_REPO kohaclone
-
 # kohadev dependencies
 RUN apt-get update && apt-get install -y libtemplate-plugin-json-escape-perl libtext-bidi-perl libwww-csrf-perl \
     libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl \
@@ -47,12 +44,19 @@ RUN apt-get update && apt-get install -y libtemplate-plugin-json-escape-perl lib
     libsearch-elasticsearch-perl && \
     apt-get clean
 
-# Git bz
+# Local repo and clone
+USER $KOHA_INSTANCE-koha
+
+RUN mkdir -p /kohadev && cd /kohadev && \
+    git clone --depth=1 $KOHA_REPO kohaclone
+
 # http://wiki.koha-community.org/wiki/Git_bz_configuration
 RUN cd /kohadev && \
     git clone $GITBZ_REPO gitbz && \
     cd gitbz && git checkout -b fishsoup origin/fishsoup && \
     ln -s /kohadev/gitbz/git-bz /usr/local/bin/git-bz
+
+USER root
 
 # Global dev settings
 ADD koha-common.tmpl /etc/default/koha-common
@@ -63,7 +67,6 @@ ADD supervisord.conf.tmpl /templates/global/supervisord.conf.tmpl
 ADD koha-conf.xml.tmpl /templates/instance/koha-conf.xml.tmpl
 ADD apache.tmpl /templates/instance/apache.tmpl
 
-ENV HOME /root
 WORKDIR /root
 
 COPY docker-entrypoint.sh /root/entrypoint.sh
