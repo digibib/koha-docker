@@ -44,19 +44,12 @@ RUN apt-get update && apt-get install -y libtemplate-plugin-json-escape-perl lib
     libsearch-elasticsearch-perl && \
     apt-get clean
 
-# Local repo and clone
-USER $KOHA_INSTANCE-koha
-
 RUN mkdir -p /kohadev && cd /kohadev && \
-    git clone --depth=1 $KOHA_REPO kohaclone
-
-# http://wiki.koha-community.org/wiki/Git_bz_configuration
-RUN cd /kohadev && \
+    git clone --depth=1 $KOHA_REPO kohaclone && \
     git clone $GITBZ_REPO gitbz && \
     cd gitbz && git checkout -b fishsoup origin/fishsoup && \
     ln -s /kohadev/gitbz/git-bz /usr/local/bin/git-bz
 
-USER root
 
 # Global dev settings
 ADD koha-common.tmpl /etc/default/koha-common
