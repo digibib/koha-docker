@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y libtemplate-plugin-json-escape-perl lib
     libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl \
     libdbix-connector-perl make libtest-warnings-perl libplack-middleware-debug-perl \
     libsereal-encoder-perl libsereal-decoder-perl libmojolicious-plugin-openapi-perl \
-    libsearch-elasticsearch-perl && \
+    libsearch-elasticsearch-perl libcatmandu-marc-perl libcatmandu-store-elasticsearch-perl && \
     apt-get clean
 
 RUN mkdir -p /kohadev && cd /kohadev && \
