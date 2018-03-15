@@ -592,6 +592,12 @@ sub itemrequested {
         return $response;
     }
 
+    # If the request is coming from our own library, we don't want to create a new biblio and item, but
+    # simply place a hold on our allready existing biblio
+    if ($ordered_from eq C4::Context->preference('ILLISIL')) {
+        return $self->_localitemrequested($request, $response);
+    }
+
     # Create a minimal MARC record based on ItemOptionalFields
     # FIXME This could be done in a more elegant way
     my $bibdata = $request->{$message}->{ItemOptionalFields}->{BibliographicDescription};
@@ -774,6 +780,81 @@ sub itemrequested {
     # This should trigger an immediate RequestItem back to the Owner Library
     # But the server should probably not be the one sending it...
 
+}
+
+
+sub _localitemrequested {
+    my $self = shift;
+    my $request = shift;
+    my $response = shift;
+    my $message = $self->parse_request_type($request);
+
+    my $itemidentifiertype = $request->{$message}->{ItemId}->{ItemIdentifierType} //
+        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifierCode};
+    my $itemidentifiervalue = $request->{$message}->{ItemId}->{ItemIdentifierValue} //
+        $request->{$message}->{BibliographicId}->{BibliographicRecordId}->{BibliographicRecordIdentifier};
+
+    my $bibdata = $request->{$message}->{ItemOptionalFields}->{BibliographicDescription};
+
+    # Get the patron that the request is meant for
+    my $cardnumber = $request->{$message}->{UserId}->{UserIdentifierValue};
+    my $patron = Koha::Patrons->find({ cardnumber => $cardnumber });
+
+    # Place a hold
+    my $canReserve = CanBookBeReserved( $patron->borrowernumber, $itemidentifiervalue );
+    my $hold;
+    if ($canReserve eq 'OK') {
+        try {
+            $hold = Koha::Hold->new(
+                    {
+                    branchcode     => $patron->branchcode,
+                    borrowernumber => $patron->borrowernumber,
+                    biblionumber   => $itemidentifiervalue,
+                    reservedate    => dt_from_string()->ymd,
+                    reservenotes   => 'Hold placed by NNCIPP',
+                    }
+                    )->store();
+            C4::Reserves::_FixPriority({ biblionumber => $itemidentifiervalue });
+        } catch {
+            if ( $_->isa('DBIx::Class::Exception') ) {
+                die "ERROR PLACING HOLD: $_->{msg}";
+            } else {
+                die "Can not place hold, pleace check the logs.";
+            }
+        }
+    } else {
+        warn "Can not place hold: $canReserve";
+    }
+
+    # Data for ItemRequestedResponse
+    my $data = {
+        RequestType  => $message,
+        ToAgencyId   => $request->{$message}->{InitiationHeader}->{FromAgencyId}->{AgencyId},
+        FromAgencyId => $request->{$message}->{InitiationHeader}->{ToAgencyId}->{AgencyId},
+        UserId       => $request->{$message}->{UserId}->{UserIdentifierValue},
+        ItemOptionalFields => NCIP::Item::BibliographicDescription->new(
+            {
+                Author             => $bibdata->{Author},
+                PlaceOfPublication => $bibdata->{PlaceOfPublication},
+                PublicationDate    => $bibdata->{PublicationDate},
+                Publisher          => $bibdata->{Publisher},
+                Title              => $bibdata->{Title},
+                Language           => $bibdata->{Language},
+                MediumType         => $bibdata->{MediumType},
+            }
+        ),
+    };
+
+
+    $data->{BibliographicId} = NCIP::Item::BibliographicRecordId->new(
+        {
+            BibliographicRecordIdentifierCode => $itemidentifiertype,
+            BibliographicRecordIdentifier => $itemidentifiervalue,
+        }
+    );
+
+    $response->data($data);
+    return $response;
 }
 
 =head2 renewitem
