@@ -119,3 +119,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # every day, full
 7 0 * * * root koha-foreach --enabled perl /cronjobs/item_marc_exploder.pl --ttl=7200
+
+
+#########################
+# Cleanup ILL mess
+##################################
+# every morning at 6
+6 0 * * * root koha-foreach /cronjobs/illrequests_cleanup.sh
