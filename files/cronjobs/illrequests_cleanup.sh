@@ -2,7 +2,7 @@
 # /cronjobs/illrequests_cleanup.sh
 #
 # This cronjob completes illrequests when the item is not checked out, but
-# illrequests still shows status O_ITEMSHIPPED or O_ITEMRETURNED.
+# illrequests still shows status O_ITEMSHIPPED or O_RETURNED.
 
 echo "Forcing illrequests with status O_ITEMSHIPPED to DONE if item is not checked out"
 QUERY="UPDATE illrequests i
@@ -10,7 +10,7 @@ QUERY="UPDATE illrequests i
          JOIN items ON ia.value=items.barcode AND items.onloan IS NULL
           SET i.status='DONE',
               i.notesstaff=CONCAT('set to DONE by cronjob at ', now())
-        WHERE i.status='O_ITEMSHIPPED' OR i.status='O_ITEMRETURNED'"
+        WHERE i.status='O_ITEMSHIPPED' OR i.status='O_RETURNED'"
 RES=`echo $QUERY | koha-mysql $(koha-list --enabled) -vv`
 echo "$RES"
 
