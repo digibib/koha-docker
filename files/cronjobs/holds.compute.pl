@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 use strict;
 use warnings;
 $|++;
@@ -17,7 +17,7 @@ BEGIN {
     eval { require "$FindBin::Bin/usr/share/koha/bin/kohalib.pl" };
 }
 use C4::Context;
-alarm(280);  
+alarm(280);
 
 my $output = $ARGV[0] or die("missing filename");
 
@@ -92,7 +92,7 @@ sub compute {
     };
 
     my $oldest = 0;
-    my @holds = SELECT "biblionumber, reserve_id, branchcode, itemnumber, found, priority, reservedate, suspend FROM reserves WHERE biblionumber = ?"
+    my @holds = SELECT "biblionumber, reserve_id, branchcode, itemnumber, found, priority, reservedate FROM reserves WHERE biblionumber = ? AND suspend=0"
     => [$bnum] => sub {
         my $age = int((time()-str2time($_{reservedate}))/86400);
         $oldest = $age if $age > $oldest;
@@ -109,7 +109,7 @@ sub compute {
         sort_author => $meta{loc_location},
         biblionumber => $biblio{biblionumber},
         pub_year => $meta{pub_year},
-        title => $biblio{title},    
+        title => $biblio{title},
         author => $biblio{author},
         holds => [],
         age => $oldest,
@@ -214,7 +214,6 @@ sub _compute {
     }
 
     for my $hold (sort { $a->{priority} <=> $b->{priority} } @$holds) {
-        next if $hold->{suspend};
         my $rid = $hold->{reserve_id};
         my $to = $hold->{branchcode};
         my $age = eval { no warnings; str2time($hold->{reservedate}) } // 0;
