@@ -125,7 +125,7 @@ sub compute {
             ccode => $pick->{ccode},
             category => category(%meta, location => $pick->{location}),
         };
-        if (exists $pick->{found} or $pick->{transfer_to}) {
+        if (exists $pick->{found} or $pick->{transfer_to} or ($pick->{homebranch} ne $pick->{holdingbranch}) ) {
             my $b = $out->{enroute}//=[];
             $i->{reserve} = $pick->{reserve} if $pick->{reserve};
             $i->{transfer_to} = $pick->{transfer_to} if $pick->{transfer_to};
