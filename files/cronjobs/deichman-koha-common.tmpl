@@ -123,6 +123,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 #########################
 # Cleanup ILL mess
-##################################
-# every morning at 6
+#########################
+# every morning at 00:06
 6 0 * * * root koha-foreach /cronjobs/illrequests_cleanup.sh
+
+#########################
+# Fix wrongly credited patrons
+#########################
+# every morning at 00:30
+30 0 * * * root koha-foreach /cronjobs/reset_accountlines_credit.sh
