@@ -1,9 +1,7 @@
 #!/bin/sh
 # /cronjobs/reset_accountlines_credit.sh
 # Zeroes out credit on users that have paid and returned items for whom the
-# library now owes money
-
-report="REPORT FROM CRONJOB reset_accountlines_credit.sh\n"
+# library now seems to owe money
 
 add_accountlines_reversing_credit() {
   # Inserts lines into accountlines that reverse any patron credits
@@ -18,11 +16,12 @@ add_accountlines_reversing_credit() {
            0,
            NOW()
     FROM accountlines
+    WHERE accounttype NOT IN ("W", "F", "FU")
     GROUP BY borrowernumber HAVING SUM(amountoutstanding) < 0;
 
     SELECT ROW_COUNT();
 EOF`"
-  report+="Unblocking juveniles with kemnersak:\t${RES}\n"
+  echo "Reversed credit on users:\t${RES}"
 }
 
 add_account_offset_credit() {
@@ -39,27 +38,35 @@ add_account_offset_credit() {
               borrowernumber,
               SUM(amountoutstanding) AS total
        FROM accountlines
+       WHERE accounttype NOT IN ("W", "F", "FU")
        GROUP BY borrowernumber HAVING total < 0) tmp USING (borrowernumber)
     WHERE tmp.total < 0
     GROUP BY a.borrowernumber;
+
+    SELECT ROW_COUNT();
 EOF`"
-  report+="Unblocking juveniles with kemnersak:\t${RES}\n"
+  echo "Inserted account_offset on reversed credit on users:\t${RES}"
 }
 
 update_accountlines_amountoutstanding() {
   # Updates all relevant lines that have amountoutstanding
   local RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
     UPDATE accountlines a
-    JOIN ( SELECT accountlines_id,borrowernumber,SUM(amountoutstanding) AS total FROM accountlines GROUP BY borrowernumber HAVING total < 0 ) tmp USING (borrowernumber)
+    JOIN ( SELECT accountlines_id,borrowernumber,SUM(amountoutstanding) AS total
+      FROM accountlines
+      WHERE accounttype NOT IN ("W", "F", "FU")
+      GROUP BY borrowernumber HAVING total < 0
+    ) tmp USING (borrowernumber)
     SET a.amountoutstanding = 0, timestamp = NOW()
     WHERE a.amountoutstanding < 0
     AND tmp.total < 0;
 
     SELECT ROW_COUNT();
 EOF`"
-  report+="Unblocking juveniles with kemnersak:\t${RES}\n"
+  echo "Updated amountoutstanding on users:\t${RES}"
 }
 
-add_accountlines_reversing_credit()
-add_account_offset_credit()
-update_accountlines_amountoutstanding()
+echo "REPORT FROM CRONJOB reset_accountlines_credit.sh"
+add_accountlines_reversing_credit
+add_account_offset_credit
+update_accountlines_amountoutstanding
