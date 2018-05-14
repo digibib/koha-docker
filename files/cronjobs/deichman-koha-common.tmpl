@@ -78,6 +78,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 45 3 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/auto_unsuspend_holds.pl
 
 ##############
+# purresaker
+# Replacing fines.pl cronjob, managing accountlines AND purresaker table - fines for patrons
+##############
+40 1 * * *    root koha-foreach --enabled /cronjobs/purresaker.pl
+
+##############
 # Run sql reports to email
 #   -e   email to receive report (can be multiple)
 #   -s   store results in koha

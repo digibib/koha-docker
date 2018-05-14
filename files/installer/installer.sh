@@ -199,6 +199,30 @@ EOF
     echo -n "INSERT IGNORE INTO borrower_attribute_types (code,description,repeatable,unique_id,class) VALUES ('hist_cons', 'Samtykke lagre historikk', 1, 0, 'history_consent');" | koha-mysql $KOHA_INSTANCE
     EXIT_CODE=$?
   fi
+
+  VERSION=17.1105000
+  if expr "$CURRENTDBVERSION" '<=' "$VERSION" 1>/dev/null ; then
+    echo "Setting up purresaker tables ..."
+    cat <<-EOF | koha-mysql $(koha-list --enabled)
+        /*
+         *   create table purresaker (unless exists)
+         */
+        CREATE TABLE IF NOT EXISTS purresaker (
+          purre_id int(16) NOT NULL AUTO_INCREMENT,
+          nets_id varchar(100),
+          amount double,
+          borrowernumber int(11) NOT NULL,
+          status enum('open','reserved','captured') DEFAULT 'open',
+          done tinyint(1) NOT NULL DEFAULT 0,
+          timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (purre_id),
+          KEY purre_borroweridx (borrowernumber)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+EOF
+  EXIT_CODE=$?
+  fi
+
 }
 
 run_db_install_or_update

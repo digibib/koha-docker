@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 koha-foreach --enabled /usr/share/koha/bin/cronjobs/automatic_renewals.pl
-koha-foreach --enabled /usr/share/koha/bin/cronjobs/fines.pl
+# koha-foreach --enabled /usr/share/koha/bin/cronjobs/fines.pl # replaced by /cronjobs/purresaker
 koha-foreach --enabled --email /usr/share/koha/bin/cronjobs/overdue_notices.pl -t
 koha-foreach --enabled --email /usr/share/koha/bin/cronjobs/advance_notices.pl -c -itemscontent title,author
 koha-foreach --enabled /usr/share/koha/bin/cronjobs/membership_expiry.pl -c
