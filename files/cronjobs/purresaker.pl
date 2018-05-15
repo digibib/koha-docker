@@ -20,6 +20,7 @@ use File::Spec;
 
 use Koha::Calendar;
 use Koha::DateUtils;
+use Koha::Purresaker;
 
 use C4::Log qw( cronlogaction );
 use Template;
@@ -66,44 +67,6 @@ my $finesCount    = 0;
 my $purresakCount = 0;
 #my $overdues = C4::Overdues::Getoverdues();
 
-sub getOverdues {
-    my $query = "SELECT iss.*,
-           bit.itemtype,
-           it.itype,
-           it.barcode,
-           it.itemlost,
-           it.homebranch AS itemhomebranch,
-           b.branchcode AS borrbranch,
-           b.categorycode AS borrcat
-        FROM issues iss
-        LEFT JOIN items it USING (itemnumber)
-        LEFT JOIN biblioitems bit USING (biblionumber)
-        JOIN borrowers b USING (borrowernumber)
-        WHERE iss.date_due < NOW()
-        AND TO_DAYS( NOW() )-TO_DAYS( iss.date_due ) BETWEEN 10 and 35
-        GROUP BY iss.borrowernumber ORDER BY iss.borrowernumber;";
-
-    my $dbh = C4::Context->dbh();
-    my $sth = $dbh->prepare( $query );
-    $sth->execute() or die "Error executing query: " . $DBI::errstr;
-    return $sth;
-}
-
-# add a line to purresaker if not any already open
-sub addOverdue {
-    my ($borrowernumber, $amount) = @_;
-    my $query = "INSERT INTO purresaker (borrowernumber,amount)
-                SELECT * FROM (SELECT ? AS borrowernumber, ? AS amount) AS tmp
-                WHERE NOT EXISTS (
-                    SELECT borrowernumber FROM purresaker
-                    WHERE borrowernumber = ?
-                    AND done = 0);";
-    my $dbh = C4::Context->dbh();
-    my $sth = $dbh->prepare( $query );
-    $sth->execute($borrowernumber, $amount, $borrowernumber) or die "Error executing query: " . $DBI::errstr;
-    return $sth;
-}
-
 # C4::Overdues::CalcFine rewritten
 sub calcFine {
     my ( $item, $bortype, $branchcode, $datedue, $today  ) = @_;
@@ -140,7 +103,7 @@ sub calcFine {
 }
 
 my %branch_holiday;
-my $overdues = getOverdues();
+my $overdues = Koha::Purresaker->GetAllOverdues();
 while ( my $overdue = $overdues->fetchrow_hashref() ) {
     # skip items lost
     next if $overdue->{itemlost};
@@ -164,7 +127,7 @@ while ( my $overdue = $overdues->fetchrow_hashref() ) {
     if (! $branch_holiday{$circ_rules_branchcode}) {
         $verbose and print "Fine: $overdue->{issue_id}, $overdue->{borrowernumber}, $units_minus_grace, $amount\n";
         ++$finesCount;
-        my $purresak = addOverdue($overdue->{borrowernumber}, $amount);
+        my $purresak = Koha::Purresaker->AddOverdue($overdue->{borrowernumber}, $amount);
         $purresakCount += $purresak->rows;
             # NOTE: charge_type is always empty hash
             C4::Overdues::UpdateFine(
