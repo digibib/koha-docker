@@ -16,7 +16,6 @@ use POSIX qw( floor ceil );
 use C4::Context;
 use C4::Overdues;
 use Carp;
-use File::Spec;
 
 use Koha::Calendar;
 use Koha::DateUtils;
@@ -103,10 +102,11 @@ sub calcFine {
 }
 
 my %branch_holiday;
-my $overdues = Koha::Purresaker->GetAllOverdues();
+my $overdues = Koha::Purresaker->GetPatronOverduesWithPotentialFines();
+# Loop each patron with potential fines
 while ( my $overdue = $overdues->fetchrow_hashref() ) {
-    # skip items lost
-    next if $overdue->{itemlost};
+    # skip items lost ? not relevant since we group by borrower, not by issue
+    # next if $overdue->{itemlost};
 
     # get applying circ rules for patron or item
     my $circ_rules_branchcode =
@@ -129,17 +129,17 @@ while ( my $overdue = $overdues->fetchrow_hashref() ) {
         ++$finesCount;
         my $purresak = Koha::Purresaker->AddOverdue($overdue->{borrowernumber}, $amount);
         $purresakCount += $purresak->rows;
-            # NOTE: charge_type is always empty hash
-            C4::Overdues::UpdateFine(
-                {
-                    issue_id       => $overdue->{issue_id},
-                    itemnumber     => $overdue->{itemnumber},
-                    borrowernumber => $overdue->{borrowernumber},
-                    amount         => $amount,
-                    type           => $charge_type,
-                    due            => output_pref($datedue),
-                }
-            );
+        # NOTE: charge_type is always empty hash
+        C4::Overdues::UpdateFine(
+            {
+                issue_id       => $overdue->{issue_id},
+                itemnumber     => $overdue->{itemnumber},
+                borrowernumber => $overdue->{borrowernumber},
+                amount         => $amount,
+                type           => $charge_type,
+                due            => output_pref($datedue),
+            }
+        );
     }
 }
 
