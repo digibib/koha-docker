@@ -29,11 +29,12 @@ binmode( STDOUT, ":utf8" );
 use Getopt::Long;
 
 my $help;
-my $verbose;
+my ($verbose, $test_mode) = (0,0);
 
 GetOptions(
     'h|help'    => \$help,
     'v|verbose' => \$verbose,
+    't|test'    => \$test_mode,
 );
 my $usage = << 'ENDUSAGE';
 
@@ -44,6 +45,7 @@ calculated and emailed to the admin but not applied ("Calculate (but only for ma
 This script has the following parameters :
     -h --help: this message
     -v --verbose
+    -t --test:      test mode, don't actually add purresak
 
 ENDUSAGE
 
@@ -127,30 +129,29 @@ while ( my $overdue = $overdues->fetchrow_hashref() ) {
     if (! $branch_holiday{$circ_rules_branchcode}) {
         $verbose and print "Fine: $overdue->{issue_id}, $overdue->{borrowernumber}, $units_minus_grace, $amount\n";
         ++$finesCount;
-        my $purresak = Koha::Purresaker->AddOverdue($overdue->{borrowernumber}, $amount);
-        $purresakCount += $purresak->rows;
+        my $purresak;
+        unless ($test_mode) {
+            $purresak = Koha::Purresaker->AddOverdue($overdue->{borrowernumber}, $amount);
+            $purresakCount += $purresak->rows;
+        }
         # NOTE: charge_type is always empty hash
-        C4::Overdues::UpdateFine(
-            {
-                issue_id       => $overdue->{issue_id},
-                itemnumber     => $overdue->{itemnumber},
-                borrowernumber => $overdue->{borrowernumber},
-                amount         => $amount,
-                type           => $charge_type,
-                due            => output_pref($datedue),
-            }
-        );
+        $test_mode or C4::Overdues::UpdateFine({
+            issue_id       => $overdue->{issue_id},
+            itemnumber     => $overdue->{itemnumber},
+            borrowernumber => $overdue->{borrowernumber},
+            amount         => $amount,
+            type           => $charge_type,
+            due            => output_pref($datedue),
+        });
     }
 }
 
-if ($verbose) {
-    my $overdue_items = $overdues->rows;
-    print <<"EOM";
+$test_mode and print "TEST MODE\n";
+my $overdue_items = $overdues->rows;
+print <<"EOM";
 Fines -- $today
 Total overdue:    $overdue_items
 Fines calculated: $finesCount
 Purresaker added: $purresakCount
 
 EOM
-}
-
