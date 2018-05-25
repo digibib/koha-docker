@@ -134,8 +134,8 @@ Med vennlig hilsen
 Deichman
 EOF
     },
-    "ODUE FJERNLAAN 2" => {
-        title => "ODUEILL: 2. purring på forfalte lån",
+    "ODUE SKOLE 2" => {
+        title => "ODUESKOLE2: 2. purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %] [% patron.surname %],
 Lånekortnummer: [% patron.cardnumber %]
@@ -154,6 +154,24 @@ https://hjelp.deichman.no/hc/no/requests/new
 Med vennlig hilsen
 Deichmanske bibliotek, skoletjenesten
 Telefon:  23 43 29 00 (mandag – fredag, kl.12:00 – 15:30)
+EOF
+    },
+    "ODUE BIB" => {
+        title => "ODUEBIB: Melding om forfall",
+        content => <<"EOF",
+Hei [% patron.firstname %],
+Lånekortnummer: [% patron.cardnumber %]
+
+Følgende lån forfalt for 5 dager siden:
+
+[% FOREACH o IN overdues %]
+    [% o.title %], [% o.author %] [% o.barcode %]
+[% END %]
+
+Vi ber deg levere tilbake til oss snarest.
+
+Med vennlig hilsen
+Deichman
 EOF
     }
 };
