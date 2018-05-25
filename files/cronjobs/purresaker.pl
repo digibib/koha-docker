@@ -104,7 +104,7 @@ sub calcFine {
 }
 
 my %branch_holiday;
-my $overdues = Koha::Purresaker->GetPatronOverduesWithPotentialFines();
+my $overdues = Koha::Purresaker->GetPatronOverduesWithPossiblePurresak();
 # Loop each patron with potential fines
 while ( my $overdue = $overdues->fetchrow_hashref() ) {
     # skip items lost ? not relevant since we group by borrower, not by issue
@@ -131,7 +131,7 @@ while ( my $overdue = $overdues->fetchrow_hashref() ) {
         ++$finesCount;
         my $purresak;
         unless ($test_mode) {
-            $purresak = Koha::Purresaker->AddOverdue($overdue->{borrowernumber}, $amount);
+            $purresak = Koha::Purresaker->AddPurresak($overdue->{borrowernumber}, $amount);
             $purresakCount += $purresak->rows;
         }
         # NOTE: charge_type is always empty hash
