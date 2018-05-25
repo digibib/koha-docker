@@ -205,7 +205,7 @@ EOF
     echo "Setting up purresaker tables ..."
     cat <<-EOF | koha-mysql $(koha-list --enabled)
         /*
-         *   create table purresaker (unless exists)
+         *   create table purresaker and purresaker_issues (unless exists)
          */
         CREATE TABLE IF NOT EXISTS purresaker (
           purre_id int(16) NOT NULL AUTO_INCREMENT,
@@ -217,6 +217,13 @@ EOF
           timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           PRIMARY KEY (purre_id),
           KEY purre_borroweridx (borrowernumber)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+        CREATE TABLE IF NOT EXISTS purresaker_issues (
+          purre_id int(16),
+          issue_id int(11) NOT NULL,
+          PRIMARY KEY (purre_id,issue_id),
+          CONSTRAINT purreid_fk_1 FOREIGN KEY (purre_id) REFERENCES purresaker (purre_id) ON UPDATE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 EOF
