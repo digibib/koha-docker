@@ -64,6 +64,9 @@ services:
       ILLENABLE: "${ILLENABLE:-0}"
       ILLUSER: "${ILLUSER:-illuser}"
       ILLNAME: "${ILLNAME:-Interlibrary loan}"
+      NETS_MERCHANT_ID: "${NETS_MERCHANT_ID}"
+      NETS_URL: "${NETS_URL}"
+      NETS_TOKEN: "${NETS_TOKEN}"
     ports:
       - "3000:3000"
       - "6001:6001"
