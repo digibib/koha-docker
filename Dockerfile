@@ -56,6 +56,7 @@ RUN apt-get install -y python-requests && apt-get clean
 # Missing perl dependencies
 RUN apt-get update && apt-get install -y \
     libhtml-strip-perl libipc-run3-perl paps \
+    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl && \
     libyaml-libyaml-perl && \
     apt-get clean
 
@@ -67,9 +68,6 @@ RUN echo "deb http://debian.koha-community.org/koha unstable main" > /etc/apt/so
 # NCIP Server and dependencies
 ADD ./files/NCIPServer /NCIPServer
 
-RUN apt-get update && apt-get install -y \
-    libdancer-perl libobject-tiny-perl libxml-libxml-simple-perl libconfig-merge-perl && \
-    apt-get clean
 
 # Installer files
 COPY ./files/installer /installer
