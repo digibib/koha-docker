@@ -96,7 +96,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Send hold waiting reminder
 #   --days    days waiting hold has been waiting
 ##############
-0 9 * * *  root koha-foreach --enabled perl /cronjobs/holds_reminder.pl --days 4
+0 9 * * *  root koha-foreach --enabled perl /cronjobs/holds_reminder.pl --days 7
 
 ##############
 # Reset pickupnumber counter at 00:10
