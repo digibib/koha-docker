@@ -70,6 +70,7 @@ Du har lån som skulle vært levert :
 [% FOREACH o IN overdues %]
     [% o.title %], [% o.author %] [% o.barcode %]
 [% END %]
+Du har nå fått et purregebyr på 100 kroner og er sperret for videre lån inntil lånene er levert og purregebyret er betalt. Du kan betale gebyret på Mine sider: https://sok.deichman.no/profile
 
 Levér så fort du kan. Det er flere som kan ha lyst til å låne det du har lånt.
 Hvis ikke materialet blir levert, vil du motta et erstatningskrav fra Oslo kemnerkontor.
@@ -219,7 +220,8 @@ PATRON: while ( my $patron = $patrons->fetchrow_hashref() ) {
             $overdues or next PERIOD;
             my $ct = scalar @{$overdues};
             $totalOverdues += $ct;
-            my $trigger = grep { $_->{days_overdue} == 29} @{$overdues};
+            # Check if we have an overdue that matches this delay trigger, otherwise move to next
+            my $trigger = grep { $_->{days_overdue} == $rule->{"letter$i"}->{delay}} @{$overdues};
             if ($trigger) {
                 ++$triggeredOverdues;
                 # Send message
@@ -227,7 +229,7 @@ PATRON: while ( my $patron = $patrons->fetchrow_hashref() ) {
                 my $transport;
                 my $transports = $rule->{"letter$i"}->{transports};
                 #warn Dumper($transports);
-                # Not used?
+                # Item_Due notice not used? We override by forcing mail first, sms second, print last resort, if patron have these
                 #my $patron_message_prefs  = C4::Members::Messaging::GetMessagingPreferences({ borrowernumber => $patron->{borrowernumber}, message_name => 'Item_Due' });
 
                 if ( $patron->{borremail} && grep /^email$/, @{$transports} ) {

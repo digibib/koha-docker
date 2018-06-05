@@ -97,7 +97,7 @@ sub calcFine {
         $amount = $charge_periods * $issuing_rule->fine;
     } # else { # a zero (or null) chargeperiod or negative units_minus_grace value means no charge. }
 
-    # why return amount = overduefinescap ?
+    # Deichman mod: we need to know if issue generated real fine or not. why return amount = overduefinescap ?
     $amount = $issuing_rule->overduefinescap if $issuing_rule->overduefinescap && $amount > $issuing_rule->overduefinescap;
     $amount = $item->{replacementprice} if ( $issuing_rule->cap_fine_to_replacement_price && $item->{replacementprice} && $amount > $item->{replacementprice} );
     return ($amount, {}, $units_minus_grace, $charge_duration);
@@ -131,8 +131,8 @@ while ( my $overdue = $overdues->fetchrow_hashref() ) {
         ++$finesCount;
         my $purresak;
         unless ($test_mode) {
-            $purresak = Koha::Purresaker->AddPurresak($overdue->{borrowernumber}, $amount);
-            $purresakCount += $purresak->rows;
+            $purresak = Koha::Purresaker->new->AddPurresak($overdue->{borrowernumber}, $amount, $overdue->{issue_id});
+            $purresakCount++;
         }
         # NOTE: charge_type is always empty hash
         $test_mode or C4::Overdues::UpdateFine({
