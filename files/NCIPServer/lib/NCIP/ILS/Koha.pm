@@ -180,12 +180,21 @@ sub itemshipped {
         my @items = $biblio->items();
         @items == 1 or die "expected only 1 entry for $biblio_id, got: ".scalar(@items);
         my $item = $items[0];
-        if ($request->{$message}->{ItemId}->{ItemIdentifierType} eq "Barcode") {
-            my $barcode = $request->{$message}->{ItemId}->{ItemIdentifierValue};
-            $saved_request->illrequestattributes->find({ type => 'ItemIdentifierType' })->value('Barcode')->store();
-            $saved_request->illrequestattributes->find({ type => 'ItemIdentifierValue' })->value($barcode)->store();
-            $item->itemnotes("ILL barcode: " . $barcode);
+        my @identifier_types = split(";", $request->{$message}->{ItemId}->{ItemIdentifierType});
+        my @identifiers = split(";", $request->{$message}->{ItemId}->{ItemIdentifierValue});
+        for ($i=0; $i<@identifier_types; $i++) {
+            my $id_type = @identifier_types[$i];
+            my $id = @identifiers[$i];
+            if ($id_type eq "Barcode") {
+                $saved_request->illrequestattributes->find({ type => 'ItemIdentifierType' })->value('Barcode')->store();
+                $saved_request->illrequestattributes->find({ type => 'ItemIdentifierValue' })->value($id)->store();
+                $item->itemnotes("ILL barcode: " . $barcode);
+            }
+            if ($id_type eq "RFID") {
+                $saved_request->illrequestattributes->find_or_create({ type => 'RFID' })->value($id)->store();
+            }
         }
+
         $item->store;
         warn "Setting status to H_ITEMSHIPPED";
         $saved_request->status( 'H_ITEMSHIPPED' )->store;
