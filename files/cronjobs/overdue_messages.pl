@@ -61,15 +61,35 @@ if ($help) {
 cronlogaction();
 
 my $templates = {
+    "ODUE" => {
+        title   => "ODUEV: Purring forfalte lån",
+        content => <<"EOF",
+Hei [% patron.firstname %].
+
+Har du glemt oss? Du har lån som skulle vært levert for 5 dager siden:
+[% FOREACH o IN overdues %]
+    [% o.title %], [% o.author %] [% o.barcode %]
+[%- END %]
+
+Vi ber deg om å levere så fort du kan. Det er flere som kan ha lyst til å låne det du har lånt. Hvis du ikke leverer, vil du få et purregebyr på 100 kroner.
+
+Ikke ferdig? Da kan du forlenge lånet ditt på Mine sider: https://sok.deichman.no/profile
+Du kan ikke forlenge hurtiglån, dagslån, lån som er reseververt av andre, eller lån som allerede er forlenget to ganger.
+
+Hilsen
+Deichman
+EOF
+    },
     "ODUE V2" => {
         title   => "ODUEV2: 2. purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %].
 
-Du har lån som skulle vært levert :
+Du har lån som skulle vært levert for 10 dager siden:
 [% FOREACH o IN overdues %]
     [% o.title %], [% o.author %] [% o.barcode %]
-[% END %]
+[%- END %]
+
 Du har nå fått et purregebyr på 100 kroner og er sperret for videre lån inntil lånene er levert og purregebyret er betalt. Du kan betale gebyret på Mine sider: https://sok.deichman.no/profile
 
 Levér så fort du kan. Det er flere som kan ha lyst til å låne det du har lånt.
@@ -87,10 +107,30 @@ Hei [% patron.firstname %].
 Du har lånt noe hos oss som du skulle ha levert for 10 dager siden. Det vi savner er:
 [% FOREACH o IN overdues %]
     [% o.title %], [% o.author %] [% o.barcode %]
-[% END %]
+[%- END %]
 
 Du kan ikke låne noe mer før vi får dette tilbake. Levér så fort du kan. Det er flere som kan ha lyst til å låne det du har lånt.
 Hvis du ikke leverer tilbake, vil du få et erstatningskrav fra Oslo Kemnerkontor.
+
+Hilsen
+Deichman
+EOF
+    },
+    "ODUE BARN 1" => {
+        title => "ODUEBARN: Purring forfalte lån",
+        content => <<"EOF",
+Hei [% patron.firstname %].
+
+Har du glemt noe? Du har lånt noe hos oss som du skulle ha levert for 5 dager siden.
+Det vi savner er:
+[% FOREACH o IN overdues %]
+    [% o.title %], [% o.author %] [% o.barcode %]
+[%- END %]
+
+Levér tilbake så fort du kan. Det er flere som kan ha lyst til å låne det du har lånt. Hvis du ikke leverer, må vi sperre bibliotekkortet ditt. Da får du ikke låne mer før alt er levert tilbake.
+
+Ikke ferdig? Da kan du forlenge lånet ditt på Mine sider: https://sok.deichman.no/profile
+Du kan ikke forlenge hurtiglån, dagslån, lån som er reseververt av andre, eller lån som allerede er forlenget to ganger.
 
 Hilsen
 Deichman
@@ -106,7 +146,7 @@ Lånekortnummer: [% patron.cardnumber %]
 Følgende lån forfalt for 5 dager siden:
 [% FOREACH o IN overdues %]
     [% o.title %], [% o.author %] [% o.barcode %]
-[% END %]
+[%- END %]
 
 Vi ber deg levere tilbake til oss snarest.
 
@@ -126,13 +166,33 @@ Lånekortnummer: [% patron.cardnumber %]
 Følgende lån forfalt for 15 dager siden:
 [% FOREACH o IN overdues %]
     [% o.title %], [% o.author %] [% o.barcode %]
-[% END %]
+[%- END %]
 
 Du kan prøve å forlenge lånene dine på Mine sider https://sok.deichman.no/profile
 Lån som allerede er forlenget 3 ganger eller reservert av andre, kan ikke forlenges. For materiale som ikke blir levert vil du motta et erstatningskrav fra Oslo kemnerkontor.
 
 Med vennlig hilsen
 Deichman
+EOF
+    },
+    "ODUE SKOLE 1" => {
+        title => "ODUESKOLE1: Purring på forfalte lån",
+        content => <<"EOF",
+Hei [% patron.firstname %] [% patron.surname %],
+Lånekortnummer: [% patron.cardnumber %]
+
+Vi kan ikke se å ha mottatt dine lån fra skoletjenesten med leveringsfrist [% overdues.0.date_due %]
+
+[% FOREACH o IN overdues %]
+    [% o.title %], [% o.author %] [% o.barcode %]
+[%- END %]
+
+Vennligst kontakt oss dersom noe er uklart.
+https://hjelp.deichman.no/hc/no/requests/new
+
+Med vennlig hilsen
+Deichmanske bibliotek, skoletjenesten
+Telefon:  23 43 29 00 (mandag – fredag, kl.12:00 – 15:30)
 EOF
     },
     "ODUE SKOLE 2" => {
@@ -147,7 +207,7 @@ Et erstatningskrav vil bli sendt til skolen dersom materialet ikke blir levert i
 
 [% FOREACH o IN overdues %]
     [% o.title %], [% o.author %] [% o.barcode %]
-[% END %]
+[%- END %]
 
 Vennligst kontakt oss dersom noe er uklart.
 https://hjelp.deichman.no/hc/no/requests/new
@@ -167,11 +227,30 @@ Følgende lån forfalt for 5 dager siden:
 
 [% FOREACH o IN overdues %]
     [% o.title %], [% o.author %] [% o.barcode %]
-[% END %]
+[%- END %]
 
 Vi ber deg levere tilbake til oss snarest.
 
 Med vennlig hilsen
+Deichman
+EOF
+    },
+    "ODUE FJERNLAAN 1" => {
+        title => "ODUEFJERNLAAN1: Purring på forfalte lån",
+        content => <<"EOF",
+Hei [% patron.surname %],
+
+Lånekortnummer: [% patron.cardnumber %]
+
+Du har lån som skulle vært levert for 5 dager siden <<issues.date_due>>
+[% FOREACH o IN overdues %]
+    [% o.title %], [% o.author %] [% o.barcode %]
+[%- END %]
+
+Du kan prøve å forlenge lånene dine på Mine sider https://sok.deichman.no/profile 
+Lån som allerede er forlenget 3 ganger eller reservert av andre, kan ikke forlenges.
+
+Hilsen
 Deichman
 EOF
     }
@@ -221,7 +300,8 @@ PATRON: while ( my $patron = $patrons->fetchrow_hashref() ) {
             my $ct = scalar @{$overdues};
             $totalOverdues += $ct;
             # Check if we have an overdue that matches this delay trigger, otherwise move to next
-            my $trigger = grep { $_->{days_overdue} == $rule->{"letter$i"}->{delay}} @{$overdues};
+            my $trigger = grep { $_->{days_overdue} == $rule->{"letter$i"}->{delay} } @{$overdues};
+
             if ($trigger) {
                 ++$triggeredOverdues;
                 # Send message
