@@ -55,6 +55,21 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 0 2 * * *    root koha-foreach --enabled /usr/share/koha/bin/cronjobs/longoverdue.pl --lost 35=12 --charge 12 --maxdays=36 --confirm
 
 ##############
+# Kemnersaker + Send reports to email
+#   -e   email to receive report (can be multiple)
+#   -s   store results in koha
+##############
+00 04 * * *   root koha-foreach --enabled /cronjobs/kemnersaker.sh
+45 04 * * *   root koha-foreach --enabled /cronjobs/send_reports.sh -s -e benjamin.rokseth@kul.oslo.kommune.no -e kirsten.partapuoli@kem.oslo.kommune.no -e raakel.rosenborg@kul.oslo.kommune.no -e cecilie.bergh@kul.oslo.kommune.no
+
+##############
+# purresaker and overdue messages
+# Replacing fines.pl cronjob, managing purresaker and purresaker_issues table - fines and overdue messages for patrons
+##############
+0 05 * * *    root koha-foreach --enabled /cronjobs/purresaker.pl
+15 05 * * *    root koha-foreach --enabled /cronjobs/overdue_messages.pl
+
+##############
 # Process notice with transport type 'print' to print service
 #   --update_status  	set status to sent or failed
 #   --print				send to print service
@@ -76,21 +91,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ##############
 15 3 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/cancel_expired_holds.pl
 45 3 * * *  root koha-foreach --enabled /usr/share/koha/bin/cronjobs/holds/auto_unsuspend_holds.pl
-
-##############
-# purresaker and overdue messages
-# Replacing fines.pl cronjob, managing purresaker and purresaker_issues table - fines and overdue messages for patrons
-##############
-#40 0 * * *    root koha-foreach --enabled /cronjobs/purresaker.pl
-#55 0 * * *    root koha-foreach --enabled /cronjobs/overdue_messages.pl
-
-##############
-# Run sql reports to email
-#   -e   email to receive report (can be multiple)
-#   -s   store results in koha
-##############
-00 07 * * *   root koha-foreach --enabled /cronjobs/kemnersaker.sh
-45 07 * * *   root koha-foreach --enabled /cronjobs/send_reports.sh -s -e benjamin.rokseth@kul.oslo.kommune.no -e kirsten.partapuoli@kem.oslo.kommune.no -e raakel.rosenborg@kul.oslo.kommune.no -e cecilie.bergh@kul.oslo.kommune.no
 
 ##############
 # Send hold waiting reminder
