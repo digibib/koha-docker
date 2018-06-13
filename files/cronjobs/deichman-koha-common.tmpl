@@ -59,15 +59,15 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #   -e   email to receive report (can be multiple)
 #   -s   store results in koha
 ##############
-00 04 * * *   root koha-foreach --enabled /cronjobs/kemnersaker.sh
-45 04 * * *   root koha-foreach --enabled /cronjobs/send_reports.sh -s -e benjamin.rokseth@kul.oslo.kommune.no -e kirsten.partapuoli@kem.oslo.kommune.no -e raakel.rosenborg@kul.oslo.kommune.no -e cecilie.bergh@kul.oslo.kommune.no
+0 4 * * *   root koha-foreach --enabled /cronjobs/kemnersaker.sh
+45 4 * * *   root koha-foreach --enabled /cronjobs/send_reports.sh -s -e benjamin.rokseth@kul.oslo.kommune.no -e kirsten.partapuoli@kem.oslo.kommune.no -e raakel.rosenborg@kul.oslo.kommune.no -e cecilie.bergh@kul.oslo.kommune.no
 
 ##############
 # purresaker and overdue messages
 # Replacing fines.pl cronjob, managing purresaker and purresaker_issues table - fines and overdue messages for patrons
 ##############
-0 05 * * *    root koha-foreach --enabled /cronjobs/purresaker.pl
-15 05 * * *    root koha-foreach --enabled /cronjobs/overdue_messages.pl
+0 5 * * *    root koha-foreach --enabled /cronjobs/purresaker.pl
+15 5 * * *    root koha-foreach --enabled /cronjobs/overdue_messages.pl
 
 ##############
 # Process notice with transport type 'print' to print service
