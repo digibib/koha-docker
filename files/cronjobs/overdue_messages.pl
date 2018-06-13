@@ -62,7 +62,7 @@ cronlogaction();
 
 my $templates = {
     "ODUE" => {
-        title   => "ODUEV: Purring forfalte lån",
+        title   => "Purring forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %].
 
@@ -81,7 +81,7 @@ Deichman
 EOF
     },
     "ODUE V2" => {
-        title   => "ODUEV2: 2. purring på forfalte lån",
+        title   => "2. purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %].
 
@@ -100,7 +100,7 @@ Deichman
 EOF
     },
     "ODUE BARN" => {
-        title => "ODUEBARN: 2. purring på forfalte lån",
+        title => "2. purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %].
 
@@ -117,7 +117,7 @@ Deichman
 EOF
     },
     "ODUE BARN 1" => {
-        title => "ODUEBARN: Purring forfalte lån",
+        title => "Purring forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %].
 
@@ -137,7 +137,7 @@ Deichman
 EOF
     },
     "ODUE INST" => {
-        title => "ODUEINST: 2. purring på forfalte lån",
+        title => "2. purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.lastname %].
 
@@ -157,7 +157,7 @@ Deichman
 EOF
     },
     "ODUE FJERNLAAN 2" => {
-        title => "ODUEILL: 2. purring på forfalte lån",
+        title => "2. purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.lastname %].
 
@@ -176,7 +176,7 @@ Deichman
 EOF
     },
     "ODUE SKOLE 1" => {
-        title => "ODUESKOLE1: Purring på forfalte lån",
+        title => "Purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %] [% patron.surname %],
 Lånekortnummer: [% patron.cardnumber %]
@@ -196,7 +196,7 @@ Telefon:  23 43 29 00 (mandag – fredag, kl.12:00 – 15:30)
 EOF
     },
     "ODUE SKOLE 2" => {
-        title => "ODUESKOLE2: 2. purring på forfalte lån",
+        title => "2. purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.firstname %] [% patron.surname %],
 Lånekortnummer: [% patron.cardnumber %]
@@ -218,7 +218,7 @@ Telefon:  23 43 29 00 (mandag – fredag, kl.12:00 – 15:30)
 EOF
     },
     "ODUE BIB" => {
-        title => "ODUEBIB: Melding om forfall",
+        title => "Melding om forfall",
         content => <<"EOF",
 Hei [% patron.firstname %],
 Lånekortnummer: [% patron.cardnumber %]
@@ -236,7 +236,7 @@ Deichman
 EOF
     },
     "ODUE FJERNLAAN 1" => {
-        title => "ODUEFJERNLAAN1: Purring på forfalte lån",
+        title => "Purring på forfalte lån",
         content => <<"EOF",
 Hei [% patron.surname %],
 
