@@ -14,7 +14,7 @@ echo "Setting up supervisord ..."
 envsubst < /templates/global/supervisord.conf.tmpl > /etc/supervisor/conf.d/supervisord.conf
 
 echo "Mysql server setup ..."
-if [ -z $KOHA_DBHOST && ping -c 1 -W 1 $KOHA_DBHOST ] ; then
+if [[ "$KOHA_DBHOST" != "localhost" && ping -c 1 -W 1 $KOHA_DBHOST ]] ; then
   printf "Using linked mysql container $KOHA_DBHOST\n"
 else
   printf "No linked mysql or unable to connect to linked mysql $KOHA_DBHOST\n-- initializing local mysql ...\n"
