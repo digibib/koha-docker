@@ -22,6 +22,8 @@ if [ "$KOHA_DBHOST" != "localhost" ]; then
   fi
 else
   printf "No linked mysql or unable to connect to linked mysql $KOHA_DBHOST\n-- initializing local mysql ...\n"
+  # overlayfs fix for mysql
+  find /var/lib/mysql -type f -exec touch {} \;
   /etc/init.d/mysql start
   sleep 1 # waiting for mysql to spin up on slow computers
   echo "127.0.0.1  $KOHA_DBHOST" >> /etc/hosts
