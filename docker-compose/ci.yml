@@ -1,6 +1,10 @@
 ---
 version: '2.1'
 
+networks:
+  backend:
+    driver: bridge
+
 services:
   koha_ci:
     container_name: koha_ci
