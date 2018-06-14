@@ -14,10 +14,10 @@ echo "Setting up supervisord ..."
 envsubst < /templates/global/supervisord.conf.tmpl > /etc/supervisor/conf.d/supervisord.conf
 
 echo "Mysql server setup ..."
-if ping -c 1 -W 1 $KOHA_DBHOST ; then
+if [ -z $KOHA_DBHOST && ping -c 1 -W 1 $KOHA_DBHOST ] ; then
   printf "Using linked mysql container $KOHA_DBHOST\n"
 else
-  printf "Unable to connect to linked mysql container $KOHA_DBHOST\n-- initializing local mysql ...\n"
+  printf "No linked mysql or unable to connect to linked mysql $KOHA_DBHOST\n-- initializing local mysql ...\n"
   /etc/init.d/mysql start
   sleep 1 # waiting for mysql to spin up on slow computers
   echo "127.0.0.1  $KOHA_DBHOST" >> /etc/hosts
