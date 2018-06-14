@@ -12,8 +12,6 @@ services:
         KOHA_RELEASE: "$KOHA_RELEASE"
     networks:
       - backend
-    depends_on:
-      - koha_mysql
     cap_add:
       - SYS_NICE
       - DAC_READ_SEARCH
