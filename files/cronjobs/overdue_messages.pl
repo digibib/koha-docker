@@ -3,7 +3,6 @@
 # cronjob: overdue_messages.pl
 # This job handles cronjob for overduerules
 # Sends notices for patrons with overdues and/or fines
-# It also adds debarments
 
 use Modern::Perl;
 use strict;
@@ -24,7 +23,6 @@ use C4::Letters;
 use Koha::Calendar;
 use Koha::DateUtils;
 use Koha::Purresaker;
-use Koha::Patron::Debarments qw(AddUniqueDebarment);
 
 use C4::Log qw( cronlogaction );
 use Template;
@@ -49,7 +47,7 @@ This script handles message shipment to patrons with overdues.
 This script has the following parameters :
     -h --help:      this message
     -v --verbose:   more output
-    -t --test:      test mode, don't debar or send messages
+    -t --test:      test mode, don't send messages
 
 ENDUSAGE
 
@@ -247,7 +245,7 @@ Du har lån som skulle vært levert for 5 dager siden <<issues.date_due>>
     [% o.title %], [% o.author %] [% o.barcode %]
 [%- END %]
 
-Du kan prøve å forlenge lånene dine på Mine sider https://sok.deichman.no/profile 
+Du kan prøve å forlenge lånene dine på Mine sider https://sok.deichman.no/profile
 Lån som allerede er forlenget 3 ganger eller reservert av andre, kan ikke forlenges.
 
 Hilsen
@@ -262,7 +260,7 @@ my $from_address = C4::Context->preference('KohaAdminEmailAddress');
 
 my $today = DateTime->now( time_zone => C4::Context->tz() );
 
-my ($totalOverdues,$triggeredOverdues,$smsMessagesSent,$emailMessagesSent,$printMessagesSent, $patronsDebarred) = (0,0,0,0,0,0);
+my ($totalOverdues,$triggeredOverdues,$smsMessagesSent,$emailMessagesSent,$printMessagesSent) = (0,0,0,0,0);
 
 my %branch_holiday;
 my $patrons      = Koha::Purresaker->GetPatronsWithOverdues();
@@ -327,7 +325,6 @@ PATRON: while ( my $patron = $patrons->fetchrow_hashref() ) {
                 my $template = $templates->{$letter}; # TODO: swap with above when ready
                 $template or warn "Letter $letter not found";
                 $template and sendPatronMessage($template, $transport, $patron, $overdues);
-                $rule->{"letter$i"}->{debar} and debarPatron($patron);
                 next PATRON;
             }
         }
@@ -359,17 +356,6 @@ sub generate_letter_content {
   return $processed_content;
 }
 
-sub debarPatron {
-    my $patron = shift;
-    $test_mode or Koha::Patron::Debarments::AddUniqueDebarment({
-        borrowernumber => $patron->{borrowernumber},
-        type           => 'OVERDUES',
-        comment => "OVERDUES_PROCESS " .  _today(),
-    });
-    $verbose and warn "debarring patron $patron->{borrowernumber}\n";
-    ++$patronsDebarred;
-}
-
 sub _today {
     return DateTime->now()->strftime('%d.%m.%Y');
 }
@@ -384,6 +370,5 @@ Triggered overdues:     $triggeredOverdues
 SMS messages sent:      $smsMessagesSent
 Email messages sent:    $emailMessagesSent
 Print messages sent:    $printMessagesSent
-Patrons debarred:       $patronsDebarred
 
 EOM

@@ -68,6 +68,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ##############
 0 5 * * *    root koha-foreach --enabled /cronjobs/purresaker.pl
 15 5 * * *    root koha-foreach --enabled /cronjobs/overdue_messages.pl
+30 5 * * *    root koha-foreach --enabled /cronjobs/debar_patrons.pl
 
 ##############
 # Process notice with transport type 'print' to print service
