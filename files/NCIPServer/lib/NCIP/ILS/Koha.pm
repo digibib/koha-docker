@@ -182,13 +182,13 @@ sub itemshipped {
         my $item = $items[0];
         my @identifier_types = split(";", $request->{$message}->{ItemId}->{ItemIdentifierType});
         my @identifiers = split(";", $request->{$message}->{ItemId}->{ItemIdentifierValue});
-        for ($i=0; $i<@identifier_types; $i++) {
+        for (my $i=0; $i<@identifier_types; $i++) {
             my $id_type = @identifier_types[$i];
             my $id = @identifiers[$i];
             if ($id_type eq "Barcode") {
                 $saved_request->illrequestattributes->find({ type => 'ItemIdentifierType' })->value('Barcode')->store();
                 $saved_request->illrequestattributes->find({ type => 'ItemIdentifierValue' })->value($id)->store();
-                $item->itemnotes("ILL barcode: " . $barcode);
+                $item->itemnotes("ILL barcode: " . $id);
             }
             if ($id_type eq "RFID") {
                 $saved_request->illrequestattributes->find_or_create({ type => 'RFID' })->value($id)->store();
