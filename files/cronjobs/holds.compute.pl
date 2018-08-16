@@ -104,6 +104,7 @@ sub compute {
 
     my $out = {
         #meta => \%meta,
+        fiction => $meta{fiction},
         dewey => $meta{loc_dewey},
         format => $meta{loc_format},
         sort_author => $meta{loc_location},
