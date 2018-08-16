@@ -40,11 +40,8 @@ sub category {
     if ($mt eq 'Musikkopptak') {
         return 'Annen';
     }
-    if ($mt eq 'Film') {
-        return 'Annen';
-    }
-    if ($mt eq 'Spill') {
-        return 'Annen';
+    if ($mt =~ m{^(Film|Spill|Tegneserie|Noter|Lydbok)$}) {
+        return $mt;
     }
     if ($mt eq 'Andre') {
         return 'Annen';
