@@ -37,10 +37,7 @@ sub category {
     my $dewey = $meta{loc_dewey}; # 090$c
     my $location = $meta{location}//'';
 
-    if ($mt eq 'Musikkopptak') {
-        return 'Annen';
-    }
-    if ($mt =~ m{^(Film|Spill|Tegneserie|Noter|Lydbok)$}) {
+    if ($mt =~ m{^(Film|Spill|Tegneserie|Noter|Lydbok|Musikkopptak)$}) {
         return $mt;
     }
     if ($mt eq 'Andre') {
