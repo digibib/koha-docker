@@ -84,8 +84,6 @@ PATRON: while ( my $patron = $patrons->fetchrow_hashref() ) {
     my $rule = $overdueRules->{"$patron->{borrbranch}|$patron->{borrcat}"} ? $overdueRules->{"$patron->{borrbranch}|$patron->{borrcat}"} : $overdueRules->{"|$patron->{borrcat}"};
     $rule or next; # No overduerule = no message
 
-    use Data::Dumper;
-
     # We loop through overduerules backwards, oldest overdues define what message is sent
     # 1 - If we have any overdue passed letter3 give this notice, otherwise check letter2, etc..
     # 2 - If days_overdue equals delay, we define a message for this patron to be sent
