@@ -114,20 +114,15 @@ sub compute {
         my $loc = $pick->{loc} or die Dumper($pick)."...";
         my $i = {
             itemnumber => $pick->{itemnumber},
+            onlyex => $pick->{onlyex},
             barcode => $pick->{barcode},
             location => $pick->{location},
             itemcallnumber => $pick->{itemcallnumber},
             ccode => $pick->{ccode},
             category => category(%meta, location => $pick->{location}),
         };
-        if (exists $pick->{found} or $pick->{transfer_to} or ($pick->{homebranch} ne $pick->{holdingbranch}) ) {
-            my $b = $out->{enroute}//=[];
-            $i->{reserve} = $pick->{reserve} if $pick->{reserve};
-            $i->{transfer_to} = $pick->{transfer_to} if $pick->{transfer_to};
-            push @$b, $i;
-        } else {
+        if (not $pick->{onloan}) {
             $out->{pick}//={};
-            $i->{plukk} = 1;
             my $b = $out->{pick}->{$pick->{loc}}//=[];
             push @$b, $i;
         }
@@ -147,9 +142,7 @@ sub compute {
 sub _compute {
     my ($bib, $items, $holds) = @_;
 
-    my %orig;
     my %available;
-    my %all;
     my %pick;
 
     my %bybranch;
@@ -176,12 +169,8 @@ sub _compute {
             $item->{shelf} = $branch;
         }
 
-        $orig{$item->{itemnumber}} = $item;
-
         next if $item->{notforloan} or $item->{damaged} or $item->{itemlost};
         next if $item->{itype} and $item->{itype} =~ m{^(DAGSLAAN|UKESLAAN|10DLAAN|TOUKESLAAN|SETT)$};
-
-        $all{$item->{itemnumber}} = $item;
 
         my $b = $bybranch->($branch);
         $b->{items}++;
@@ -192,41 +181,34 @@ sub _compute {
             $b->{available}++;
         }
     }
+
     for my $hold (sort { $a->{priority} <=> $b->{priority} } @$holds) {
-        my $rid = $hold->{reserve_id};
         if (my $i = $hold->{itemnumber}) { # item number is locked
-            my $item = $orig{$i} or do {
-                warn "Can't find item $i";
-                next;
-            };
-            $item->{reserve} = $rid;
+            next if $hold->{found};
+            my $item = $available{$i} or next;
+            $item->{reserve} = $hold->{reserve_id};
             $item->{found} = $hold->{found};
+            $item->{onlyex} = $item->{copynumber};
             $pick{$i} = $item;
-            #print "; FIXED $rid $to <= $i $item->{loc}\n";
-            $bybranch->($item->{loc})->{available}-- if $item and $item->{loc};
+            $bybranch->($item->{loc})->{available}-- if $item->{loc};
             delete $available{$i};
         }
     }
 
     for my $hold (sort { $a->{priority} <=> $b->{priority} } @$holds) {
-        my $rid = $hold->{reserve_id};
+        if (my $i = $hold->{itemnumber}) { # item number is locked, handeled in above for loop
+            next;
+        }
+
+        next if $hold->{found};
+
         my $to = $hold->{branchcode};
         my $age = eval { no warnings; str2time($hold->{reservedate}) } // 0;
         $age = int( (time()-$age)/86400) if $age;
         $hold->{age} = $age;
         next if $age < 0; # not active yet (TODO, maybe start working on it 2 days before?)
 
-        if (my $i = $hold->{itemnumber}) { # item number is locked
-            next;
-        }
 
-        #next if $hold->{found}//'' eq 'W'; # should we check the transfers?
-        next if $hold->{found};
-
-        #if ($age>10) { # if there is a hold for 10 days, than all the books should be picked up
-        #    print "ALL\n";
-        #    return values %all;
-        #}
         my $b = $bybranch->($to);
         #print Dumper([branch => $b]);
         if ($b->{available}) {
@@ -237,21 +219,19 @@ sub _compute {
             else {
                 $pick{$_->{itemnumber}} = $_ for @list;
                 my $first = $list[0];
-                delete $all{$first->{itemnumber}};
                 $bybranch->($first->{loc})->{available}--;
-                #print "; $first->{barcode} for $rid ($to)\n";
                 next;
             }
         }
         # no good items found, mark everything for pick
-        return values %available;
+        #return values %available;
     }
     return values %pick;
 }
 
 my %bnums;
 TX {
-    SELECT "distinct biblionumber FROM reserves WHERE reservedate < NOW() and found IS NULL ORDER BY biblionumber" => [] => sub { $bnums{$_{biblionumber}}++; };
+    SELECT "DISTINCT biblionumber FROM reserves WHERE reservedate < NOW() AND found IS NULL ORDER BY biblionumber" => [] => sub { $bnums{$_{biblionumber}}++; };
 };
 #print "got ".scalar(keys %bnums)." distinct bibnums\n";
 
