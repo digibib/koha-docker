@@ -157,7 +157,10 @@ sub _compute {
     };
 
     for my $item (sort { $a->{itemnumber} <=> $b->{itemnumber} } @$items) {
-        my $lastseen = eval { str2time($item->{datelastseen}); };
+
+        next if $item->{notforloan} or $item->{damaged} or $item->{itemlost};
+        next if $item->{itype} and $item->{itype} =~ m{^(DAGSLAAN|UKESLAAN|10DLAAN|TOUKESLAAN|SETT)$};
+        next if $item->{transfer_to};
 
         my $branch = $item->{homebranch} // 'unknown';
         if ($item->{location} and $item->{location} =~ m{^([a-z]{4})(\.[a-z\d]+)+$}) {
@@ -168,9 +171,6 @@ sub _compute {
             $item->{loc} = $branch;
             $item->{shelf} = $branch;
         }
-
-        next if $item->{notforloan} or $item->{damaged} or $item->{itemlost};
-        next if $item->{itype} and $item->{itype} =~ m{^(DAGSLAAN|UKESLAAN|10DLAAN|TOUKESLAAN|SETT)$};
 
         my $b = $bybranch->($branch);
         $b->{items}++;
