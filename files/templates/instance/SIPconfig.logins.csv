@@ -18,4 +18,17 @@ utf8,autoroms,$SIP_AUTOPASS,from
 ,autostv,$SIP_AUTOPASS,fsto
 ,autotor,$SIP_AUTOPASS,ftor
 ,autohb,$SIP_AUTOPASS,hutl
+utf8,autoblrutf8,$SIP_AUTOPASS,fbol
+utf8,autofuruutf8,$SIP_AUTOPASS,ffur
+utf8,autogruutf8,$SIP_AUTOPASS,fgry
+utf8,automajutf8,$SIP_AUTOPASS,fmaj
+utf8,autotoyutf8,$SIP_AUTOPASS,fgam
+utf8,autoholutf8,$SIP_AUTOPASS,fhol
+utf8,autolmbutf8,$SIP_AUTOPASS,flam
+utf8,autonydutf8,$SIP_AUTOPASS,fnyd
+utf8,autoopputf8,$SIP_AUTOPASS,fopp
+utf8,autorommutf8,$SIP_AUTOPASS,frmm
+utf8,autoroautf8,$SIP_AUTOPASS,froa
+utf8,autostvutf8,$SIP_AUTOPASS,fsto
+utf8,autotorutf8,$SIP_AUTOPASS,ftor
 utf8,autohbutf8,$SIP_AUTOPASS,hutl
