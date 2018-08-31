@@ -36,6 +36,7 @@ sub category {
     my $fmt = $meta{loc_format}; # 090$b
     my $dewey = $meta{loc_dewey}; # 090$c
     my $location = $meta{location}//'';
+    my $fiction = $meta{fiction};
 
     if ($mt =~ m{^(Film|Spill|Tegneserie|Noter|Lydbok|Musikkopptak)$}) {
         return $mt;
@@ -45,13 +46,13 @@ sub category {
     }
 
     if ($fmt =~ m{^\w*[bu]} or $location =~ m{^(BARNEFAG|UNG|UNGFAG)$}) {
-        if ($dewey or $fmt =~ m{E}) {
+        if ($fiction eq "0") {
             return 'Fag barn';
         } else {
             return 'Skjønn barn';
         }
     } else {
-        if ($dewey) {
+        if ($fiction eq "0") {
             return 'Fag voksen';
         } else {
             return 'Skjønn voksen';
