@@ -81,8 +81,10 @@ sub compute {
 
     my @items = SELECT "items.*, branchtransfers.tobranch transfer_to FROM items
         LEFT JOIN branchtransfers ON branchtransfers.itemnumber = items.itemnumber AND datearrived IS NULL
-        WHERE biblionumber = ?
-        AND deleted_on IS NULL"
+        LEFT JOIN reserves ON reserves.itemnumber = items.itemnumber
+        WHERE items.biblionumber = ?
+        AND deleted_on IS NULL
+        AND found IS NULL"
     => [$bnum] => sub {
         return \%_;
     };
