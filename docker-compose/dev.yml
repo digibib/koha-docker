@@ -9,6 +9,7 @@ services:
       context: "${KOHAPATH}/kohadev"
       dockerfile: Dockerfile
       args:
+        KOHA_BASE_IMAGE_TAG: "$KOHA_BASE_IMAGE_TAG"
         KOHA_RELEASE: "$KOHA_RELEASE"
     networks:
       - backend

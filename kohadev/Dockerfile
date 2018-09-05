@@ -3,8 +3,8 @@
 # Based on debian jessy Koha
 # USES a docker image built from GITREF from koha-salt-docker
 #######
-
-FROM digibib/koha:c2735642135d7df4d5d14e01e6f9023055d294a0
+ARG KOHA_BASE_IMAGE_TAG
+FROM digibib/koha:${KOHA_BASE_IMAGE_TAG}
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
