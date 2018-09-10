@@ -180,6 +180,14 @@ __PAZPAR2_TOGGLE_XML_POST__
           - By default this is set to 'ILLLIBS' -->
      <partner_code>IL</partner_code>
  </interlibrary_loans>
+ <!-- The timezone setting can let you force the timezone for this
+      instance to be something other then the local timezone of the
+      server. e.g. Antarctica/South_Pole -->
+ <timezone>Europe/Oslo</timezone>
+ <core_modules>
+     <circulation>Core::Community::Circulation</circulation>
+     <sip>Core::Community::Circulation::SIP</sip>
+ </core_modules>
 
 </config>
 </yazgfs>
