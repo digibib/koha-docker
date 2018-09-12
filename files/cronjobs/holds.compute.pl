@@ -84,6 +84,7 @@ sub compute {
         LEFT JOIN reserves ON reserves.itemnumber = items.itemnumber
         WHERE items.biblionumber = ?
         AND deleted_on IS NULL
+        AND homebranch=holdingbranch
         AND found IS NULL"
     => [$bnum] => sub {
         return \%_;
