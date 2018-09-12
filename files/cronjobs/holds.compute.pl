@@ -229,7 +229,7 @@ sub _compute {
             }
         }
         # no good items found, mark everything for pick
-        #return values %available;
+        return values %available;
     }
     return values %pick;
 }
