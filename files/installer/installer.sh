@@ -160,6 +160,7 @@ apply_once() {
         /*
          *   create table kemnersaker (unless exists)
          */
+        /*
         CREATE TABLE IF NOT EXISTS kemnersaker (
         issue_id int(11) NOT NULL,
         borrowernumber int(11) NOT NULL,
@@ -171,6 +172,7 @@ apply_once() {
         KEY kemner_issueidx (issue_id),
         KEY kemner_borroweridx (borrowernumber)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+      */
 EOF
   EXIT_CODE=$?
   fi
@@ -208,7 +210,7 @@ EOF
         /*
          *   create table purresaker and purresaker_issues (unless exists)
          */
-        CREATE TABLE IF NOT EXISTS purresaker (
+        /*CREATE TABLE IF NOT EXISTS purresaker (
           purre_id int(16) NOT NULL AUTO_INCREMENT,
           nets_id varchar(100),
           amount double,
@@ -227,7 +229,7 @@ EOF
           PRIMARY KEY (purre_id,issue_id),
           CONSTRAINT purreid_fk_1 FOREIGN KEY (purre_id) REFERENCES purresaker (purre_id) ON UPDATE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+        */
 EOF
   EXIT_CODE=$?
   fi
