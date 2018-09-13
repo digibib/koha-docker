@@ -165,6 +165,7 @@ apply_once() {
         borrowernumber int(11) NOT NULL,
         itemnumber int(11) NOT NULL,
         status varchar(10) COLLATE utf8_unicode_ci DEFAULT NULL,
+        created timestamp NOT NULL DEFAULT NOW(),
         timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (issue_id),
         KEY kemner_issueidx (issue_id),
@@ -214,7 +215,7 @@ EOF
           borrowernumber int(11) NOT NULL,
           status enum('open','reserved','captured') DEFAULT 'open',
           done tinyint(1) NOT NULL DEFAULT 0,
-          created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          created timestamp NOT NULL DEFAULT NOW(),
           timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           PRIMARY KEY (purre_id),
           KEY purre_borroweridx (borrowernumber)
