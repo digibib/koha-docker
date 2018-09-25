@@ -140,3 +140,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 #########################
 # every morning at 00:30
 30 0 * * * root koha-foreach /cronjobs/reset_accountlines_credit.sh
+
+####################################
+# set missing itemtypes every 15 minutes
+####################################
+*/15 * * * * root koha-foreach /cronjobs/set_itemtype.sh
