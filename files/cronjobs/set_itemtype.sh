@@ -2,8 +2,6 @@
 # /cronjobs/set_itemtype.sh
 # update itemtype based on mediaType,format
 
-report="REPORT FROM CRONJOB set_itemtype.sh\n"
-
 RES="`cat <<-EOF | koha-mysql $(koha-list --enabled) --default-character-set=utf8 -N 2>&1
 
     UPDATE biblioitems
@@ -43,3 +41,5 @@ WHERE biblioitems.itemtype IS NULL;
 
     SELECT ROW_COUNT();
 EOF`"
+
+echo "REPORT FROM CRONJOB set_itemtype.sh\nUpdated biblioitems missing itemtype: " $RES
