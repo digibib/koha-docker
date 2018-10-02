@@ -10,7 +10,7 @@ JOIN (
     WHEN mediatype='Lydbok' THEN 'LYDBOK'
     WHEN mediatype='Bok' THEN 'BOK'
     WHEN mediatype='Tegneserie' THEN 'BOK'
-    WHEN mediatype='E-bok' THEN 'BOK'
+    WHEN mediatype='E-bok' THEN 'EBOK'
     WHEN mediatype='Film' THEN 'FILM'
     WHEN mediatype='Spill' THEN 'SPILL'
     WHEN mediatype='Språkkurs' THEN 'SPRAAKKURS'
