@@ -38,6 +38,7 @@ git config --global bz.default-tracker bugs.koha-community.org && \
     git config --global apply.whitespace fix
 
 echo "Koha Sites global config ..."
+envsubst < /templates/global/apache-envvars.tmpl > /etc/apache2/envvars
 envsubst < /templates/global/koha-sites.conf.tmpl > /etc/koha/koha-sites.conf
 envsubst < /templates/global/passwd.tmpl > /etc/koha/passwd
 

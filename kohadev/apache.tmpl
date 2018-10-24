@@ -1,50 +1,5 @@
 ## KOHA GIT DEVELOPMENT VHOSTS
 
-# OPAC
-<VirtualHost *:8080>
-  <IfVersion >= 2.4>
-    Define instance "${KOHA_INSTANCE}"
-  </IfVersion>
-  #Include /etc/koha/apache-shared.conf
-  #Include /etc/koha/apache-shared-opac-git.conf
-
-  ServerName "${KOHA_INSTANCE}"
-  DocumentRoot /kohadev/kohaclone/koha-tmpl
-
-
-  <Directory "/kohadev/kohaclone">
-  Options All
-  AllowOverride All
-  Require all granted
-  Order deny,allow
-  Allow from All
-  </Directory>
-
-  RewriteEngine On
-  SetEnv KOHA_CONF "/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml"
-  SetEnv PERL5LIB "/kohadev/kohaclone"
-
-  AssignUserID ${KOHA_INSTANCE}-koha ${KOHA_INSTANCE}-koha
-
-  ScriptAlias /cgi-bin/koha/ "/kohadev/kohaclone/opac/"
-  ScriptAlias /index.html "/kohadev/kohaclone/opac/opac-main.pl"
-  ScriptAlias /search "/kohadev/kohaclone/opac/opac-search.pl"
-  ScriptAlias /opac-search.pl "/kohadev/kohaclone/opac/opac-search.pl"
-
-  RewriteCond %{QUERY_STRING} (.*?)(?:[A-Za-z0-9_-]+)=&(.*)
-  RewriteRule (.+) $1?%1%2 [N,R,NE]
-  RewriteRule ^/bib/([^\/]*)/?$ /cgi-bin/koha/opac-detail\.pl?bib=$1 [PT]
-  RewriteRule ^/isbn/([^\/]*)/?$ /search?q=isbn:$1 [PT]
-  RewriteRule ^/issn/([^\/]*)/?$ /search?q=issn:$1 [PT]
-  RewriteRule ^(.*)_(.*).js$ $1.js [N,L]
-  RewriteRule ^(.*)_(.*).css$ $1.css [N,L]
-
-   ErrorLog    /var/log/koha/${KOHA_INSTANCE}/opac-error.log
-#  TransferLog /var/log/koha/${KOHA_INSTANCE}/opac-access.log
-#  RewriteLog  /var/log/koha/${KOHA_INSTANCE}/opac-rewrite.log
-</VirtualHost>
-
-
 # INTRANET
 <VirtualHost *:8081>
   <IfVersion >= 2.4>
@@ -134,7 +89,7 @@
   SetEnv KOHA_CONF "/etc/koha/sites/${KOHA_INSTANCE}/koha-conf.xml"
   SetEnv PERL5LIB "/kohadev/kohaclone"
 
-  AssignUserID ${KOHA_INSTANCE}-koha ${KOHA_INSTANCE}-koha
+  #AssignUserID ${KOHA_INSTANCE}-koha ${KOHA_INSTANCE}-koha
 
   ScriptAlias /cgi-bin/koha/ "/kohadev/kohaclone/"
   ScriptAlias /index.html "/kohadev/kohaclone/mainpage.pl"

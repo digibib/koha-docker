@@ -1,0 +1,25 @@
+# envvars - default environment variables for apache2ctl
+
+# this won't be correct after changing uid
+unset HOME
+
+# for supporting multiple apache2 instances
+if [ "${APACHE_CONFDIR##/etc/apache2-}" != "${APACHE_CONFDIR}" ] ; then
+	SUFFIX="-${APACHE_CONFDIR##/etc/apache2-}"
+else
+	SUFFIX=
+fi
+export APACHE_RUN_USER=${KOHA_INSTANCE}-koha
+export APACHE_RUN_GROUP=${KOHA_INSTANCE}-koha
+export APACHE_PID_FILE=/run/apache2/apache2$SUFFIX.pid
+export APACHE_RUN_DIR=/run/apache2$SUFFIX
+export APACHE_LOCK_DIR=/run/lock/apache2$SUFFIX
+# Only /var/log/apache2 is handled by /etc/logrotate.d/apache2.
+export APACHE_LOG_DIR=/var/log/apache2$SUFFIX
+
+## The locale used by some modules like mod_dav
+export LANG=C
+## Uncomment the following line to use the system default locale instead:
+#. /etc/default/locale
+
+export LANG

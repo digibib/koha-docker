@@ -57,6 +57,7 @@ ADD plack.psgi /etc/koha/plack.psgi
 
 # Override with kohadev templates
 ADD supervisord.conf.tmpl /templates/global/supervisord.conf.tmpl
+ADD apache-envvars.tmpl /templates/global/apache-envvars.tmpl
 ADD koha-conf.xml.tmpl /templates/instance/koha-conf.xml.tmpl
 ADD apache.tmpl /templates/instance/apache.tmpl
 
