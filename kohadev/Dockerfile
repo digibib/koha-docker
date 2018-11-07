@@ -63,6 +63,10 @@ ADD apache.tmpl /templates/instance/apache.tmpl
 
 WORKDIR /root
 
+# LinkMobiblity SMS Driver - SMS modules need to be in shared perl libs
+RUN mkdir -p /usr/share/perl5/SMS/Send/NO && \
+  cp /koha/Deichman/LinkMobilityHTTP.pm /usr/share/perl5/SMS/Send/NO/LinkMobilityHTTP.pm
+
 COPY docker-entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
 
