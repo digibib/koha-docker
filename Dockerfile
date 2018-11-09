@@ -6,7 +6,7 @@ FROM debian:jessie
 
 MAINTAINER Oslo Public Library "digitalutvikling@gmail.com"
 
-ENV REFRESHED_AT 2018-05-03
+ENV REFRESHED_AT 2018-11-03
 
 RUN echo "APT::Acquire::Retries \"3\";" > /etc/apt/apt.conf.d/80-retries
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
