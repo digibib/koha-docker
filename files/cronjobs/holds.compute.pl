@@ -134,6 +134,7 @@ sub compute {
     }
     for my $hold (sort { $a->{priority} <=> $b->{priority} } @holds) {
         push @{$out->{holds}}, {
+            priority => $hold->{priority},
             reserve_id => $hold->{reserve_id},
             itemnumber => $hold->{itemnumber},
             found => $hold->{found},
