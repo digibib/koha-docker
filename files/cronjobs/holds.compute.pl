@@ -124,6 +124,7 @@ sub compute {
             location => $pick->{location},
             itemcallnumber => $pick->{itemcallnumber},
             ccode => $pick->{ccode},
+            itemlost => $pick->{itemlost},
             category => category(%meta, location => $pick->{location}),
         };
         if (not $pick->{onloan}) {
@@ -164,7 +165,7 @@ sub _compute {
 
     for my $item (sort { $a->{itemnumber} <=> $b->{itemnumber} } @$items) {
 
-        next if $item->{notforloan} or $item->{damaged} or $item->{itemlost};
+        next if $item->{notforloan} or $item->{damaged} or ($item->{itemlost} and $item->{itemlost} != 5);
         next if $item->{itype} and $item->{itype} =~ m{^(DAGSLAAN|UKESLAAN|10DLAAN|TOUKESLAAN|SETT)$};
         next if $item->{transfer_to};
 
