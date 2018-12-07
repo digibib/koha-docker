@@ -26,6 +26,7 @@ use Clone qw( clone);
 use IPC::Run3;
 use Data::Dumper;
 use Koha::DateUtils;
+#use SOAP::Lite +trace => [ transport => sub { print $_[0]->as_string } ];
 use SOAP::Lite;
 use MIME::Lite;
 use MIME::Entity;
@@ -91,11 +92,12 @@ sub assemble_birds {
             my $receiver = Koha::Patrons->find($patron);
             if (validate_destination($receiver)) {
                 my $pidgeon  = feed_pidgeon($pdf, $receiver);
+                #warn Dumper($pidgeon);
                 my $res = send_pidgeon($pidgeon);
-                warn Dumper($res->body);
+                #warn Dumper($res->headers);
                 if ($res->fault) {
                     update_status($messages, 'failed');
-                    warn $res->fault->faultstring
+                    warn $res->fault->{faultstring};
                 } else {
                     update_status($messages, 'sent');
                 }
@@ -139,9 +141,9 @@ sub feed_pidgeon {
             )->type('tns:privatPerson'),
             SOAP::Data->name(
                'dokumenter' => \SOAP::Data->value(
-                   SOAP::Data->name( 'filnavn'   => "testdokument" )->type( 'string' ),
+                   SOAP::Data->name( 'filnavn'   => "dokument.pdf" )->type( 'string' ),
                    SOAP::Data->name( 'mimetype'  => "application/pdf" )->type( 'string' ),
-                   SOAP::Data->name( 'data'      => SOAP::Data->type(base64 => $pdf))->type( 'xs:base64Binary'),
+                   SOAP::Data->name( 'data'      => SOAP::Data->type(base64 => $pdf))->type( 'xsd:base64Binary'),
                ),
             ),
         )
@@ -182,7 +184,7 @@ sub group_messages_by_patrons {
     my $messages = shift;
     my %grouped;
     for (@{$messages} ) {
-       push @{ $grouped{$_->{borrowernumber}} }, $_; 
+       push @{ $grouped{$_->{borrowernumber}} }, $_;
     }
     return \%grouped
 }
