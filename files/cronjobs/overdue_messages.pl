@@ -72,7 +72,7 @@ Har du glemt oss? Du har lån som skulle vært levert for 5 dager siden:
 Vi ber deg om å levere så fort du kan. Det er flere som kan ha lyst til å låne det du har lånt. Hvis du ikke leverer, vil du få et purregebyr på 100 kroner.
 
 Ikke ferdig? Da kan du forlenge lånet ditt på Mine sider: https://sok.deichman.no/profile
-Du kan ikke forlenge hurtiglån, dagslån, lån som er reseververt av andre, eller lån som allerede er forlenget to ganger.
+Du kan ikke forlenge hurtiglån, dagslån, lån som er resevert av andre, eller lån som allerede er forlenget to ganger.
 
 Hilsen
 Deichman
@@ -128,7 +128,7 @@ Det vi savner er:
 Levér tilbake så fort du kan. Det er flere som kan ha lyst til å låne det du har lånt. Hvis du ikke leverer, må vi sperre bibliotekkortet ditt. Da får du ikke låne mer før alt er levert tilbake.
 
 Ikke ferdig? Da kan du forlenge lånet ditt på Mine sider: https://sok.deichman.no/profile
-Du kan ikke forlenge hurtiglån, dagslån, lån som er reseververt av andre, eller lån som allerede er forlenget to ganger.
+Du kan ikke forlenge hurtiglån, dagslån, lån som er resevert av andre, eller lån som allerede er forlenget to ganger.
 
 Hilsen
 Deichman
