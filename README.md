@@ -1,4 +1,4 @@
-Koha Docker Container ~WILL BE DEPRECATED SOON~
+Koha Docker Container (WILL BE DEPRECATED SOON)
 ===
 
 This repo is no longer maintained by Deichman (Oslo Public Library)
