@@ -1,4 +1,16 @@
-Koha Docker Container
+Koha Docker Container ~WILL BE DEPRECATED SOON~
+===
+
+This repo is no longer maintained by Deichman (Oslo Public Library)
+
+If anyone wants to keep on developing this, we'd happily transfer ownership.
+
+If interested in seeing our customized version of the Koha project, head to [OPL repo](https://gitlab.deichman.no/digibib/deichman).
+
+It includes a koha + mysql setup with a heavily customized version of Koha, of course keeping the GPL license.
+
+
+Old info
 ===
 
 This project builds a [Docker](https://www.docker.com/) image containg an installation of the library system [Koha](http://koha-community.org/).
